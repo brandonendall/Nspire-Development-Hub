@@ -55,7 +55,9 @@ static int add(mz_zip_archive *z,const char *path,const char *name,int depth,
   char folder[MAXPATH],child_path[MAXPATH],child_name[MAXPATH];
   if(depth==MAX_ZIP_DEPTH||
      snprintf(folder,sizeof(folder),"%s/",name)>=(int)sizeof(folder))return 0;
-  if(!mz_zip_writer_add_mem(z,folder,NULL,0,0))return 0;
+  /* miniz calls the write callback even for zero-length entries. */
+  static const unsigned char empty_entry=0;
+  if(!mz_zip_writer_add_mem(z,folder,&empty_entry,0,0))return 0;
   DIR *dir=opendir(path);
   if(!dir)return 0;
   int ok=1;
