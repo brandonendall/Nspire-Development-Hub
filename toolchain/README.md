@@ -18,8 +18,8 @@ bash toolchain/build.sh tools/ndless-smoke
 For a new Ndless application, create its own `Projects/<App>/Makefile` with the required `nspire-gcc`, `nspire-ld`, and `genzehn` commands, then invoke `bash toolchain/build.sh Projects/<App>`. The script shares one Docker image across all projects.
 
 ## Pinning, verification and limitations
-`bensuperpc/ndless:latest` is an **external SDK image pinned only by its moving tag**, not an immutable digest. Record the actual image digest on a successful run before claiming reproducibility. These tools have not been validated on the user's current machine or calculator as part of this import.
+`bensuperpc/ndless:latest` is an **external SDK image pinned only by its moving tag**, not an immutable digest. Record the actual image digest on a successful run before claiming reproducibility. GitHub Actions compilation succeeded in the new private hub on November 13, 2026. This does **not** establish local-machine or calculator hardware verification.
 
-The supplied Run007 handoff reports successful historical CI and device launch. This newly created repository's Actions status is **not yet verified**. No source for UltraZip or Ultimate Commander was contained in the uploaded UltraGBA package.
+The supplied Run007 handoff reports successful historical CI and device launch. The new hub's Actions builds are **verified passing**: shared SDK smoke run 43346931188 and Run007 emulator run 43346931207. No source for UltraZip or Ultimate Commander was contained in the uploaded UltraGBA package.
 
 Do not commit personal saves, copyrighted Nintendo ROMs, official GBA BIOS, firmware, passwords or signing secrets.

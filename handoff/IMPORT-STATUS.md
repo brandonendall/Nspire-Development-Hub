@@ -1,24 +1,25 @@
-# Handoff import record — November 12, 2026
+# Handoff import verification — November 13, 2026
 
-## Source inspected
-User-supplied `UltraGBA_COMPLETE_AI_REBUILD_HANDOFF (1).zip`: **397 archived files**, approximately 6.6 MB uncompressed. The package contains legacy branch snapshots, historical Git bundle, 6 .tns binaries, pinned gpSP upstream source, patch scripts, CI workflows, documentation and checksum manifests.
+## Archive inspected
+The uploaded `UltraGBA_COMPLETE_AI_REBUILD_HANDOFF (1).zip` contains **397 archived files**, approximately 6.6 MB uncompressed, including multiple source snapshots, Git history, six historical .tns binaries, pinned gpSP source, patches, workflows, docs, and checksum manifests.
 
-## Imported into the hub
-- Run007 branch's **25 text files** from original `OffCamera-Civilman/Nspire-Development-Hub`, with older documentation and CI recipes stored under `handoff/` so they do not misrepresent current status or trigger obsolete builds.
-- **185 text files** from exact pinned gpSP upstream commit, under `vendor/upstream-gpsp/`. The 16 KiB GPL-licensed open replacement BIOS binary was skipped in the connector transfer; supported CI builds clone the full upstream source at the pinned SHA.
-- Shared build wrapper, updated SDK smoke-test workflow, and project registration notes. All original Run003–Run007 scripts are preserved unchanged.
+## Uploaded to the private hub
+- Run007 branch snapshot: **25 source/doc/workflow files** copied from `OffCamera-Civilman/Nspire-Development-Hub`.
+- Pinned upstream gpSP reference: **185 text files** from commit `2ddeb23b565cab84e20278bb73ed76f3d91b25f5`, with one open replacement BIOS binary not copied by this text API transfer.
+- Shared Ndless Docker build wrapper and dedicated smoke workflow.
+- Project notes and isolated placeholders for EndraGBA, UltraZip and Ultimate Commander.
+- **Original complete nine-branch Git commit history** preserved in `handoff/history/UltraGBA-all-repo-branches.bundle`, verified by successful GitHub Action 43347375606. This is a portable bundle, not nine active branches and does not replace the private hub's `main`.
 
-## Not imported, and why
-- Original **full Git history bundle** (binary) and **6 historical .tns binaries**: retained in the original uploaded ZIP; they were not transferred to this repository by the GitHub text/API import.
-- Historical snapshots of all branches: recoverable from the original Git bundle and source repository but not re-imported as dozens of duplicate directories here.
-- UltraZip and Ultimate Commander actual source: not part of this UltraGBA archive; placeholders only.
-- The full Ndless SDK binary distribution: not part of this archive; build via external Ndless Docker image.
+## Verified CI
+- Shared SDK smoke .tns build succeeded: run `43346931188`, artifact `NspireSmoke_Run001`.
+- Run007 emulator .tns build succeeded: run `43346931207`, artifact `UltraGBA_Run007_BrowserClean`.
+- Both used Ndless Docker image `bensuperpc/ndless:latest` as resolved at build time; actual image digest recorded in build logs.
+- Actual calculator hardware testing remains **pending**.
 
-## Verification required
-1. Verify the repository tree and new commit.
-2. Check the shared SDK smoke GitHub Action; no verified result recorded yet.
-3. Check the original Run007 GitHub Action builds and uploads a usable .tns.
-4. Test the .tns on the actual TI-Nspire; no new device test is claimed.
-5. Restore the original full Git history separately if required, without rewriting the new hub's commits.
+## Still not transferred to the new repository
+- Six historical built .tns files from the uploaded ZIP; they remain in the original handoff, though a new Run007 build artifact is available.
+- All 397 ZIP members as literal GitHub files; repeated historical snapshots were not duplicated on main. Original commit ancestry is preserved in the Git bundle.
+- Actual source for UltraZip and Ultimate Commander; not supplied in this archive.
+- A standalone binary Ndless SDK; the external Docker compiler is the shared build environment.
 
-Never upload copyrighted ROMs, official BIOS, firmware, personal saves, or secrets.
+No copyrighted ROMs, official BIOS, personal save files or secrets were uploaded.
