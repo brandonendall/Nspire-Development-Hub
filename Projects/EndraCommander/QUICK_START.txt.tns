@@ -1,7 +1,7 @@
-ENDRACOMMANDER NX - RUN 004
+ENDRACOMMANDER NX - RUN 005
 First calculator test build
 
-Transfer EndraCommanderNX_Run004.tns
+Transfer EndraCommanderNX_Run005.tns
 to a folder on your TI-Nspire.
 Open it with Ndless already active.
 
@@ -51,3 +51,9 @@ RUN004 DIAGNOSTIC NOTE
 No nested Ndless app launching; exit to
 Documents to start another app.
 No clock/date formatting in browser.
+
+RUN005 SAFETY:
+Documents-only browsing; root disabled.
+Preview reads only first 4KB of file.
+Use small, disposable text files.
+Stop immediately after any hard lock.

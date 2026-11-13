@@ -70,7 +70,7 @@ static void render(void){
     for(size_t i=0;i<p->count;++i)if(p->items[i].selected)++count;
     if(e){nx_size(size,sizeof(size),e->size);snprintf(info,sizeof(info),"%s | %u marked",e->directory?"Folder":size,count);}else snprintf(info,sizeof(info),"%lu items | %s sort",(unsigned long)p->count,p->sort==0?"Name":p->sort==1?"Size":"Date");
     tailtext(5,194,p->path,muted,38);text(5,204,e?e->name:status,fg,38);text(5,214,info,muted,38);
-    footer(diag_readonly?"004 SAFE  Q unlock  MENU actions":"004 WRITE  Q lock  MENU actions");present();
+    footer(diag_readonly?"005 SAFE  Q unlock  MENU actions":"005 WRITE  Q lock  MENU actions");present();
 }
 static void wrapped(const char *s,int x,int y,int cols,int rows,uint16_t color){int row=0,col=0;for(;*s&&row<rows;++s){if(*s=='\r')continue;if(*s=='\n'){++row;col=0;continue;}char ch[2]={*s=='\t'?' ':*s,0};text(x+col*8,y+row*10,ch,color,1);if(++col==cols){col=0;++row;}}}
 static void message(const char *heading,const char *body){clear();title(heading);wrapped(body,8,32,38,18,fg);footer("ENTER / ESC back");present();int k;do{k=platform_key();}while(k!=K_ENTER&&k!=K_ESC);}
@@ -92,11 +92,63 @@ static int progress(const char *name,uint64_t amount){static char last[NX_PATH];
     if(change){char size[32];snprintf(last,sizeof(last),"%s",name);previous=amount;clear();title("Working...");wrapped(name,8,40,38,10,fg);nx_size(size,sizeof(size),amount);text(8,166,size,accent,32);footer("ESC cancel when operation responds");present();}return 1;}
 static void view_text_buffer(const char *heading,const char *data){size_t pos=0,n=strlen(data),history[256];unsigned page=0;for(;;){clear();title(heading);size_t next=pos;int row=0,col=0;for(;next<n&&row<18;++next){unsigned char c=(unsigned char)data[next];if(c=='\r')continue;if(c=='\n'){++row;col=0;continue;}char ch[2]={c=='\t'?' ':c>=32&&c<127?(char)c:'.',0};text(8+col*8,30+row*10,ch,fg,1);if(++col==38){col=0;++row;}}
         footer("UP / DOWN page   ESC back");present();int k=platform_key();if(k==K_ESC||k==K_ENTER)return;if(k==K_DOWN&&next<n&&page<256){history[page++]=pos;pos=next;}if(k==K_UP&&page)pos=history[--page];}}
-static void view_file(const char *path,int hex){FILE *f=fopen(path,"rb");if(!f){nx_fail("Cannot open file for preview");error();return;}long offsets[1024],pos=0;unsigned page=0;for(;;){clear();title(hex?"HEX VIEWER":"TEXT VIEWER");fseek(f,pos,SEEK_SET);int row=0,col=0,c;
-        if(hex){for(row=0;row<18;++row){unsigned char bytes[8];size_t n=fread(bytes,1,8,f);if(!n)break;char line[64],part[8];snprintf(line,sizeof(line),"%06lX ",(unsigned long)(pos+row*8));for(size_t j=0;j<n;++j){snprintf(part,sizeof(part),"%02X ",bytes[j]);strcat(line,part);}text(5,30+row*10,line,fg,38);}}
-        else{while(row<18&&(c=fgetc(f))!=EOF){if(c=='\r')continue;if(c=='\n'){++row;col=0;continue;}char ch[2]={c=='\t'?' ':c>=32&&c<127?(char)c:'.',0};text(8+col*8,30+row*10,ch,fg,1);if(++col==38){col=0;++row;}}}
-        long next=ftell(f);int more=fgetc(f)!=EOF;footer("UP / DOWN page   H hex/text  ESC back");present();int k=platform_key();if(k==K_ESC||k==K_ENTER)break;if(k==K_DOWN&&more&&page<1024){offsets[page++]=pos;pos=next;}if(k==K_UP&&page)pos=offsets[--page];if(k=='h'||k=='H'){hex=!hex;pos=0;page=0;}}
+/* Run005: bounded preview avoids repeated fseek/ftell on Nspire filesystem,
+ * uses a heap buffer, and keeps page history out of the GUI stack. */
+static void view_file(const char *path,int hex){
+    enum { PREVIEW_BYTES = 4096, PREVIEW_PAGES = 40 };
+    static size_t history[PREVIEW_PAGES];
+    unsigned char *data=malloc(PREVIEW_BYTES);
+    if(!data){message("File preview","Not enough memory for preview");return;}
+    FILE *f=fopen(path,"rb");
+    if(!f){free(data);nx_fail("Cannot open file for preview");error();return;}
+    size_t n=fread(data,1,PREVIEW_BYTES,f);
+    int io_error=ferror(f);
+    int truncated=0;
+    if(!io_error && n==PREVIEW_BYTES)truncated=fgetc(f)!=EOF;
+    if(ferror(f))io_error=1;
     fclose(f);
+    if(io_error){free(data);message("File preview","File could not be read safely.");return;}
+    if(!n){free(data);message("File preview","This file is empty.");return;}
+    size_t pos=0;
+    unsigned page=0;
+    for(;;){
+        clear();title(hex?"HEX PREVIEW 005":"TEXT PREVIEW 005");
+        size_t next=pos;
+        int row=0,col=0;
+        if(hex){
+            for(row=0;row<18&&next<n;++row){
+                char line[64],part[8];
+                size_t index=next;
+                size_t take=n-next<8?n-next:8;
+                snprintf(line,sizeof(line),"%06lX ",(unsigned long)index);
+                for(size_t j=0;j<take;++j){
+                    snprintf(part,sizeof(part),"%02X ",(unsigned)data[next++]);
+                    strcat(line,part);
+                }
+                text(5,30+row*10,line,fg,38);
+            }
+        }else{
+            while(row<18 && next<n){
+                unsigned char c=data[next++];
+                if(c=='\r')continue;
+                if(c=='\n'){++row;col=0;continue;}
+                char ch[2]={c=='\t'?' ':(c>=32&&c<127?(char)c:'.'),0};
+                text(8+col*8,30+row*10,ch,fg,1);
+                if(++col==38){col=0;++row;}
+            }
+        }
+        footer(truncated?"FIRST 4KB ONLY  DOWN PAGE  ESC BACK":"UP/DOWN PAGE  H MODE  ESC BACK");
+        present();
+        int k=platform_key();
+        if(k==K_ESC||k==K_ENTER)break;
+        if(k==K_DOWN&&next<n&&page<PREVIEW_PAGES){
+            history[page++]=pos;
+            pos=next;
+        }
+        if(k==K_UP&&page)pos=history[--page];
+        if(k=='h'||k=='H'){hex=!hex;pos=0;page=0;}
+    }
+    free(data);
 }
 static void view_image(const char *path){int w,h,channels;if(!stbi_info(path,&w,&h,&channels)||w<1||h<1||(uint64_t)w*h>2097152){message("Image viewer","Cannot read image, or image exceeds\n2 million pixels.\n\nSupported: PNG, JPG and BMP.\nThe .tns suffix is accepted.");return;}
     clear();title("Loading image...");present();unsigned char *data=stbi_load(path,&w,&h,&channels,3);if(!data){message("Image viewer","Image decoding failed or memory\nis insufficient.");return;}
@@ -129,7 +181,7 @@ static void zip_action(int extract){char src[NX_PATH],name[NX_NAME],dst[NX_PATH]
 }
 static void workspace_set(void){char path[NX_PATH];NxEntry *e=entry();if(e&&e->directory){if(!current_path(path))return;}else strcpy(path,panes[active].path);strcpy(workspace,path);config_save();message("Workspace saved",workspace);}
 static void go_path(void){char path[NX_PATH];strcpy(path,panes[active].path);if(input("Go to folder","Absolute folder path:",path,sizeof(path))&&!navigate(&panes[active],path))error();}
-static void help(void){message("EndraCommander NX | Run 004","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
+static void help(void){message("EndraCommander NX | Run 005","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
 static void action(int k);
 static void menu(void){const char *labels[]={"Open selected","Copy to other pane","Move to other pane","Rename selected","Create folder","Delete marked/selected","Text viewer","Hex viewer","ZIP contents","Create ZIP in other pane","Extract ZIP to other pane","Toggle folders-only","Filter names in this folder","Sort: name / size / date","Save workspace folder","Open saved workspace","Go to folder path","Go to Documents","Toggle light / dark","Device info","Help / credits","Toggle diagnostic write lock"};
     const int keys[]={K_ENTER,'C','M','R','N',K_DELETE,'V','H','Z','P','X','F','S','T','W','B','G','D','Y','I','?','Q'};int chosen=0,top=0;for(;;){if(chosen<top)top=chosen;if(chosen>=top+18)top=chosen-17;clear();title("ACTIONS");for(int j=0;j<18&&top+j<22;++j){int i=top+j;int y=29+j*10;if(i==chosen)rect(4,y-1,312,10,selected);text(10,y,labels[i],i==chosen?accent:fg,37);}footer("UP / DOWN choose   ENTER   ESC back");present();int k=platform_key();if(k==K_ESC)return;if(k==K_UP&&chosen>0)--chosen;if(k==K_DOWN&&chosen<21)++chosen;if(k==K_ENTER){action(keys[chosen]);return;}}
@@ -137,7 +189,7 @@ static void menu(void){const char *labels[]={"Open selected","Copy to other pane
 static void action(int key){NxPane *p=&panes[active];int k=key<256?toupper((unsigned char)key):key;char path[NX_PATH];
     if(k=='Q'){
         if(diag_readonly){
-            if(confirm("Unlock file writes?","Run004 diagnostics starts READ ONLY.\n\nOnly unlock to test disposable files. Freezes are still under investigation."))diag_readonly=0;
+            if(confirm("Unlock file writes?","Run005 diagnostics starts READ ONLY.\n\nOnly unlock to test disposable files. Freezes are still under investigation."))diag_readonly=0;
         }else diag_readonly=1;
         return;
     }

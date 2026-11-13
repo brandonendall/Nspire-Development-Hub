@@ -90,8 +90,15 @@ static int matches(const char *s,const char *q) { size_t n=strlen(q); if(!n)retu
 void nx_release(NxPane *p) { free(p->items); p->items=NULL;p->count=p->cursor=p->scroll=0; }
 int nx_scan(NxPane *p) {
     DIR *dir; struct dirent *d; NxEntry *list=NULL; size_t count=0,capacity=0;
-    if(!path_no_links(p->path))return 0;
-    dir=opendir(p->path); if(!dir)return nx_fail("Cannot open this folder");
+    char safe_path[NX_PATH], safe_root[NX_PATH];
+    /* Run005: hard-freeze observed while traversing the OS root. Refuse
+     * out-of-Documents directory scans before any stat/opendir. */
+    if(!nx_normalize(safe_path,p->path) ||
+       !nx_normalize(safe_root,nx_write_root))return 0;
+    if(!within(safe_path,safe_root))
+        return nx_fail("Run005 safe mode: Documents folder only");
+    if(!path_no_links(safe_path))return 0;
+    dir=opendir(safe_path); if(!dir)return nx_fail("Cannot open this folder");
     while((d=readdir(dir))) {
         char path[NX_PATH]; struct stat st; NxEntry *e;
         if(!strcmp(d->d_name,".") || !strcmp(d->d_name,".."))continue;

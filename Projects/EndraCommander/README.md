@@ -1,11 +1,24 @@
-# EndraCommander NX — Run 004 (freeze diagnostics)
+# EndraCommander NX — Run 005 (root and preview safety diagnostics)
 
 Endra-branded Ndless file manager build for Brandon's TI-Nspire CX II CAS.
 Target device: OS 6.4.0.74 with working Ndless. Built using Ndless r2023.
-Run004 is a read-only-first diagnostic based on Run003; it does not change calculator files automatically.
+Run005 builds on Run004's read-only diagnostic mode; it does not change calculator files automatically.
 The new build requires its own calculator test.
 
-## Run004 freeze tracing (experimental)
+## Run005 full-calculator freeze investigation
+
+On CX II CAS OS 6.4.0.74, the owner reported hard locks requiring physical resets after (1) navigating from filesystem root toward Documents and (2) using Text Viewer. Because both freeze the entire calculator, do not repeatedly test those pathways on earlier builds.
+
+Targeted safeguards:
+- `nx_scan()` now refuses paths outside `/documents` **before** trying `opendir` or child `stat`. At Documents, LEFT produces a safe error rather than browsing OS root.
+- Text/hex preview uses a **single bounded 4 KiB read into heap memory**. Subsequent paging stays within that memory; `fseek` and `ftell` were removed from the preview loop. The old on-stack 1024-element offsets table is replaced with a small static array. Large text files show only their initial 4 KiB.
+- Existing A/H/K key and idle heartbeat instrumentation remains active; Run004's read-only lock remains on at launch.
+- Root access is temporarily disabled for safety. It has not been removed from the long-term plan, and file-management functions within Documents are unchanged in code (but locked by default).
+- Automated host tests/compilation cannot reproduce a calculator OS hard lock. The freeze is not yet confirmed fixed.
+
+Safe test procedure: USB disconnected; check heartbeat while idle; browse only inside Documents; test a **small disposable** text file (not a ROM or system file). Stop testing immediately if a complete hard lock occurs. If possible preserve any newly generated exception log and a photo with the A/H/K counters.
+
+## Run004 freeze tracing (retained)
 
 Run003 lasted through more actions but still froze on a physical CX II CAS. The cause is **not established**. Run004 keeps Run003's avoidance of frequent `localtime()` conversion and nested Ndless launching, and adds visible, in-memory freeze breadcrumbs on every screen:
 
@@ -20,7 +33,7 @@ Run003 lasted through more actions but still froze on a physical CX II CAS. The 
 
 ## Install and first test
 
-1. Transfer `EndraCommanderNX_Run004.tns` into a Documents folder using your
+1. Transfer `EndraCommanderNX_Run005.tns` into a Documents folder using your
    existing calculator transfer app. No additional app data files are required.
 2. With Ndless active, open the file from the calculator's document browser.
 3. First check that both panes appear, arrows navigate, Tab switches panes,
@@ -136,7 +149,7 @@ With a built SDK already available:
 make NDLESS_SDK=/absolute/path/Ndless/ndless-sdk
 ```
 
-Output: `dist/EndraCommanderNX_Run004.tns`. The build compiles ARM machine code,
+Output: `dist/EndraCommanderNX_Run005.tns`. The build compiles ARM machine code,
 processes the ELF using genzehn, and prepends the official Zehn loader.
 `make preview` builds a host-only renderer. Example:
 
