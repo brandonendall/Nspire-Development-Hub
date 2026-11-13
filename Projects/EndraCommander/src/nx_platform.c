@@ -3,6 +3,7 @@
 #ifdef _TINSPIRE
 #include <libndls.h>
 #include <string.h>
+extern void platform_trace_event(int key);
 /* Stock GNU Arm newlib expects the legacy .fini hook. This C app has
  * no legacy .fini section; Ndless runs its init/fini arrays itself. */
 void __attribute__((weak)) _fini(void) {}
@@ -35,9 +36,22 @@ static int scan(void) {
     if(isKeyPressed(KEY_NSPIRE_APOSTROPHE))return '\'';
     return 0;
 }
+/* Run004 diagnostics: yield to the UI every ~1.5 s so an idle heartbeat
+ * distinguishes input polling from an application/OS lock. Keep key-release
+ * state across those yields; the timer never synthesizes a key press. */
 int platform_key(void) {
     static int old=0,held=0;
-    for(;;){int k=scan();if(!k){old=held=0;}else if(k!=old){old=k;held=0;return k;}else if(++held>=18&&(k==K_UP||k==K_DOWN||k==K_DELETE)){held=14;return k;}msleep(20);}
+    unsigned ticks=0;
+    for(;;){
+        int k=scan();
+        if(!k){old=held=0;}
+        else if(k!=old){old=k;held=0;platform_trace_event(k);return k;}
+        else if(++held>=18&&(k==K_UP||k==K_DOWN||k==K_DELETE)){
+            held=14;platform_trace_event(k);return k;
+        }
+        if(++ticks>=75){platform_trace_event(0);return 0;}
+        msleep(20);
+    }
 }
 int platform_launch(const char *path) {
     char *args[2]={(char*)path,NULL};
@@ -45,7 +59,7 @@ int platform_launch(const char *path) {
     int result=nl_exec(path,1,args);
     lcd_init(SCR_320x240_565);wait_no_key_pressed();return result;
 }
-void platform_info(char *out,unsigned length) { snprintf(out,length,"EndraCommander NX\nRun 002 | Endra branding\n\nNdless revision: %u\nHardware subtype: %u\nCX II: %s\nDisplay API: lcd_blit\n\nNative nSonic hook: OFF\nOS 6.4 hook needs validation.\n\nNo CPU overclock or resident hook.",(unsigned)nl_ndless_rev(),(unsigned)nl_hwsubtype(),is_cx2?"yes":"no"); }
+void platform_info(char *out,unsigned length) { snprintf(out,length,"EndraCommander NX\nRun 004 | freeze tracing\n\nNdless revision: %u\nHardware subtype: %u\nCX II: %s\nDisplay API: lcd_blit\n\nNative nSonic hook: OFF\nOS 6.4 hook needs validation.\n\nNo CPU overclock or resident hook.",(unsigned)nl_ndless_rev(),(unsigned)nl_hwsubtype(),is_cx2?"yes":"no"); }
 #else
 int platform_init(void){return 1;}
 void platform_close(void){}

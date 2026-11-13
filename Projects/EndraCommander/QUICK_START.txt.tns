@@ -1,7 +1,7 @@
-ENDRACOMMANDER NX - RUN 003
+ENDRACOMMANDER NX - RUN 004
 First calculator test build
 
-Transfer EndraCommanderNX_Run003.tns
+Transfer EndraCommanderNX_Run004.tns
 to a folder on your TI-Nspire.
 Open it with Ndless already active.
 
@@ -17,8 +17,8 @@ working on important documents.
 Set one pane to your Left sample
 folder and the other to empty Right.
 
-MAIN CONTROLS
-ENTER: open / view / launch
+DIAGNOSTIC COUNTERS\nA = key count\nH = idle heartbeat (about 1.5s)\nK = last key code\nIf frozen, photograph these numbers.\n\nREAD ONLY by default. Q unlocks\nwrite actions with confirmation.\nTest with USB disconnected.\n\nMAIN CONTROLS
+ENTER: open / view; no app launch
 LEFT: parent folder
 SPACE: mark; A: mark all
 C: copy to other pane
@@ -47,7 +47,7 @@ No CPU overclock or resident hook.
 This guide is plain text for nTxt or
 EndraCommander NX's text viewer.
 
-RUN003 DIAGNOSTIC NOTE
+RUN004 DIAGNOSTIC NOTE
 No nested Ndless app launching; exit to
 Documents to start another app.
 No clock/date formatting in browser.

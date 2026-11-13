@@ -1,4 +1,4 @@
-name: EndraCommander NX Run003 - freeze-isolation diagnostic
+name: EndraCommander NX Run004 - freeze-trace and write lock
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run original filesystem and ZIP checks with sanitizers
         working-directory: Projects/EndraCommander
-        run: make test
+        run: |\n          make test\n          make preview
   calculator-build:
     needs: host-checks
     runs-on: ubuntu-latest
@@ -34,19 +34,19 @@ jobs:
             libnewlib-arm-none-eabi libstdc++-arm-none-eabi-dev \
             libboost-program-options-dev zlib1g-dev
       - uses: actions/checkout@v4
-      - name: Build pinned Ndless SDK and Endra Run003 application
+      - name: Build pinned Ndless SDK and Endra Run004 application
         working-directory: Projects/EndraCommander
         run: bash scripts/build-sdk.sh
       - name: Verify and package calculator binary
         working-directory: Projects/EndraCommander
         run: |
-          test -s dist/EndraCommanderNX_Run003.tns
+          test -s dist/EndraCommanderNX_Run004.tns
           cp README.md QUICK_START.txt.tns THIRD_PARTY.md dist/
           cd dist
-          sha256sum EndraCommanderNX_Run003.tns > SHA256SUMS.txt
+          sha256sum EndraCommanderNX_Run004.tns > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraCommanderNX_Run003
+          name: EndraCommanderNX_Run004
           path: Projects/EndraCommander/dist/
           if-no-files-found: error
