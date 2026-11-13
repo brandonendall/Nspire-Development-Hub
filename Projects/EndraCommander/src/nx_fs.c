@@ -1,4 +1,4 @@
-/* UltraCommander NX Run 001. Original implementation, 2026-11-12. */
+/* EndraCommander NX Run 001. Original implementation, 2026-11-12. */
 #include "nx.h"
 #include <stdio.h>
 #include <stdlib.h>

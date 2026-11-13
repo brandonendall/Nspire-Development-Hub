@@ -45,7 +45,7 @@ int platform_launch(const char *path) {
     int result=nl_exec(path,1,args);
     lcd_init(SCR_320x240_565);wait_no_key_pressed();return result;
 }
-void platform_info(char *out,unsigned length) { snprintf(out,length,"UltraCommander NX\nRun 001 | first device test\n\nNdless revision: %u\nHardware subtype: %u\nCX II: %s\nDisplay API: lcd_blit\n\nNative nSonic hook: OFF\nOS 6.4 hook needs validation.\n\nNo CPU overclock or resident hook.",(unsigned)nl_ndless_rev(),(unsigned)nl_hwsubtype(),is_cx2?"yes":"no"); }
+void platform_info(char *out,unsigned length) { snprintf(out,length,"EndraCommander NX\nRun 002 | Endra branding\n\nNdless revision: %u\nHardware subtype: %u\nCX II: %s\nDisplay API: lcd_blit\n\nNative nSonic hook: OFF\nOS 6.4 hook needs validation.\n\nNo CPU overclock or resident hook.",(unsigned)nl_ndless_rev(),(unsigned)nl_hwsubtype(),is_cx2?"yes":"no"); }
 #else
 int platform_init(void){return 1;}
 void platform_close(void){}

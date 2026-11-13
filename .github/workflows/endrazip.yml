@@ -1,17 +1,12 @@
-name: UltraZIP 003 - Restored source
+name: EndraZIP 005 - Endra branding
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'Projects/UltraZip/**'
+      - 'Projects/EndraZIP/**'
       - 'toolchain/build.sh'
-      - '.github/workflows/ultrazip.yml'
-  pull_request:
-    paths:
-      - 'Projects/UltraZip/**'
-      - 'toolchain/build.sh'
-      - '.github/workflows/ultrazip.yml'
+      - '.github/workflows/endrazip.yml'
 
 permissions:
   contents: read
@@ -25,23 +20,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Prepare vendored miniz header
-        working-directory: Projects/UltraZip
+        working-directory: Projects/EndraZIP
         run: sh get_miniz.sh
-      - name: Build UltraZIP with shared Ndless toolchain
+      - name: Test controls and ZIP round trips
+        working-directory: Projects/EndraZIP
+        run: python3 tests/test_host.py
+      - name: Build EndraZIP with shared Ndless toolchain
         run: |
           docker pull "$NSPIRE_BUILD_IMAGE"
-          bash toolchain/build.sh Projects/UltraZip
+          bash toolchain/build.sh Projects/EndraZIP
       - name: Verify and package calculator binary
         run: |
-          test -s Projects/UltraZip/UltraZIP_003.tns
+          test -s Projects/EndraZIP/EndraZIP_005.tns
           mkdir -p dist
-          cp Projects/UltraZip/UltraZIP_003.tns dist/
-          cp Projects/UltraZip/README.md dist/
+          cp Projects/EndraZIP/EndraZIP_005.tns dist/
+          cp Projects/EndraZIP/README.md dist/
           cd dist
-          sha256sum UltraZIP_003.tns > SHA256SUMS.txt
+          sha256sum EndraZIP_005.tns > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: UltraZIP_003_Restored_Run001
+          name: EndraZIP_005
           path: dist/
           if-no-files-found: error
+

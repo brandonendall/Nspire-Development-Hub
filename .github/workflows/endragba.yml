@@ -1,0 +1,43 @@
+name: EndraGBA Run008
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/endragba.yml'
+      - 'Projects/EndraGBA/**'
+      - 'Projects/UltraGBA/run007_patch.py'
+      - 'vendor/upstream-gpsp/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare preserved source and apply Endra branding
+        run: |
+          cp -a vendor/upstream-gpsp upstream-gpsp
+          python3 Projects/EndraGBA/run008_branding.py
+      - name: Build calculator executable
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh upstream-gpsp
+      - name: Package EndraGBA
+        run: |
+          test -s upstream-gpsp/gpsp_libretro.tns
+          mkdir -p dist
+          cp upstream-gpsp/gpsp_libretro.tns dist/EndraGBA_Run008_Branding.tns
+          cp Projects/EndraGBA/README.md dist/
+          cd dist
+          sha256sum *.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraGBA_Run008_Branding
+          path: dist/
+          if-no-files-found: error

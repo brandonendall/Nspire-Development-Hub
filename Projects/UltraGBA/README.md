@@ -13,4 +13,6 @@ The `vendor/upstream-gpsp` folder is a source reference snapshot, *not* the full
 Run008: native Documents-browser associations for `.gbz.tns` / `.gba.tns` remain unresolved. Avoid automatic `ndless.cfg.tns` mutations, especially because existing image-viewer mappings must be preserved. Create a new branch for further changes; keep Run007 intact.
 
 ## Branding
-**EndraGBA** is the requested future product name. Avoid mixing a rename into the baseline recovery or changing file/save paths before device verification.
+
+Current development uses **[EndraGBA](../EndraGBA/README.md)**. These cumulative
+scripts preserve the historical baseline and their original data paths.
