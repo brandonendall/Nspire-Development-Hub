@@ -1,7 +1,7 @@
-ENDRACOMMANDER NX - RUN 005
+ENDRACOMMANDER NX - RUN 006
 First calculator test build
 
-Transfer EndraCommanderNX_Run005.tns
+Transfer EndraCommanderNX_Run006.tns
 to a folder on your TI-Nspire.
 Open it with Ndless already active.
 
@@ -57,3 +57,10 @@ Documents-only browsing; root disabled.
 Preview reads only first 4KB of file.
 Use small, disposable text files.
 Stop immediately after any hard lock.
+
+RUN006 ADDITIONS
+S0 normal browse; S1 dialog
+S2 closed dialog; S3 exit.
+At /documents LEFT reports boundary
+inline (no popup to dismiss).
+If hard lock repeats: stop testing.
