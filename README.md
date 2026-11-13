@@ -22,3 +22,12 @@ The shared Ndless toolchain smoke test and UltraGBA Run007 build both **passed**
 
 ## Restore the remaining projects
 The November 13 complete backup supplied the UltraZIP and UltraCommander source absent from the earlier UltraGBA-only handoff. See [source restoration](handoff/SOURCE-RESTORATION-Run001.md) for exact provenance and verification.
+
+### Restored project builds — passing
+
+- [UltraZIP 003](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43470855176): calculator build passed.
+- [UltraCommander NX Run001](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43470855438): 129 host checks and calculator build passed.
+
+Both generated `.tns` files match the original saved binaries byte for byte.
+Physical calculator testing remains separate. The source import and exact
+checksums are documented in the restoration handoff.
