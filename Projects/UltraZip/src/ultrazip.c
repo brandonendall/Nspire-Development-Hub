@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 #define MAXPATH 512
+#define COMPRESSION_LEVEL MZ_UBER_COMPRESSION
 static int exists(const char *p){struct stat st; return stat(p,&st)==0;}
 static int safe(const char *p){
  if(!p[0]||p[0]=='/'||p[0]=='\\'||strchr(p,':'))return 0;
@@ -40,7 +41,7 @@ static int extract(const char *file,const char *dest){
 static int add(mz_zip_archive *z,const char *path,const char *name){
  struct stat st;if(stat(path,&st))return 0;
  if(S_ISDIR(st.st_mode)){puts("Folder packing comes in run 002");return 0;}
- return mz_zip_writer_add_file(z,name,path,NULL,0,MZ_BEST_SPEED);
+ return mz_zip_writer_add_file(z,name,path,NULL,0,COMPRESSION_LEVEL);
 }
 static int create(const char *file,const char *source){
  mz_zip_archive z={0};char name[MAXPATH];const char *base=strrchr(source,'/');
@@ -53,7 +54,7 @@ static int create(const char *file,const char *source){
 }
 
 
-/* UltraZIP 003: nCXplorer-inspired pixel UI. No terminal output is used. */
+/* UltraZIP 004: direct browsing and best-compression ZIP creation. */
 #define MAXENT 128
 #define W 320
 #define H 240
@@ -71,8 +72,7 @@ typedef struct { char name[256]; int directory; unsigned long size; } entry_t;
 static entry_t entries[MAXENT];
 static int count=0,selected=0,view=0;
 static char cwd[MAXPATH]="/documents";
-static char feedback[112]="ENTER: menu  LEFT: parent";
-static char chosen[MAXPATH]="";
+static char feedback[112]="ENTER: open  MENU: actions  LEFT: parent";
 static int menu=0,menusel=0,listing=0;
 static char listings[80][57];
 static int nlisting=0,listscroll=0;
@@ -165,7 +165,7 @@ static void updir(void){
 }
 static void paint(void){
  box(0,0,W,H,BG);box(0,0,W,31,BAR);box(0,29,W,2,CYAN);
- label(11,7,"ULTRAZIP 003",TEXT,2,18);
+ label(11,7,"ULTRAZIP 004",TEXT,2,18);
  label(214,12,"ZIP MANAGER",CYAN,1,17);
  box(0,31,W,25,PANEL);label(8,40,cwd,MUTED,1,51);
  box(0,57,W,18,0x2126);
@@ -185,12 +185,12 @@ static void paint(void){
   }
  }
  if(!count)label(18,100,"NO FILES IN THIS FOLDER",TEXT,1,45);
- box(0,216,W,24,BAR);label(5,221,"ENTER MENU  LEFT BACK  ESC EXIT",TEXT,1,51);
+ box(0,216,W,24,BAR);label(5,221,"ENTER OPEN  MENU ACTIONS  ESC EXIT",TEXT,1,51);
  box(0,204,W,12,PANEL);label(5,206,feedback,CYAN,1,51);
  if(menu){
   box(52,58,216,133,0x0000);box(55,61,210,127,PANEL);
   label(67,69,"FILE ACTIONS",CYAN,2,17);
-  const char *options[4]={"OPEN / BROWSE","EXTRACT ZIP","CREATE ZIP","CANCEL"};
+  const char *options[4]={"OPEN / BROWSE","EXTRACT ZIP","CREATE ZIP - BEST","CANCEL"};
   for(int i=0;i<4;i++){
    if(menusel==i)box(62,96+i*20,196,18,CYAN);
    label(72,101+i*20,options[i],menusel==i?DARK:TEXT,1,28);
@@ -223,9 +223,9 @@ static void operate(int action){
  if(!join(full,sizeof(full),cwd,entries[selected].name)){status("Path is too long");return;}
  if(action==0){
   if(entries[selected].directory){
-   strcpy(cwd,full);refresh();
+   strcpy(cwd,full);refresh();status("ENTER: open  MENU: actions  LEFT: parent");
   }else if(zipname(entries[selected].name))show_contents(full);
-  else status("Choose CREATE ZIP for this file");
+  else status("Press MENU, then CREATE ZIP for this file");
   return;
  }
  if(entries[selected].directory){status("Folder ZIP comes in next release");return;}
@@ -243,9 +243,16 @@ static void operate(int action){
  if(action==2){
   if(snprintf(out,sizeof(out),"%s.zip.tns",full)>=(int)sizeof(out)){status("Output path is too long");return;}
   if(exists(out)){status("ZIP already exists - not overwritten");return;}
-  status("Compressing...");paint();
+  status("Compressing - BEST level 10. Please wait...");paint();
   int ok=create(out,full);
-  refresh();status(ok?"ZIP created successfully":"Compression failed");
+  refresh();
+  if(ok){
+   struct stat before,after;
+   if(!stat(full,&before)&&!stat(out,&after)&&before.st_size>0&&after.st_size<before.st_size){
+    unsigned long saved=(unsigned long)(((mz_uint64)(before.st_size-after.st_size)*100)/(mz_uint64)before.st_size);
+    snprintf(feedback,sizeof(feedback),"ZIP ready - saved %lu%% (BEST level 10)",saved);
+   }else status("ZIP ready - no size saving on this file");
+  }else status("Compression failed");
  }
 }
 int main(void){
@@ -258,7 +265,7 @@ int main(void){
    else if(isKeyPressed(KEY_NSPIRE_UP)&&listscroll>0)listscroll--;
    else if(isKeyPressed(KEY_NSPIRE_DOWN)&&listscroll+12<nlisting)listscroll++;
   }else if(menu){
-   if(isKeyPressed(KEY_NSPIRE_ESC)){menu=0;}
+   if(isKeyPressed(KEY_NSPIRE_ESC)||isKeyPressed(KEY_NSPIRE_MENU)){menu=0;}
    else if(isKeyPressed(KEY_NSPIRE_UP)&&menusel>0)menusel--;
    else if(isKeyPressed(KEY_NSPIRE_DOWN)&&menusel<3)menusel++;
    else if(isKeyPressed(KEY_NSPIRE_ENTER)){
@@ -270,6 +277,9 @@ int main(void){
    else if(isKeyPressed(KEY_NSPIRE_DOWN)&&selected<count-1)selected++;
    else if(isKeyPressed(KEY_NSPIRE_LEFT))updir();
    else if(isKeyPressed(KEY_NSPIRE_ENTER)||isKeyPressed(KEY_NSPIRE_RIGHT)){
+    operate(0);
+   }
+   else if(isKeyPressed(KEY_NSPIRE_MENU)){
     if(count){menu=1;menusel=0;}
    }
    else if(isKeyPressed(KEY_NSPIRE_1))operate(1);
@@ -280,3 +290,4 @@ int main(void){
  }
  lcd_init(SCR_TYPE_INVALID);return 0;
 }
+

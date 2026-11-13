@@ -4,7 +4,7 @@ Private, multi-project development workspace for TI-Nspire CX II CAS application
 
 ## Projects
 - **UltraGBA** — preserved original work through Run007. The product rename to **EndraGBA** is planned; source/build names remain UltraGBA until changes are verified.
-- **UltraZip** — UltraZIP 003 source and pinned miniz dependency restored under `Projects/UltraZip`; dedicated calculator build workflow included.
+- **UltraZip** — UltraZIP 004 under `Projects/UltraZip`: Enter opens folders/ZIP contents, Menu opens actions, and ZIP creation defaults to miniz level 10. Includes host checks and a dedicated calculator build workflow. Run003 is preserved in Git history.
 - **Ultimate Commander** — complete UltraCommander NX Run001 source restored under `Projects/UltimateCommander`, with host tests and a dedicated calculator build workflow. The original executable name is retained.
 
 ## Shared Ndless build environment
@@ -31,3 +31,4 @@ The November 13 complete backup supplied the UltraZIP and UltraCommander source 
 Both generated `.tns` files match the original saved binaries byte for byte.
 Physical calculator testing remains separate. The source import and exact
 checksums are documented in the restoration handoff.
+

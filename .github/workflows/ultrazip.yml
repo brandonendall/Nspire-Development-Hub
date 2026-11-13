@@ -1,4 +1,4 @@
-name: UltraZIP 003 - Restored source
+name: UltraZIP 004 - Controls and compression
 
 on:
   workflow_dispatch:
@@ -27,21 +27,25 @@ jobs:
       - name: Prepare vendored miniz header
         working-directory: Projects/UltraZip
         run: sh get_miniz.sh
+      - name: Test controls and ZIP round trips
+        working-directory: Projects/UltraZip
+        run: python3 tests/test_host.py
       - name: Build UltraZIP with shared Ndless toolchain
         run: |
           docker pull "$NSPIRE_BUILD_IMAGE"
           bash toolchain/build.sh Projects/UltraZip
       - name: Verify and package calculator binary
         run: |
-          test -s Projects/UltraZip/UltraZIP_003.tns
+          test -s Projects/UltraZip/UltraZIP_004.tns
           mkdir -p dist
-          cp Projects/UltraZip/UltraZIP_003.tns dist/
+          cp Projects/UltraZip/UltraZIP_004.tns dist/
           cp Projects/UltraZip/README.md dist/
           cd dist
-          sha256sum UltraZIP_003.tns > SHA256SUMS.txt
+          sha256sum UltraZIP_004.tns > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: UltraZIP_003_Restored_Run001
+          name: UltraZIP_004
           path: dist/
           if-no-files-found: error
+
