@@ -138,6 +138,7 @@ with tempfile.TemporaryDirectory(prefix="endrazip-006-") as temp:
     # Recursive archive must fail cleanly if a child is unreadable or a path
     # exceeds the fixed calculator path buffer.
     too_deep = tmp / "TooDeep"
+    too_deep.mkdir()
     inner = too_deep
     for i in range(26):
         inner = inner / "sub"
