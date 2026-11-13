@@ -21,28 +21,42 @@ static int symlink_path(const char *path) {
     struct stat st; return lstat(path,&st)==0 && S_ISLNK(st.st_mode);
 #endif
 }
+/* Run006: only one path-size scratch buffer, no 256-element stack table.
+ * This reduces nested GUI/navigation stack pressure on the CX II.
+ * Aliasing (out == path) is supported by copying input before writing. */
 int nx_normalize(char *out,const char *path) {
-    char tmp[NX_PATH], result[NX_PATH]="/";
-    size_t starts[NX_PATH/2], depth=0, used=1;
+    char tmp[NX_PATH];
     const char *p;
-    if (!path || path[0]!='/' || strlen(path)>=sizeof(tmp)) return nx_fail("Invalid or overlong path");
-    strcpy(tmp,path); p=tmp;
-    while (*p) {
-        const char *s; size_t n;
-        while (*p=='/') ++p;
-        if (!*p) break;
-        s=p; while (*p && *p!='/') ++p; n=(size_t)(p-s);
-        if (n==1 && s[0]=='.') continue;
-        if (n==2 && s[0]=='.' && s[1]=='.') {
-            if (!depth) return nx_fail("Path goes above root");
-            used=starts[--depth]; result[used]=0; continue;
+    size_t used=1;
+    if(!out||!path||path[0]!='/'||strlen(path)>=sizeof(tmp))
+        return nx_fail("Invalid or overlong path");
+    strcpy(tmp,path);
+    p=tmp;
+    out[0]='/';out[1]=0;
+    while(*p){
+        const char *s;size_t n;
+        while(*p=='/')++p;
+        if(!*p)break;
+        s=p;
+        while(*p&&*p!='/')++p;
+        n=(size_t)(p-s);
+        if(n==1&&s[0]=='.')continue;
+        if(n==2&&s[0]=='.'&&s[1]=='.'){
+            if(used==1)return nx_fail("Path goes above root");
+            char *slash=strrchr(out,'/');
+            if(!slash)return nx_fail("Path normalization failed");
+            used=(size_t)(slash-out);
+            if(!used)used=1;
+            out[used]=0;
+            continue;
         }
-        if (n>=NX_NAME || used+n+2>=sizeof(result)) return nx_fail("Path too long");
-        starts[depth++]=used;
-        if (used>1) result[used++]='/';
-        memcpy(result+used,s,n); used+=n; result[used]=0;
+        if(n>=NX_NAME||used+(used>1?1u:0u)+n>=NX_PATH)
+            return nx_fail("Path too long");
+        if(used>1)out[used++]='/';
+        memcpy(out+used,s,n);
+        used+=n;out[used]=0;
     }
-    strcpy(out,result); return 1;
+    return 1;
 }
 int nx_name_valid(const char *name) {
     const unsigned char *p=(const unsigned char*)name;
