@@ -1,4 +1,4 @@
-name: EndraCommander NX Run002 - Endra branding
+name: EndraCommander NX Run003 - freeze-isolation diagnostic
 
 on:
   workflow_dispatch:
@@ -34,19 +34,19 @@ jobs:
             libnewlib-arm-none-eabi libstdc++-arm-none-eabi-dev \
             libboost-program-options-dev zlib1g-dev
       - uses: actions/checkout@v4
-      - name: Build pinned Ndless SDK and Endra Run002 application
+      - name: Build pinned Ndless SDK and Endra Run003 application
         working-directory: Projects/EndraCommander
         run: bash scripts/build-sdk.sh
       - name: Verify and package calculator binary
         working-directory: Projects/EndraCommander
         run: |
-          test -s dist/EndraCommanderNX_Run002.tns
+          test -s dist/EndraCommanderNX_Run003.tns
           cp README.md QUICK_START.txt.tns THIRD_PARTY.md dist/
           cd dist
-          sha256sum EndraCommanderNX_Run002.tns > SHA256SUMS.txt
+          sha256sum EndraCommanderNX_Run003.tns > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraCommanderNX_Run002
+          name: EndraCommanderNX_Run003
           path: Projects/EndraCommander/dist/
           if-no-files-found: error

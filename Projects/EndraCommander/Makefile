@@ -1,7 +1,7 @@
 NDLESS_SDK ?= $(shell nspire-tools path 2>/dev/null)
 ARM_CC ?= arm-none-eabi-gcc
 HOST_CC ?= gcc
-APP = EndraCommanderNX_Run002
+APP = EndraCommanderNX_Run003
 MINIZ = vendor/miniz/miniz.c vendor/miniz/miniz_zip.c vendor/miniz/miniz_tdef.c vendor/miniz/miniz_tinfl.c
 CORE = src/nx_fs.c src/nx_zip.c
 UI = src/nx_ui.c src/nx_platform.c
@@ -21,7 +21,7 @@ build/$(APP).elf: $(OBJECTS)
 	$(ARM_CC) -mcpu=arm926ej-s -marm -nostartfiles -nostdlib -Wl,--pic-veneer,--emit-relocs,--gc-sections -Wl,-T,$(NDLESS_SDK)/system/ldscript $(NDLESS_SDK)/system/crt0.o $(NDLESS_SDK)/system/crti.o $(OBJECTS) -L$(NDLESS_SDK)/lib -Wl,--start-group -lndls -lsyscalls -lm -lc -Wl,--end-group -lgcc $(NDLESS_SDK)/system/crtn.o -o $@
 dist/$(APP).tns: build/$(APP).elf
 	@mkdir -p dist
-	$(NDLESS_SDK)/bin/genzehn --input $< --output build/$(APP).zehn --name "EndraCommander NX 002" --ndless-rev-min 2004 --240x320-support true
+	$(NDLESS_SDK)/bin/genzehn --input $< --output build/$(APP).zehn --name "EndraCommander NX 003" --ndless-rev-min 2004 --240x320-support true
 	$(NDLESS_SDK)/bin/genzehn --info --input build/$(APP).zehn
 	cat $(NDLESS_SDK)/tools/zehn_loader/zehn_loader.tns build/$(APP).zehn > $@
 build/test_core: tests/test_core.c $(CORE) $(MINIZ) src/nx.h
