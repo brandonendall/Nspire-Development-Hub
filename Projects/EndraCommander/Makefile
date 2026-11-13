@@ -1,7 +1,7 @@
 NDLESS_SDK ?= $(shell nspire-tools path 2>/dev/null)
 ARM_CC ?= arm-none-eabi-gcc
 HOST_CC ?= gcc
-APP = EndraCommanderNX_Run004
+APP = EndraCommanderNX_Run005
 MINIZ = vendor/miniz/miniz.c vendor/miniz/miniz_zip.c vendor/miniz/miniz_tdef.c vendor/miniz/miniz_tinfl.c
 CORE = src/nx_fs.c src/nx_zip.c
 UI = src/nx_ui.c src/nx_platform.c
