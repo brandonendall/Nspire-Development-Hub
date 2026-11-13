@@ -1,0 +1,36 @@
+name: Shared Ndless SDK - Smoke Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/ndless-smoke-build.yml'
+      - 'tools/ndless-smoke/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build smoke test using shared Ndless container
+        run: |
+          set -euxo pipefail
+          docker pull bensuperpc/ndless:latest
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work bensuperpc/ndless:latest \
+            -c 'set -eu; command -v nspire-gcc; command -v nspire-ld; command -v genzehn; make -C tools/ndless-smoke clean all'
+      - name: Verify .tns
+        run: |
+          set -euxo pipefail
+          test -s tools/ndless-smoke/NspireSmoke_Run001.tns
+          sha256sum tools/ndless-smoke/NspireSmoke_Run001.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NspireSmoke_Run001
+          path: tools/ndless-smoke/NspireSmoke_Run001.tns
+          if-no-files-found: error
