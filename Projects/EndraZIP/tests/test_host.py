@@ -24,7 +24,7 @@ def check(value, message):
         raise AssertionError(message)
 
 
-with tempfile.TemporaryDirectory(prefix="endrazip-004-") as temp:
+with tempfile.TemporaryDirectory(prefix="endrazip-006-") as temp:
     tmp = Path(temp)
     export = tmp / "miniz_export.h"
     export.write_text("#define MINIZ_EXPORT\n")
@@ -92,8 +92,59 @@ with tempfile.TemporaryDirectory(prefix="endrazip-004-") as temp:
     missing_output = tmp / "missing.zip.tns"
     run("create", tmp / "missing", missing_output, succeeds=False)
     check(not missing_output.exists(), "failed archive cleaned up")
-    run("create", tmp, tmp / "folder.zip.tns", succeeds=False)
-    check(not (tmp / "folder.zip.tns").exists(), "unsupported folder leaves no archive")
+    # Folders are now first-class ZIP sources. Retain nested and empty dirs.
+    source_dir = tmp / "ArchiveMe"
+    (source_dir / "nested" / "deeper").mkdir(parents=True)
+    (source_dir / "empty").mkdir()
+    (source_dir / "nested" / "empty_child").mkdir()
+    (source_dir / "nested" / "deeper" / "payload.txt.tns").write_bytes(
+        b"recursive folder test\n" * 5000)
+    (source_dir / ".hidden.tns").write_bytes(b"hidden files are included")
+    (source_dir / "root.txt.tns").write_bytes(b"root content")
+    archive_dir = tmp / "ArchiveMe.zip.tns"
+    run("create", source_dir, archive_dir)
+    with zipfile.ZipFile(archive_dir) as z:
+        names = z.namelist()
+        for item in ("ArchiveMe/", "ArchiveMe/empty/",
+                     "ArchiveMe/nested/", "ArchiveMe/nested/empty_child/",
+                     "ArchiveMe/nested/deeper/", "ArchiveMe/.hidden.tns",
+                     "ArchiveMe/root.txt.tns",
+                     "ArchiveMe/nested/deeper/payload.txt.tns"):
+            check(item in names, f"folder member exists: {item}")
+        check(z.testzip() is None, "recursive archive ZIP CRC")
+        check(z.read("ArchiveMe/nested/deeper/payload.txt.tns") ==
+              b"recursive folder test\n" * 5000, "nested data matches")
+    unpack_dir = tmp / "recursive_unpacked"
+    run("extract", archive_dir, unpack_dir)
+    check((unpack_dir / "ArchiveMe" / "empty").is_dir(), "empty directory extracted")
+    check((unpack_dir / "ArchiveMe" / "nested" / "empty_child").is_dir(),
+          "nested empty directory extracted")
+    check((unpack_dir / "ArchiveMe" / ".hidden.tns").read_bytes() ==
+          b"hidden files are included", "hidden file extracted")
+    check((unpack_dir / "ArchiveMe" / "root.txt.tns").read_bytes() ==
+          b"root content", "folder root file extracted")
+    check((unpack_dir / "ArchiveMe" / "nested" / "deeper" /
+           "payload.txt.tns").read_bytes() ==
+          b"recursive folder test\n" * 5000, "nested file extracted")
+    run("create", source_dir, archive_dir, succeeds=False)
+    check(archive_dir.is_file(), "existing folder archive preserved")
+    empty_source = tmp / "EmptyOnly"
+    empty_source.mkdir()
+    empty_archive = tmp / "EmptyOnly.zip.tns"
+    run("create", empty_source, empty_archive)
+    with zipfile.ZipFile(empty_archive) as z:
+        check(z.namelist() == ["EmptyOnly/"], "empty root folder ZIP entry")
+
+    # Recursive archive must fail cleanly if a child is unreadable or a path
+    # exceeds the fixed calculator path buffer.
+    too_deep = tmp / "TooDeep"
+    inner = too_deep
+    for i in range(26):
+        inner = inner / "sub"
+        inner.mkdir()
+    failed_archive = tmp / "TooDeep.zip.tns"
+    run("create", too_deep, failed_archive, succeeds=False)
+    check(not failed_archive.exists(), "recursive failure removes partial archive")
 
     protected_dir = tmp / "protected_dir"
     protected_dir.mkdir()
@@ -115,10 +166,12 @@ with tempfile.TemporaryDirectory(prefix="endrazip-004-") as temp:
     with zipfile.ZipFile(browse / "archive.zip.tns", "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("sample.txt.tns", b"sample")
     print(run("ui", browse, tmp).strip())
+    with zipfile.ZipFile(browse / "child.zip.tns") as z:
+        check(z.namelist() == ["child/"], "menu creates selected folder ZIP")
     with zipfile.ZipFile(browse / "notes.txt.tns.zip.tns") as z:
         check(z.read("notes.txt.tns") == fixtures["notes.txt.tns"], "menu compression round trip")
 
-    summary = {"python_checks": checks, "ui_states": 22, "sanitizers": "ASan + UBSan",
+    summary = {"python_checks": checks, "ui_states": 26, "sanitizers": "ASan + UBSan",
                "note": "Synthetic host fixtures; calculator speed and real-ROM ratios not measured.",
                "compression": report}
     print(json.dumps(summary, indent=2))
