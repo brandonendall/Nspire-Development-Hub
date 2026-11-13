@@ -1,10 +1,10 @@
-ENDRA SDL RESTART - RUN 001
+ENDRA SDL RESTART - RUN 002
 
 Fresh SDL browser, not NX Run006.
 For TI-Nspire CX II CAS with Ndless.
 
 INSTALL:
-Place EndraSDL_Run001.tns in Documents.
+Place EndraSDL_Run002.tns in Documents.
 Start it with Ndless installed.
 
 KEYS:
@@ -15,7 +15,7 @@ LEFT      go to parent folder
 ESC       parent; exits at Documents
 MENU      show the help screen
 
-Run001 cannot preview CFG or TXT files.
+Run002 cannot preview CFG or TXT files.
 NO FILE WRITES, ZIP OR APP LAUNCH.
 System root is never displayed.
 
