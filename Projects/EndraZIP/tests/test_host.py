@@ -171,7 +171,7 @@ with tempfile.TemporaryDirectory(prefix="endrazip-006-") as temp:
     with zipfile.ZipFile(browse / "notes.txt.tns.zip.tns") as z:
         check(z.read("notes.txt.tns") == fixtures["notes.txt.tns"], "menu compression round trip")
 
-    summary = {"python_checks": checks, "ui_states": 26, "sanitizers": "ASan + UBSan",
+    summary = {"python_checks": checks, "ui_states": 27, "sanitizers": "ASan + UBSan",
                "note": "Synthetic host fixtures; calculator speed and real-ROM ratios not measured.",
                "compression": report}
     print(json.dumps(summary, indent=2))
