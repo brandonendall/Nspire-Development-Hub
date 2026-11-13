@@ -1,0 +1,31 @@
+make: Entering directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/libsyscalls'
+make: Nothing to be done for 'all'.
+make: Leaving directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/libsyscalls'
+make: Entering directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/libndls'
+make: Leaving directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/libndls'
+make: Entering directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/system'
+make: 'all' is up to date.
+make: Leaving directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/system'
+make: Entering directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/tools/zehn_loader'
+make: 'zehn_loader.tns' is up to date.
+make: Leaving directory '/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/tools/zehn_loader'
+make: Entering directory '/workspace/scratch/7f45a741c241/UltraCommanderNX_Run001'
+arm-none-eabi-gcc -std=c11 -Wall -Wextra -Wno-misleading-indentation -D_DEFAULT_SOURCE -DMINIZ_NO_TIME -Isrc -Ivendor -Ivendor/miniz -Os -marm -mcpu=arm926ej-s -D_TINSPIRE -fPIE -ffunction-sections -fdata-sections -I/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/include -c src/nx_fs.c -o build/src/nx_fs.o
+arm-none-eabi-gcc -std=c11 -Wall -Wextra -Wno-misleading-indentation -D_DEFAULT_SOURCE -DMINIZ_NO_TIME -Isrc -Ivendor -Ivendor/miniz -Os -marm -mcpu=arm926ej-s -D_TINSPIRE -fPIE -ffunction-sections -fdata-sections -I/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/include -c src/nx_zip.c -o build/src/nx_zip.o
+arm-none-eabi-gcc -mcpu=arm926ej-s -marm -nostartfiles -nostdlib -Wl,--pic-veneer,--emit-relocs,--gc-sections -Wl,-T,/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/system/ldscript /workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/system/crt0.o /workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/system/crti.o build/src/nx_fs.o build/src/nx_zip.o build/src/nx_ui.o build/src/nx_platform.o build/vendor/miniz/miniz.o build/vendor/miniz/miniz_zip.o build/vendor/miniz/miniz_tdef.o build/vendor/miniz/miniz_tinfl.o -L/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/lib -Wl,--start-group -lndls -lsyscalls -lm -lc -Wl,--end-group -lgcc /workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/system/crtn.o -o build/UltraCommanderNX_Run001.elf
+/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/bin/genzehn --input build/UltraCommanderNX_Run001.elf --output build/UltraCommanderNX_Run001.zehn --name "UltraCommander NX 001" --ndless-rev-min 2004 --240x320-support true
+/workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/bin/genzehn --info --input build/UltraCommanderNX_Run001.zehn
+Zehn header starts at byte 0x0
+956	relocations
+9	flags
+24	bytes extra data
+349928	bytes needed to load this file
+192940	bytes Zehn executable file
+Entry point:	0x0
+
+Application: UltraCommander NX 001
+Version: 1
+This executable uses the new lcd_blit API.
+This executable supports the HW-W 240x320 LCD.
+cat /workspace/scratch/7f45a741c241/toolchain/Ndless/ndless-sdk/tools/zehn_loader/zehn_loader.tns build/UltraCommanderNX_Run001.zehn > dist/UltraCommanderNX_Run001.tns
+make: Leaving directory '/workspace/scratch/7f45a741c241/UltraCommanderNX_Run001'

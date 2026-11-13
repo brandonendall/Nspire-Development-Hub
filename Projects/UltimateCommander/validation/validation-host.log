@@ -1,0 +1,13 @@
+gcc -std=c11 -Wall -Wextra -Wno-misleading-indentation -D_DEFAULT_SOURCE -DMINIZ_NO_TIME -Isrc -Ivendor -Ivendor/miniz -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer tests/test_core.c src/nx_fs.c src/nx_zip.c vendor/miniz/miniz.c vendor/miniz/miniz_zip.c vendor/miniz/miniz_tdef.c vendor/miniz/miniz_tinfl.c -lm -o build/test_core
+vendor/miniz/miniz_zip.c:165:9: note: ‘#pragma message: Using fopen, ftello, fseeko, stat() etc. path for file I/O - this path may not support large files.’
+  165 | #pragma message("Using fopen, ftello, fseeko, stat() etc. path for file I/O - this path may not support large files.")
+      |         ^~~~~~~
+vendor/miniz/miniz_zip.c: In function ‘mz_zip_writer_add_mem_ex_v2’:
+vendor/miniz/miniz_zip.c:3189:120: warning: unused parameter ‘last_modified’ [-Wunused-parameter]
+ 3189 |                                     mz_uint level_and_flags, mz_uint64 uncomp_size, mz_uint32 uncomp_crc32, MZ_TIME_T *last_modified,
+vendor/miniz/miniz_zip.c: In function ‘mz_zip_writer_add_read_buf_callback’:
+vendor/miniz/miniz_zip.c:3474:187: warning: unused parameter ‘pFile_time’ [-Wunused-parameter]
+ 3474 | mz_bool mz_zip_writer_add_read_buf_callback(mz_zip_archive *pZip, const char *pArchive_name, mz_file_read_func read_callback, void* callback_opaque, mz_uint64 max_size, const MZ_TIME_T *pFile_time, const void *pComment, mz_uint16 comment_size, mz_uint level_and_flags,
+      |                                                                                                                                                                          ~~~~~~~~~~~~~~~~~^~~~~~~~~~
+ASAN_OPTIONS=detect_leaks=0 ./build/test_core
+PASS: 129 checks. Fixtures: /tmp/ultracommander-test-wN8MK4

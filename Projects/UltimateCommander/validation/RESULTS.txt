@@ -1,0 +1,21 @@
+UltraCommander NX Run 001 | 2026-11-12
+
+ARM build: PASS; 193432-byte Ndless TNS.
+Host core checks: PASS, 129 checks.
+AddressSanitizer and UndefinedBehaviorSanitizer: no reported errors.
+Leak detection: disabled; not tested.
+Screen layout: inspected 4 host-rendered screens (browser, menu, text, image).
+Binary inspection: ARM EABI5, no unresolved strong symbols, genzehn valid.
+SDK build script: executed successfully against the pinned local checkout.
+
+NOT TESTED: physical calculator, calculator emulator, OS 6.4 hardware
+behavior, app-to-app launch/return, persistence on device, low-memory/device
+full-storage behavior. No native nSonic OS hook is included.
+
+Core checks cover normalization, write boundaries, file contents, no-overwrite,
+move collisions, recursive copy, cancellation cleanup, concurrent destination
+preservation, nonempty-folder delete rejection, symlink rejection, folder
+filters, ZIP roundtrip/list/no-overwrite, traversal and duplicate entry cleanup.
+Dependency compiler warnings (unused parameters/type limits) remain in logs.
+
+HOST_UI_PREVIEW.png is a host rendering, not a calculator screenshot.

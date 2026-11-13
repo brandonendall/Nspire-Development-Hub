@@ -18,3 +18,8 @@ dist/
 # Tooling
 .DS_Store
 __pycache__/
+
+# Original, redistributable test fixtures and open replacement BIOS
+!Projects/UltimateCommander/QUICK_START.txt.tns
+!Projects/UltimateCommander/test_files/**/*.tns
+!vendor/upstream-gpsp/libretro-gpsp/bios/open_gba_bios.bin

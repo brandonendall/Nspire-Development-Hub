@@ -1,0 +1,48 @@
+ULTRACOMMANDER NX - RUN 001
+First calculator test build
+
+Transfer UltraCommanderNX_Run001.tns
+to a folder on your TI-Nspire.
+Open it with Ndless already active.
+
+FIRST CHECK:
+1. Both panes appear.
+2. Arrows select files/folders.
+3. TAB switches panes.
+4. MENU opens all actions.
+5. ESC exits to the TI browser.
+
+Use the included test files before
+working on important documents.
+Set one pane to your Left sample
+folder and the other to empty Right.
+
+MAIN CONTROLS
+ENTER: open / view / launch
+LEFT: parent folder
+SPACE: mark; A: mark all
+C: copy to other pane
+M: move to other pane
+R: rename; N: new folder
+DEL: delete files or empty folders
+V: text; H: hex; Z: ZIP contents
+P: create ZIP; X: extract ZIP
+F: folders only; S: filter names
+T: sort by name / size / date
+W: save workspace; B: go there
+G: type path; D: Documents
+Y: theme; I: device information
+
+ZIP actions use the highlighted item.
+Copy/move/delete use marked items,
+or the highlighted item if none marked.
+Existing destinations are refused.
+
+This is a genuine compiled Ndless app.
+Hardware behavior is not yet tested.
+The nSonic native OS hook is OFF.
+Saved workspace is an in-app shortcut.
+No CPU overclock or resident hook.
+
+This guide is plain text for nTxt or
+UltraCommander NX's text viewer.

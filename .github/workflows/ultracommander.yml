@@ -1,0 +1,56 @@
+name: UltraCommander NX Run001 - Restored source
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/UltimateCommander/**'
+      - '.github/workflows/ultracommander.yml'
+  pull_request:
+    paths:
+      - 'Projects/UltimateCommander/**'
+      - '.github/workflows/ultracommander.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  host-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run original filesystem and ZIP checks with sanitizers
+        working-directory: Projects/UltimateCommander
+        run: make test
+  calculator-build:
+    needs: host-checks
+    runs-on: ubuntu-latest
+    container: debian:13-slim
+    timeout-minutes: 30
+    steps:
+      - name: Install compiler and SDK build prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git build-essential php-cli \
+            gcc-arm-none-eabi binutils-arm-none-eabi \
+            libnewlib-arm-none-eabi libstdc++-arm-none-eabi-dev \
+            libboost-program-options-dev zlib1g-dev
+      - uses: actions/checkout@v4
+      - name: Build pinned Ndless SDK and original Run001 application
+        working-directory: Projects/UltimateCommander
+        run: bash scripts/build-sdk.sh
+      - name: Verify and package calculator binary
+        working-directory: Projects/UltimateCommander
+        run: |
+          test -s dist/UltraCommanderNX_Run001.tns
+          cp README.md QUICK_START.txt.tns THIRD_PARTY.md dist/
+          cd dist
+          sha256sum UltraCommanderNX_Run001.tns > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UltraCommanderNX_Run001_Restored_Run001
+          path: Projects/UltimateCommander/dist/
+          if-no-files-found: error

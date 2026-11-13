@@ -1,0 +1,1 @@
+The repository source is unchanged. This convenience copy also includes miniz 3.0.2 at commit 293d4db1b7d0ffee9756d035b9ac6f7431ef8492. Run sh get_miniz.sh before make to generate miniz_export.h. The original branch snapshot and Git bundle retain the unmodified repository tree.

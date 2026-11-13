@@ -16,10 +16,20 @@ The uploaded `UltraGBA_COMPLETE_AI_REBUILD_HANDOFF (1).zip` contains **397 archi
 - Both used Ndless Docker image `bensuperpc/ndless:latest` as resolved at build time; actual image digest recorded in build logs.
 - Actual calculator hardware testing remains **pending**.
 
-## Still not transferred to the new repository
+## Items outstanding after the initial UltraGBA import (historical)
 - Six historical built .tns files from the uploaded ZIP; they remain in the original handoff, though a new Run007 build artifact is available.
 - All 397 ZIP members as literal GitHub files; repeated historical snapshots were not duplicated on main. Original commit ancestry is preserved in the Git bundle.
 - Actual source for UltraZip and Ultimate Commander; not supplied in this archive.
 - A standalone binary Ndless SDK; the external Docker compiler is the shared build environment.
 
 No copyrighted ROMs, official BIOS, personal save files or secrets were uploaded.
+
+## Complete-backup follow-up — November 13, 2026
+
+UltraZIP 003 and UltraCommander NX Run001 have now been imported from the verified
+complete backup. Their original source, vendored dependencies, tests, sample files
+and validation records are present, with new GitHub build workflows. The missing
+GPL open replacement BIOS was also restored to the pinned gpSP snapshot.
+See SOURCE-RESTORATION-Run001.md for build results and the source checksum manifest.
+Historical binary packages remain in the complete backup; they were not all
+duplicated as Git-tracked files.

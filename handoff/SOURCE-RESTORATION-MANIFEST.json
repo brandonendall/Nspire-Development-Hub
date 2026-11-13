@@ -1,0 +1,462 @@
+[
+  {
+    "file": "Projects/UltimateCommander/.gitignore",
+    "sha256": "7768bf4f1a1dbd2ae0d7dba25f7d8ebd5f23477192e8a31fe44e99a0c4e15304",
+    "bytes": 37
+  },
+  {
+    "file": "Projects/UltimateCommander/LICENSE",
+    "sha256": "7a95519fc5d5a21e574c67f529d5e64226f744f6304a6d42e282f20361aef75f",
+    "bytes": 1258
+  },
+  {
+    "file": "Projects/UltimateCommander/Makefile",
+    "sha256": "e406af4115e8574595206e067f0f1a7bc7a1462ce60ef045ed909988f4aadd01",
+    "bytes": 2061
+  },
+  {
+    "file": "Projects/UltimateCommander/QUICK_START.txt.tns",
+    "sha256": "25a387fcb99b69a78353613f0f2e22121b268471a3ea23168beabe697bb92c21",
+    "bytes": 1262
+  },
+  {
+    "file": "Projects/UltimateCommander/README.md",
+    "sha256": "8017e157ee43997ae0d973f59825bcc8e1ea7d1147e5c90a045b851d65fc6e72",
+    "bytes": 6489
+  },
+  {
+    "file": "Projects/UltimateCommander/THIRD_PARTY.md",
+    "sha256": "4a66470125be11a4cd33d648dcdb3d07021ec5bb84cda7816ca94560d09df170",
+    "bytes": 3061
+  },
+  {
+    "file": "Projects/UltimateCommander/licenses/GCC-COPYING.RUNTIME.txt",
+    "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+    "bytes": 3324
+  },
+  {
+    "file": "Projects/UltimateCommander/licenses/GCC-COPYING3.txt",
+    "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+    "bytes": 35147
+  },
+  {
+    "file": "Projects/UltimateCommander/licenses/Ndless-MPL-1.1.html",
+    "sha256": "08dcc04c71f5dca768b217e6d952fb43b123ee4722a653bb11ffc519e0def717",
+    "bytes": 27502
+  },
+  {
+    "file": "Projects/UltimateCommander/licenses/newlib-COPYRIGHT.txt",
+    "sha256": "0383bc85177c121b1ee5e00ff07f51d0cab2dd5bbe51875fdff01a91c234c3ae",
+    "bytes": 36391
+  },
+  {
+    "file": "Projects/UltimateCommander/scripts/build-sdk.sh",
+    "sha256": "7b12fc011ca808620bf93373fff89862788cc2305e44a20211aac33439f55bd6",
+    "bytes": 1875
+  },
+  {
+    "file": "Projects/UltimateCommander/src/nx.h",
+    "sha256": "b0773c00dc0bfdba77fee9abdacd9e6a6f44ca78fe76bfe65d8ba23de512a726",
+    "bytes": 1402
+  },
+  {
+    "file": "Projects/UltimateCommander/src/nx_fs.c",
+    "sha256": "cba986aa50be4517d775829fdd28725f9ad10d41b5d67d1fc72f03b09729773c",
+    "bytes": 10792
+  },
+  {
+    "file": "Projects/UltimateCommander/src/nx_platform.c",
+    "sha256": "0d090b1fc1501f7fc6ea1a87a4e1c3be937dd91c5d593ad07c2c4d912bd9af27",
+    "bytes": 3540
+  },
+  {
+    "file": "Projects/UltimateCommander/src/nx_platform.h",
+    "sha256": "fe730b9fa07dd13498cd8db75ba9f03164ef67dc2829a85e82ba05a374f2ed10",
+    "bytes": 378
+  },
+  {
+    "file": "Projects/UltimateCommander/src/nx_ui.c",
+    "sha256": "244c0ad7e434b132d9b49c0906d79b206a0e80d3de07d4c20d25d09d846a0ea6",
+    "bytes": 18433
+  },
+  {
+    "file": "Projects/UltimateCommander/src/nx_zip.c",
+    "sha256": "f6006f7a91082165e70deb33a04ee7f2c3bfd454d78e82ea654f14e3ac020a3e",
+    "bytes": 8267
+  },
+  {
+    "file": "Projects/UltimateCommander/test_files/Left/Image_Test.png.tns",
+    "sha256": "4eb81df72919226dcc2d84d2304b9c816dc6bb8c57e36c8661fb247bb7c5d2d2",
+    "bytes": 1575
+  },
+  {
+    "file": "Projects/UltimateCommander/test_files/Left/Sample_Folder/Example.txt.tns",
+    "sha256": "d089a120b9a57a1d827a85c8a7802c1000032a088b7c77f483af54d6143091de",
+    "bytes": 37
+  },
+  {
+    "file": "Projects/UltimateCommander/test_files/Left/Test_Archive.zip.tns",
+    "sha256": "531dfb02b26c3be94ca317fd9658eb807c2f71e5a591641075e72d4ac37a89f4",
+    "bytes": 303
+  },
+  {
+    "file": "Projects/UltimateCommander/test_files/Left/Welcome.txt.tns",
+    "sha256": "8ad11303d9264516656aa960034f5b00a9c4356eab6d7da1a17eda23cb3edb96",
+    "bytes": 307
+  },
+  {
+    "file": "Projects/UltimateCommander/test_files/Left/numbers.csv.tns",
+    "sha256": "207dc9121febe2c88129f283066ec25806cdb0de597506af7e601f2f7e548509",
+    "bytes": 27
+  },
+  {
+    "file": "Projects/UltimateCommander/tests/test_core.c",
+    "sha256": "12d9aca5246a7818c361ff7fb22df473e5fa5e1ae7fcd6063451a86c5353db8a",
+    "bytes": 5405
+  },
+  {
+    "file": "Projects/UltimateCommander/validation/BINARY_INSPECTION.txt",
+    "sha256": "85ad00415f5c3523560f051f2b6871bbc4345dc850c7cd2b23f70776847966a6",
+    "bytes": 1552
+  },
+  {
+    "file": "Projects/UltimateCommander/validation/HOST_UI_PREVIEW.png",
+    "sha256": "e54dfc0a8ad1254a9f8de9303c2223c070c7bc62196fd0367d3542265d8a1c63",
+    "bytes": 18454
+  },
+  {
+    "file": "Projects/UltimateCommander/validation/RESULTS.txt",
+    "sha256": "5d3e0f1bddfb6380b12bf15da9083754fe3455ce3c71178fb29f510014c3689b",
+    "bytes": 1124
+  },
+  {
+    "file": "Projects/UltimateCommander/validation/validation-build.log",
+    "sha256": "4bc54a1a5335239b528739cb5ae1474cffded8947f97b626b654ceb59f25602d",
+    "bytes": 3302
+  },
+  {
+    "file": "Projects/UltimateCommander/validation/validation-host.log",
+    "sha256": "eb228732aa0885c597ca6ff58b269bb6858218c3a770f52a95197be9d4c33de3",
+    "bytes": 1741
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/font8x8_basic.h",
+    "sha256": "49d8df366296b203ca3211bc0672cf2a762135bf12710735b6292756b19dffd5",
+    "bytes": 9596
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/LICENSE",
+    "sha256": "0115478d567121238cf6cc1c0c361926cf07a49d9e4c9e66da97fac6a01646b3",
+    "bytes": 1184
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz.c",
+    "sha256": "d8b837863cc6536a270751893a9778c4241467d8906719ae6cb787a62fa797bc",
+    "bytes": 24434
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz.h",
+    "sha256": "8033197e77c9567de66425939ab6164405e54aa3c60acf9312905d32c8cddc03",
+    "bytes": 24806
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_common.h",
+    "sha256": "8b60e76e726dfcf41a338c3a4c54c70038041a21e6314aa54fd3b7f729ea3412",
+    "bytes": 2726
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_export.h",
+    "sha256": "195259dc89fb3f83a96426a90ee03dc45acef113150cd3475ea9cfbf1f7784f3",
+    "bytes": 34
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_tdef.c",
+    "sha256": "69a1d22a01e698286a7d2a8df90884aa33b4f073e080749e1fce76c5117a5a29",
+    "bytes": 70573
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_tdef.h",
+    "sha256": "12b09b189c27aa7d0b0ebe0be2f3021a3bab26fe7b19e9b3b6f5c4df7c21e9df",
+    "bytes": 10113
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_tinfl.c",
+    "sha256": "9b7edc1fab708166e10f5e90a618a91c95a91496c4692e38160fdae810c1149a",
+    "bytes": 38261
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_tinfl.h",
+    "sha256": "040aad2d9ca23c487652c150277d950be12e72c5453ae1f7c6713ed2efd16b4e",
+    "bytes": 8343
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_zip.c",
+    "sha256": "dadaa2220bcaeb67e3d360fa549370f481f895026acf0fa73b8fdeaf5b5adc01",
+    "bytes": 189512
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/miniz/miniz_zip.h",
+    "sha256": "c9343f0d251d92f3730d5fe684d4af67aa0bed25d2d1d39d5fd4746a3c63f796",
+    "bytes": 25299
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/ndless-runtime-source.tar.gz",
+    "sha256": "c9ec4dd997e5d15e3a07172ce571d997b3caf5964ec0d12b956788c706b51d77",
+    "bytes": 326997
+  },
+  {
+    "file": "Projects/UltimateCommander/vendor/stb_image.h",
+    "sha256": "0e266e9f94592d9b87e97fa801a6d7e1bf8ebfe5809e5d7838f78257cba46e0c",
+    "bytes": 277811
+  },
+  {
+    "file": "Projects/UltraZip/Makefile",
+    "sha256": "395a80e39a0186c8ae0ac741cb0b54eaf04aa89052d2ccc04486f5c3f088dde7",
+    "bytes": 826
+  },
+  {
+    "file": "Projects/UltraZip/README.original.md",
+    "sha256": "d9e041b48f905302c45d0b0d9a97cc651e9b93d315609f7d35c09705d0f23bb0",
+    "bytes": 656
+  },
+  {
+    "file": "Projects/UltraZip/VENDORED_DEPENDENCY_NOTE.txt",
+    "sha256": "e4d442c81aa1ea648063af95a15231c487b16b91502435f49bb43ffcd727a156",
+    "bytes": 279
+  },
+  {
+    "file": "Projects/UltraZip/get_miniz.sh",
+    "sha256": "7a7ab6daf682d3947192de7312ba72e835397f840c1aba9e86571211aa13cd9c",
+    "bytes": 455
+  },
+  {
+    "file": "Projects/UltraZip/src/ndless_compat.c",
+    "sha256": "c564ea97dee1e5aa407cd52cb2f88044f1bebd3a90ccdc0ac1e2ee796a7a0f84",
+    "bytes": 321
+  },
+  {
+    "file": "Projects/UltraZip/src/ultrazip.c",
+    "sha256": "7fa7beb8b80f27a26bee00d07670c7471e53a643c49b4e3b0e05b068dedfcf90",
+    "bytes": 12074
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/.clang-format",
+    "sha256": "1faea5b9c44e1d89fba8140650f236c516e448399bbacb9d5d54ede9c55d46dd",
+    "bytes": 1424
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/.github/workflows/c-cpp.yml",
+    "sha256": "60fdaeed95ab7e946148069c0e7148eaf79744eefff4dffed56d0ebc716972d7",
+    "bytes": 235
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/.github/workflows/ci-fuzz.yml",
+    "sha256": "cf8ae4ff0a2e528e775b2ebdb4615916cbd3d6e0c114e2a9123feeeafbc576b5",
+    "bytes": 598
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/.github/workflows/release.yml",
+    "sha256": "b28a8333af1b9b447ef141afc1544712a284409cd84aa1135890640d8f34aeaa",
+    "bytes": 1870
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/.gitignore",
+    "sha256": "8150fee7be8ed252ce1f741f6d7baa747eca253edc98b3cc1c0f1e8e19c50b58",
+    "bytes": 30
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/.travis.yml",
+    "sha256": "743fb202e9117283760584656805540623f3504a76b5626e7df99bfac7ead87b",
+    "bytes": 39
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/CMakeLists.txt",
+    "sha256": "d3239306468dcd9f16a37b5993ea322d94e134b703d4dbfe7368961bf5d485b7",
+    "bytes": 12320
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/ChangeLog.md",
+    "sha256": "261c5cfb87942b5c47735b98ae2fa87ba5f3058d3c755838756b6117f3b0c0dd",
+    "bytes": 18794
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/Config.cmake.in",
+    "sha256": "b5e27b111af9abc51388098e9c3d72e63f561723e1f1facc6f2713a4f9f8d730",
+    "bytes": 64
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/LICENSE",
+    "sha256": "0115478d567121238cf6cc1c0c361926cf07a49d9e4c9e66da97fac6a01646b3",
+    "bytes": 1184
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/amalgamate.sh",
+    "sha256": "60d67339ec33783664435395760e35a07de4b15bdd7d2e26966c87dac984b017",
+    "bytes": 1663
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/examples/example1.c",
+    "sha256": "599c928a7afff9098ef8a6bd9f064f220d4859a57684a0f75fb5d9f2af93a83a",
+    "bytes": 3109
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/examples/example2.c",
+    "sha256": "9c7f916ac79f9f991d37b45b2324500e75f1164b967b334565790b66d6e1f34b",
+    "bytes": 6551
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/examples/example3.c",
+    "sha256": "99da8e9ade85e8088ccfd15be2713fa32e7aae4bb892b6faec51d3203455027e",
+    "bytes": 6737
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/examples/example4.c",
+    "sha256": "2197256143179881652e16b3d6243451221c7694fd4c1978f8087db6c6e3dab1",
+    "bytes": 2686
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/examples/example5.c",
+    "sha256": "3ff5af13bdfb68fe88f535588ddad3e050fc10542ba95fd97a295e65b256d0cb",
+    "bytes": 10582
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/examples/example6.c",
+    "sha256": "960b8949d03469626e5a71e02401cab3eaa266be604e45ebb13eadac9868db67",
+    "bytes": 4332
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/meson.build",
+    "sha256": "d7f0286e450be1504f8c0ccc3044e5cf02bc376e726fa9eeefaaad1f4ac8f0e1",
+    "bytes": 772
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz.c",
+    "sha256": "d8b837863cc6536a270751893a9778c4241467d8906719ae6cb787a62fa797bc",
+    "bytes": 24434
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz.h",
+    "sha256": "8033197e77c9567de66425939ab6164405e54aa3c60acf9312905d32c8cddc03",
+    "bytes": 24806
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz.pc.in",
+    "sha256": "f2610ba918e57f65144af3d438fd020965cd3fa2b3bc7391ffbeb99fc85ce331",
+    "bytes": 331
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_common.h",
+    "sha256": "8b60e76e726dfcf41a338c3a4c54c70038041a21e6314aa54fd3b7f729ea3412",
+    "bytes": 2726
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_tdef.c",
+    "sha256": "69a1d22a01e698286a7d2a8df90884aa33b4f073e080749e1fce76c5117a5a29",
+    "bytes": 70573
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_tdef.h",
+    "sha256": "12b09b189c27aa7d0b0ebe0be2f3021a3bab26fe7b19e9b3b6f5c4df7c21e9df",
+    "bytes": 10113
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_tinfl.c",
+    "sha256": "9b7edc1fab708166e10f5e90a618a91c95a91496c4692e38160fdae810c1149a",
+    "bytes": 38261
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_tinfl.h",
+    "sha256": "040aad2d9ca23c487652c150277d950be12e72c5453ae1f7c6713ed2efd16b4e",
+    "bytes": 8343
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_zip.c",
+    "sha256": "7179062fdaa868d18e86ae9391fe47316ef4632c5a24fe3d3ce73d6535c7dd5c",
+    "bytes": 189332
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/miniz_zip.h",
+    "sha256": "c9343f0d251d92f3730d5fe684d4af67aa0bed25d2d1d39d5fd4746a3c63f796",
+    "bytes": 25299
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/readme.md",
+    "sha256": "b4ea367be28a36e5386f65118b73962bc659a67936d248be68b7a7c03b8d359b",
+    "bytes": 4784
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/test.sh",
+    "sha256": "40283f5e592833686bc8b970c95a1b90ae5f1a95a8a061a075d7446da92e6c8e",
+    "bytes": 802
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/checksum_fuzzer.c",
+    "sha256": "19d788ec753732cc22b6d5a3686d3f4cdd32d65029b90830267d69990ba8d3a9",
+    "bytes": 630
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/compress_fuzzer.c",
+    "sha256": "69b0cc00c7d021793008d0bc30a08039647ae18fd54cf800757c6c24013e3813",
+    "bytes": 2664
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/flush_fuzzer.c",
+    "sha256": "18f1c6653cfc6fc809318cf3c20e816ed1665cae452d97cd8ca838f44dab37b3",
+    "bytes": 2011
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/fuzz_main.c",
+    "sha256": "bef18bf1aa87f291b6bb6173b54af854cc8347f813ba34a7c454eacb8e43fb04",
+    "bytes": 948
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/large_fuzzer.c",
+    "sha256": "5267d0a3cefb9bebee40f1ce7880fc99bd09ec9c59350403d78888eec9a23f98",
+    "bytes": 3302
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/miniz_tester.cpp",
+    "sha256": "16c16fb0db651d0ac35dd8a8ed2b31c78d624fe14e4fc93fe3facbfc299b5e47",
+    "bytes": 53615
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/ossfuzz.sh",
+    "sha256": "9a4051077daed5bfb79b754fd9bfcd8078e4f4ea1b2a90a41e87fcde5775d656",
+    "bytes": 1441
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/small_fuzzer.c",
+    "sha256": "06d1ac916cead52fbaaa909070f77b2ea0ea095d8db96a6c3431dc722ddfd891",
+    "bytes": 3044
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/timer.cpp",
+    "sha256": "2a748c3d9ea374bd7fd224420b6611357245b8d8e5ce619821b773a390f2b348",
+    "bytes": 2774
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/timer.h",
+    "sha256": "dd48b88a80d68410cdf6a8764cd2999989fb094ce6efb718db9c112af803749a",
+    "bytes": 1046
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/uncompress2_fuzzer.c",
+    "sha256": "57ab9174929ee20a9aaffa7cc201d1dce83d362b6ca044de8a146d018d4a4563",
+    "bytes": 484
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/uncompress_fuzzer.c",
+    "sha256": "a82394fa112a9364167bc4a7be709cc8af6212d327328a75690b84bd4c0d2e27",
+    "bytes": 681
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/zip.dict",
+    "sha256": "3d49312a3045c6a92123ccbec3dc979bddd9a87f7f1a1e727b228f831c110a58",
+    "bytes": 260
+  },
+  {
+    "file": "Projects/UltraZip/vendor/miniz/tests/zip_fuzzer.c",
+    "sha256": "331c674bd9783f57addf6e934a2cd4ff03117ad05ef369f947ee7254c75de898",
+    "bytes": 1446
+  }
+]

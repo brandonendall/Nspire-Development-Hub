@@ -1,0 +1,47 @@
+name: UltraZIP 003 - Restored source
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/UltraZip/**'
+      - 'toolchain/build.sh'
+      - '.github/workflows/ultrazip.yml'
+  pull_request:
+    paths:
+      - 'Projects/UltraZip/**'
+      - 'toolchain/build.sh'
+      - '.github/workflows/ultrazip.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare vendored miniz header
+        working-directory: Projects/UltraZip
+        run: sh get_miniz.sh
+      - name: Build UltraZIP with shared Ndless toolchain
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/UltraZip
+      - name: Verify and package calculator binary
+        run: |
+          test -s Projects/UltraZip/UltraZIP_003.tns
+          mkdir -p dist
+          cp Projects/UltraZip/UltraZIP_003.tns dist/
+          cp Projects/UltraZip/README.md dist/
+          cd dist
+          sha256sum UltraZIP_003.tns > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UltraZIP_003_Restored_Run001
+          path: dist/
+          if-no-files-found: error
