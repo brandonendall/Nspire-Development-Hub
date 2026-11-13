@@ -1,4 +1,4 @@
-name: Restore legacy UltraGBA Git history
+name: Preserve original UltraGBA Git history bundle
 
 on:
   workflow_dispatch:
@@ -11,39 +11,31 @@ permissions:
   contents: write
 
 jobs:
-  mirror-legacy-branches:
+  archive-history:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Clone read-only original history and verify handoff head
+      - uses: actions/checkout@v4
+      - name: Clone original history and validate Run007 head
         run: |
           set -euo pipefail
           git clone --bare https://github.com/OffCamera-Civilman/Nspire-Development-Hub.git legacy.git
           test "$(git --git-dir legacy.git rev-parse refs/heads/ultragba-run007-browser-launch-cleanup)" = "e151b2ccb245f67b62ec8f20b9a2a51c4e55bc1f"
-      - name: Import historical branches without modifying main or existing branches
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Archive the complete original branch history in a portable Git bundle
         run: |
           set -euo pipefail
-          REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          for branch in \
-            main \
-            feature/ultragba-run001 \
-            fix/ndless-run001-sdk \
-            ultragba-run002-baseline \
-            ultragba-run003-compressed-saves \
-            ultragba-run004-rtc-layout \
-            ultragba-run005-rtc-persistence-launch \
-            ultragba-run006-rom-associations \
-            ultragba-run007-browser-launch-cleanup
-          do
-            git --git-dir legacy.git rev-parse --verify "refs/heads/${branch}"
-            if [ "$branch" = main ]; then
-              dest="legacy/original-main"
-            else
-              dest="legacy/${branch}"
-            fi
-            git --git-dir legacy.git push "$REMOTE" "refs/heads/${branch}:refs/heads/${dest}"
-          done
-      - name: Confirm local original branch list
-        run: git --git-dir legacy.git branch --list
+          mkdir -p handoff/history
+          git --git-dir legacy.git bundle create "$GITHUB_WORKSPACE/handoff/history/UltraGBA-all-repo-branches.bundle" --all
+          git --git-dir legacy.git bundle verify "$GITHUB_WORKSPACE/handoff/history/UltraGBA-all-repo-branches.bundle"
+          git bundle list-heads handoff/history/UltraGBA-all-repo-branches.bundle > handoff/history/BRANCH-HEADS.txt
+          sha256sum handoff/history/UltraGBA-all-repo-branches.bundle > handoff/history/SHA256SUMS.txt
+      - name: Commit archive only (never change application or workflow files)
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add handoff/history/UltraGBA-all-repo-branches.bundle handoff/history/BRANCH-HEADS.txt handoff/history/SHA256SUMS.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive verified original UltraGBA Git history bundle"
+            git push origin HEAD:main
+          fi
