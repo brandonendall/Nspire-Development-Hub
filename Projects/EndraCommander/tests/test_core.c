@@ -16,6 +16,10 @@ static char concurrent_destination[NX_PATH];
 static int create_destination(const char *p,uint64_t n){(void)p;(void)n;write_text(concurrent_destination,"keep this file");return 1;}
 int main(void){
  char base[]="/tmp/ultracommander-test-XXXXXX",a[NX_PATH],b[NX_PATH],c[NX_PATH],d[NX_PATH],zip[NX_PATH],out[NX_PATH];CHECK(mkdtemp(base));strcpy(nx_write_root,base);
+ CHECK(nx_normalize(a,"/"));CHECK(!strcmp(a,"/"));
+ CHECK(nx_normalize(a,"/a/b/../../"));CHECK(!strcmp(a,"/"));
+ CHECK(nx_normalize(a,"/a///b/../c/"));CHECK(!strcmp(a,"/a/c"));
+ strcpy(a,"/x/y/../z");CHECK(nx_normalize(a,a));CHECK(!strcmp(a,"/x/z"));
  CHECK(nx_normalize(a,"/documents/a/../b//c/./"));CHECK(!strcmp(a,"/documents/b/c"));CHECK(!nx_normalize(a,"/../../escape"));CHECK(!nx_normalize(a,"relative/file"));CHECK(!nx_name_valid("../x"));CHECK(!nx_name_valid("bad/name"));CHECK(!nx_name_valid("."));CHECK(!nx_name_valid("x "));CHECK(nx_name_valid("My notes.txt.tns"));CHECK(!nx_writable("/system/file"));CHECK(!nx_writable(base));
  CHECK(nx_join(a,base,"source"));CHECK(nx_mkdir(a));CHECK(nx_join(b,a,"notes.txt.tns"));write_text(b,"hello\nworld\n");CHECK(nx_kind(b)==1);
  CHECK(nx_join(c,base,"copy.txt.tns"));CHECK(nx_copy(b,c));CHECK(equal_text(c,"hello\nworld\n"));CHECK(!nx_copy(b,c));CHECK(equal_text(c,"hello\nworld\n"));CHECK(!nx_copy(b,b));
