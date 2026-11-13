@@ -19,6 +19,8 @@
 #include "stb_image.h"
 #define ROWS 14
 #define RGB(r,g,b) ((uint16_t)((((r)>>3)<<11)|(((g)>>2)<<5)|((b)>>3)))
+/* Run003 diagnostic: preserve browsing and edits, but do not nest Ndless applications. */
+#define NX_RUN003_SAFE_LAUNCH 1
 static uint16_t pixels[320*240];
 static NxPane panes[2];
 static int active,light,quit;
@@ -37,7 +39,7 @@ static void present(void){platform_present(pixels);}
 static NxEntry *entry(void){NxPane *p=&panes[active];return p->count?p->items+p->cursor:NULL;}
 static int current_path(char *out){NxEntry *e=entry();return e?nx_join(out,panes[active].path,e->name):nx_fail("This folder is empty");}
 static void render(void){
-    clear();title("ENDRACOMMANDER NX");text(257,6,"002",gold,3);
+    clear();title("ENDRACOMMANDER NX");text(257,6,"003",gold,3);
     for(int k=0;k<2;++k){NxPane *p=&panes[k];int x=k*160;char head[32];
         rect(x,23,160,18,panel);if(k==active)rect(x,23,3,165,accent);
         snprintf(head,sizeof(head),"%c %s %s",k==active?'>':' ',k?"RIGHT":"LEFT",p->folders_only?"DIRS":"FILES");text(x+6,28,head,k==active?accent:muted,18);
@@ -49,11 +51,11 @@ static void render(void){
         if(!p->count)text(x+12,62,p->filter[0]?"No matches":"Empty folder",muted,17);
     }
     rect(159,23,1,165,muted);rect(0,190,320,1,muted);
-    NxPane *p=&panes[active];NxEntry *e=entry();char info[160],size[24],date[20]="";unsigned count=0;
+    NxPane *p=&panes[active];NxEntry *e=entry();char info[160],size[24];unsigned count=0;
     for(size_t i=0;i<p->count;++i)if(p->items[i].selected)++count;
-    if(e){nx_size(size,sizeof(size),e->size);struct tm *t=localtime(&e->modified);if(t)strftime(date,sizeof(date),"%Y-%m-%d",t);snprintf(info,sizeof(info),"%s | %s | %u marked",e->directory?"Folder":size,date,count);}else snprintf(info,sizeof(info),"%lu items | %s sort",(unsigned long)p->count,p->sort==0?"Name":p->sort==1?"Size":"Date");
+    if(e){nx_size(size,sizeof(size),e->size);snprintf(info,sizeof(info),"%s | %u marked",e->directory?"Folder":size,count);}else snprintf(info,sizeof(info),"%lu items | %s sort",(unsigned long)p->count,p->sort==0?"Name":p->sort==1?"Size":"Date");
     tailtext(5,194,p->path,muted,38);text(5,204,e?e->name:status,fg,38);text(5,214,info,muted,38);
-    footer("TAB pane  ENTER open  MENU actions");present();
+    footer("RUN003 SAFE  TAB pane  MENU actions");present();
 }
 static void wrapped(const char *s,int x,int y,int cols,int rows,uint16_t color){int row=0,col=0;for(;*s&&row<rows;++s){if(*s=='\r')continue;if(*s=='\n'){++row;col=0;continue;}char ch[2]={*s=='\t'?' ':*s,0};text(x+col*8,y+row*10,ch,color,1);if(++col==cols){col=0;++row;}}}
 static void message(const char *heading,const char *body){clear();title(heading);wrapped(body,8,32,38,18,fg);footer("ENTER / ESC back");present();int k;do{k=platform_key();}while(k!=K_ENTER&&k!=K_ESC);}
@@ -88,7 +90,13 @@ static void view_image(const char *path){int w,h,channels;if(!stbi_info(path,&w,
     stbi_image_free(data);footer("Fit to screen   ENTER / ESC back");present();int k;do{k=platform_key();}while(k!=K_ESC&&k!=K_ENTER);
 }
 static void open_entry(void){char path[NX_PATH];NxEntry *e=entry();if(!e)return;if(!current_path(path)){error();return;}if(e->directory){if(!navigate(&panes[active],path))error();return;}
-    int kind=nx_kind(path);if(kind==1)view_file(path,0);else if(kind==4)view_image(path);else if(kind==3){char *data=malloc(16384);if(!data){message("ZIP","Not enough memory");return;}if(nx_zip_list(path,data,16384))view_text_buffer("ZIP CONTENTS",data);else error();free(data);}else if(kind==2){if(confirm("Launch Ndless app?",e->name)){int result=platform_launch(path);refresh();if(result<0)message("App launch","Ndless could not launch this file.");}}else view_file(path,1);
+    int kind=nx_kind(path);if(kind==1)view_file(path,0);else if(kind==4)view_image(path);else if(kind==3){char *data=malloc(16384);if(!data){message("ZIP","Not enough memory");return;}if(nx_zip_list(path,data,16384))view_text_buffer("ZIP CONTENTS",data);else error();free(data);}else if(kind==2){
+#if NX_RUN003_SAFE_LAUNCH
+        message("Run003 safety mode","Nested app launching is temporarily disabled while diagnosing calculator freezes.\n\nExit EndraCommander and launch the app from Documents instead.");
+#else
+        if(confirm("Launch Ndless app?",e->name)){int result=platform_launch(path);refresh();if(result<0)message("App launch","Ndless could not launch this file.");}
+#endif
+    }else view_file(path,1);
 }
 static void batch(int mode){NxPane *p=&panes[active];size_t count=0;char prompt[256];for(size_t i=0;i<p->count;++i)if(p->items[i].selected)++count;if(!p->count)return;int marked=count>0;if(!count)count=1;
     snprintf(prompt,sizeof(prompt),"%s %lu item(s)?\n\n%s\n\n%s",mode==0?"Copy":mode==1?"Move":"Permanently delete",(unsigned long)count,mode==2?"Selected files and empty folders.":panes[1-active].path,mode==2?"Deletion cannot be undone.":"Existing files will not be overwritten.");
@@ -106,7 +114,7 @@ static void zip_action(int extract){char src[NX_PATH],name[NX_NAME],dst[NX_PATH]
 }
 static void workspace_set(void){char path[NX_PATH];NxEntry *e=entry();if(e&&e->directory){if(!current_path(path))return;}else strcpy(path,panes[active].path);strcpy(workspace,path);config_save();message("Workspace saved",workspace);}
 static void go_path(void){char path[NX_PATH];strcpy(path,panes[active].path);if(input("Go to folder","Absolute folder path:",path,sizeof(path))&&!navigate(&panes[active],path))error();}
-static void help(void){message("EndraCommander NX | Run 002","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
+static void help(void){message("EndraCommander NX | Run 003","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
 static void action(int k);
 static void menu(void){const char *labels[]={"Open selected","Copy to other pane","Move to other pane","Rename selected","Create folder","Delete marked/selected","Text viewer","Hex viewer","ZIP contents","Create ZIP in other pane","Extract ZIP to other pane","Toggle folders-only","Filter names in this folder","Sort: name / size / date","Save workspace folder","Open saved workspace","Go to folder path","Go to Documents","Toggle light / dark","Device info","Help / credits"};
     const int keys[]={K_ENTER,'C','M','R','N',K_DELETE,'V','H','Z','P','X','F','S','T','W','B','G','D','Y','I','?'};int chosen=0,top=0;for(;;){if(chosen<top)top=chosen;if(chosen>=top+18)top=chosen-17;clear();title("ACTIONS");for(int j=0;j<18&&top+j<21;++j){int i=top+j;int y=29+j*10;if(i==chosen)rect(4,y-1,312,10,selected);text(10,y,labels[i],i==chosen?accent:fg,37);}footer("UP / DOWN choose   ENTER   ESC back");present();int k=platform_key();if(k==K_ESC)return;if(k==K_UP&&chosen>0)--chosen;if(k==K_DOWN&&chosen<20)++chosen;if(k==K_ENTER){action(keys[chosen]);return;}}
