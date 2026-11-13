@@ -1,4 +1,4 @@
-# UltraZIP 001 - same Ndless packaging sequence as the working smoke build.
+# UltraZIP 004 - same Ndless packaging sequence as the working smoke build.
 GCC = nspire-gcc
 LD = nspire-ld
 GENZEHN = genzehn
@@ -7,7 +7,7 @@ LDFLAGS = -Wl,--nspireio,--gc-sections
 MINIZ = vendor/miniz/miniz.o vendor/miniz/miniz_zip.o vendor/miniz/miniz_tinfl.o vendor/miniz/miniz_tdef.o
 OBJS = src/ultrazip.o src/ndless_compat.o $(MINIZ)
 
-all: UltraZIP_003.tns
+all: UltraZIP_004.tns
 
 src/ndless_compat.o: src/ndless_compat.c
 	$(GCC) $(CFLAGS) -c $< -o $@
@@ -18,13 +18,17 @@ src/ultrazip.o: src/ultrazip.c
 vendor/miniz/%.o: vendor/miniz/%.c
 	$(GCC) $(CFLAGS) -c $< -o $@
 
-UltraZIP_003.elf: $(OBJS)
+UltraZIP_004.elf: $(OBJS)
 	$(LD) $^ -o $@ $(LDFLAGS)
 
-UltraZIP_003.tns: UltraZIP_003.elf
-	$(GENZEHN) --input $< --output $@ --name "UltraZIP 001"
+UltraZIP_004.tns: UltraZIP_004.elf
+	$(GENZEHN) --input $< --output $@ --name "UltraZIP 004"
 
 clean:
-	rm -f $(OBJS) UltraZIP_003.elf UltraZIP_003.tns
+	rm -f $(OBJS) UltraZIP_004.elf UltraZIP_004.tns
 
-.PHONY: all clean
+test:
+	python3 tests/test_host.py
+
+.PHONY: all clean test
+
