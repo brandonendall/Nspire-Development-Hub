@@ -1,0 +1,28 @@
+ENDRA SDL RESTART - RUN 001
+
+Fresh SDL browser, not NX Run006.
+For TI-Nspire CX II CAS with Ndless.
+
+INSTALL:
+Place EndraSDL_Run001.tns in Documents.
+Start it with Ndless installed.
+
+KEYS:
+UP/DOWN   choose a file or folder
+ENTER     open a folder (NOT a file)
+RIGHT     open a folder
+LEFT      go to parent folder
+ESC       parent; exits at Documents
+MENU      show the help screen
+
+Run001 cannot preview CFG or TXT files.
+NO FILE WRITES, ZIP OR APP LAUNCH.
+System root is never displayed.
+
+TEST SAFETY:
+Disconnect USB. Back up important work.
+First test screen display and ESC exit.
+Stop on any complete calculator freeze.
+Do not hard-reset repeatedly.
+
+Next features come only after stable tests.

@@ -1,0 +1,51 @@
+name: Endra SDL Restart Run001 - minimal read-only file browser
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraCommanderSDL/**'
+      - '.github/workflows/endra-sdl.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  host-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Documents-only path guards with sanitizers
+        working-directory: Projects/EndraCommanderSDL
+        run: make test
+  calculator-build:
+    needs: host-checks
+    runs-on: ubuntu-latest
+    container: debian:13-slim
+    timeout-minutes: 30
+    steps:
+      - name: Install cross-compiler and Ndless SDK prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates git build-essential php-cli \
+            gcc-arm-none-eabi binutils-arm-none-eabi \
+            libnewlib-arm-none-eabi libstdc++-arm-none-eabi-dev \
+            libboost-program-options-dev zlib1g-dev
+      - uses: actions/checkout@v4
+      - name: Build fresh nSDL executable against pinned Ndless SDK
+        working-directory: Projects/EndraCommanderSDL
+        run: bash scripts/build-sdk.sh
+      - name: Verify package
+        working-directory: Projects/EndraCommanderSDL
+        run: |
+          test -s dist/EndraSDL_Run001.tns
+          cp README.md QUICK_START.txt.tns dist/
+          cd dist
+          sha256sum EndraSDL_Run001.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraSDL_Run001
+          path: Projects/EndraCommanderSDL/dist/
+          if-no-files-found: error
