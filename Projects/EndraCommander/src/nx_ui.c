@@ -23,7 +23,7 @@
 #define NX_RUN003_SAFE_LAUNCH 1
 static uint16_t pixels[320*240];
 static unsigned diag_actions,diag_heartbeats;
-static int diag_last_key,diag_readonly=1;
+static int diag_last_key,diag_readonly=1,diag_stage=0,diag_notice=0;
 static NxPane panes[2];
 static int active,light,quit;
 static char workspace[NX_PATH]="/documents",status[160]="Ready. MENU shows every action.";
@@ -41,8 +41,8 @@ static void footer(const char *s){rect(0,222,320,18,panel);text(5,227,s,muted,38
 static void present(void){
     char stamp[32];
     rect(164,0,156,20,panel);
-    snprintf(stamp,sizeof(stamp),"A%03u H%03u K%03d",
-        diag_actions%1000,diag_heartbeats%1000,diag_last_key);
+    snprintf(stamp,sizeof(stamp),"A%03u H%03u K%03d S%d",
+        diag_actions%1000,diag_heartbeats%1000,diag_last_key,diag_stage);
     text(171,6,stamp,gold,18);
     platform_present(pixels);
 }
@@ -69,11 +69,17 @@ static void render(void){
     NxPane *p=&panes[active];NxEntry *e=entry();char info[160],size[24];unsigned count=0;
     for(size_t i=0;i<p->count;++i)if(p->items[i].selected)++count;
     if(e){nx_size(size,sizeof(size),e->size);snprintf(info,sizeof(info),"%s | %u marked",e->directory?"Folder":size,count);}else snprintf(info,sizeof(info),"%lu items | %s sort",(unsigned long)p->count,p->sort==0?"Name":p->sort==1?"Size":"Date");
-    tailtext(5,194,p->path,muted,38);text(5,204,e?e->name:status,fg,38);text(5,214,info,muted,38);
-    footer(diag_readonly?"005 SAFE  Q unlock  MENU actions":"005 WRITE  Q lock  MENU actions");present();
+    tailtext(5,194,p->path,muted,38);text(5,204,e?e->name:status,fg,38);text(5,214,diag_notice?status:info,diag_notice?gold:muted,38);
+    footer(diag_readonly?"006 SAFE  Q unlock  MENU actions":"006 WRITE  Q lock  MENU actions");present();
 }
 static void wrapped(const char *s,int x,int y,int cols,int rows,uint16_t color){int row=0,col=0;for(;*s&&row<rows;++s){if(*s=='\r')continue;if(*s=='\n'){++row;col=0;continue;}char ch[2]={*s=='\t'?' ':*s,0};text(x+col*8,y+row*10,ch,color,1);if(++col==cols){col=0;++row;}}}
-static void message(const char *heading,const char *body){clear();title(heading);wrapped(body,8,32,38,18,fg);footer("ENTER / ESC back");present();int k;do{k=platform_key();}while(k!=K_ENTER&&k!=K_ESC);}
+static void message(const char *heading,const char *body){
+    diag_stage=1;
+    clear();title(heading);wrapped(body,8,32,38,18,fg);
+    footer("ENTER / ESC closes this message");present();
+    int k;do{k=platform_key();}while(k!=K_ENTER&&k!=K_ESC);
+    diag_stage=2; /* modal closed; main loop must resume normally */
+}
 static int confirm(const char *heading,const char *body){int yes=0;for(;;){clear();title(heading);wrapped(body,8,36,38,13,fg);rect(16,184,136,24,yes?panel:selected);rect(168,184,136,24,yes?selected:panel);text(58,192,"NO",fg,2);text(210,192,"YES",yes?gold:fg,3);footer("LEFT / RIGHT choose   ENTER confirm");present();int k=platform_key();if(k==K_ESC)return 0;if(k==K_LEFT||k==K_RIGHT||k==K_TAB)yes=!yes;if(k==K_ENTER)return yes;}}
 static int input(const char *heading,const char *prompt,char *value,size_t cap){size_t n=strlen(value);for(;;){clear();title(heading);wrapped(prompt,8,35,38,8,fg);rect(8,126,304,26,panel);tailtext(12,135,value,fg,36);text(8,171,"SHIFT: capitals   SHIFT-minus: _",muted,38);text(8,185,"DEL: erase        divide: /",muted,38);footer("ENTER accept   ESC cancel");present();int k=platform_key();if(k==K_ESC)return 0;if(k==K_ENTER)return 1;if(k==K_DELETE&&n)value[--n]=0;else if(k>=32&&k<127&&n+1<cap){value[n++]=(char)k;value[n]=0;}}}
 static int navigate(NxPane *p,const char *path){char old[NX_PATH],dest[NX_PATH];if(!nx_normalize(dest,path))return 0;strcpy(old,p->path);strcpy(p->path,dest);size_t prev=p->cursor;p->cursor=p->scroll=0;if(!nx_scan(p)){strcpy(p->path,old);p->cursor=prev;return 0;}return 1;}
@@ -181,7 +187,7 @@ static void zip_action(int extract){char src[NX_PATH],name[NX_NAME],dst[NX_PATH]
 }
 static void workspace_set(void){char path[NX_PATH];NxEntry *e=entry();if(e&&e->directory){if(!current_path(path))return;}else strcpy(path,panes[active].path);strcpy(workspace,path);config_save();message("Workspace saved",workspace);}
 static void go_path(void){char path[NX_PATH];strcpy(path,panes[active].path);if(input("Go to folder","Absolute folder path:",path,sizeof(path))&&!navigate(&panes[active],path))error();}
-static void help(void){message("EndraCommander NX | Run 005","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
+static void help(void){message("EndraCommander NX | Run 006","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
 static void action(int k);
 static void menu(void){const char *labels[]={"Open selected","Copy to other pane","Move to other pane","Rename selected","Create folder","Delete marked/selected","Text viewer","Hex viewer","ZIP contents","Create ZIP in other pane","Extract ZIP to other pane","Toggle folders-only","Filter names in this folder","Sort: name / size / date","Save workspace folder","Open saved workspace","Go to folder path","Go to Documents","Toggle light / dark","Device info","Help / credits","Toggle diagnostic write lock"};
     const int keys[]={K_ENTER,'C','M','R','N',K_DELETE,'V','H','Z','P','X','F','S','T','W','B','G','D','Y','I','?','Q'};int chosen=0,top=0;for(;;){if(chosen<top)top=chosen;if(chosen>=top+18)top=chosen-17;clear();title("ACTIONS");for(int j=0;j<18&&top+j<22;++j){int i=top+j;int y=29+j*10;if(i==chosen)rect(4,y-1,312,10,selected);text(10,y,labels[i],i==chosen?accent:fg,37);}footer("UP / DOWN choose   ENTER   ESC back");present();int k=platform_key();if(k==K_ESC)return;if(k==K_UP&&chosen>0)--chosen;if(k==K_DOWN&&chosen<21)++chosen;if(k==K_ENTER){action(keys[chosen]);return;}}
@@ -189,7 +195,7 @@ static void menu(void){const char *labels[]={"Open selected","Copy to other pane
 static void action(int key){NxPane *p=&panes[active];int k=key<256?toupper((unsigned char)key):key;char path[NX_PATH];
     if(k=='Q'){
         if(diag_readonly){
-            if(confirm("Unlock file writes?","Run005 diagnostics starts READ ONLY.\n\nOnly unlock to test disposable files. Freezes are still under investigation."))diag_readonly=0;
+            if(confirm("Unlock file writes?","Run006 diagnostics starts READ ONLY.\n\nOnly unlock to test disposable files. Freezes are still under investigation."))diag_readonly=0;
         }else diag_readonly=1;
         return;
     }
@@ -201,11 +207,22 @@ static void action(int key){NxPane *p=&panes[active];int k=key<256?toupper((unsi
     switch(k){
     case K_UP:if(p->cursor)--p->cursor;break;
     case K_DOWN:if(p->cursor+1<p->count)++p->cursor;break;
-    case K_LEFT:strcpy(path,p->path);nx_parent(path);if(!navigate(p,path))error();break;
+    case K_LEFT:
+        if(!strcmp(p->path,nx_write_root)){
+            /* Do not invoke navigate(), nx_scan() or the blocking error
+             * dialog at the protected root boundary. */
+            snprintf(status,sizeof(status),"Documents boundary - root disabled");
+            diag_notice=1;
+        }else{
+            strcpy(path,p->path);nx_parent(path);
+            if(!navigate(p,path))error();
+            else diag_notice=0;
+        }
+        break;
     case K_RIGHT:if(entry()&&entry()->directory)open_entry();break;
     case K_ENTER:open_entry();break;
     case K_TAB:active=1-active;break;
-    case K_ESC:quit=1;break;
+    case K_ESC:diag_stage=3;quit=1;break;
     case K_MENU:menu();break;
     case ' ':if(entry()){entry()->selected=!entry()->selected;if(p->cursor+1<p->count)++p->cursor;}break;
     case 'A':{int all=p->count>0;for(size_t i=0;i<p->count;++i)all&=p->items[i].selected;for(size_t i=0;i<p->count;++i)p->items[i].selected=!all;break;}
@@ -240,5 +257,13 @@ int main(int argc,char **argv){
     const char *output=argc>2?argv[2]:"preview.ppm";FILE *f=fopen(output,"wb");if(f){fprintf(f,"P6\n320 240\n255\n");for(int i=0;i<320*240;++i){uint16_t c=pixels[i];unsigned char rgb[3]={(unsigned char)(((c>>11)&31)*255/31),(unsigned char)(((c>>5)&63)*255/63),(unsigned char)((c&31)*255/31)};fwrite(rgb,1,3,f);}fclose(f);}quit=1;
 #endif
     while(!quit){render();int key=platform_key();if(key)action(key);}
-    platform_close();nx_release(&panes[0]);nx_release(&panes[1]);return 0;
+    /* An explicit exit indicator distinguishes a freeze while closing from
+     * a freeze while dismissing the error dialogue. No disk logging. */
+    diag_stage=3;
+    clear();title("RUN006 EXIT REQUEST");
+    text(8,50,"Returning to TI Documents",fg,32);
+    text(8,70,"Stage S3 = exit sequence",accent,32);
+    present();
+    nx_release(&panes[0]);nx_release(&panes[1]);
+    platform_close();return 0;
 }
