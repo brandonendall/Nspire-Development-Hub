@@ -25,7 +25,8 @@ static const step_t browse_steps[] = {
  {KEY_NSPIRE_DOWN,0,0,"browse"},
  {KEY_NSPIRE_ENTER,0,1,"browse"}, /* ZIP contents */
  {KEY_NSPIRE_ESC,0,0,"browse"},
- {KEY_NSPIRE_DOWN,0,0,"browse"},
+ {KEY_NSPIRE_DOWN,0,0,"browse"}, /* child.zip.tns */
+ {KEY_NSPIRE_DOWN,0,0,"browse"}, /* notes.txt.tns */
  {KEY_NSPIRE_ENTER,0,0,"browse"}, /* ordinary file */
  {KEY_NSPIRE_MENU,1,0,"browse"},
  {KEY_NSPIRE_DOWN,1,0,"browse"},
