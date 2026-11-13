@@ -1,6 +1,5 @@
-/* EndraCommander SDL Restart 001: brand-new, read-only nSDL browser.
- * Intentional exclusions: text/hex preview, zip, app launching, system root,
- * writes, nested modals, OS hooks, timers and previous NX UI/platform code.
+/* Endra SDL Run002: original nSDL browse plus bounded read-only text preview.
+ * NO OS root, writes, ZIP, app launch, nested modal loops or old NX UI.
  */
 #include <SDL/SDL_config.h>
 #include <SDL/SDL.h>
@@ -10,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "safe_paths.h"
+#include "preview.h"
 
 #ifdef _TINSPIRE
 void __attribute__((weak)) _fini(void) {}
@@ -20,7 +20,10 @@ void __attribute__((weak)) _fini(void) {}
 typedef struct { char name[96]; int directory; } Entry;
 static Entry entries[MAX_FILES];
 static unsigned count,position,scroll,keys_seen;
-static int last_key,show_help,running=1;
+static int last_key,show_help,running=1,preview_active=0;
+static unsigned preview_position;
+static EsPreview preview;
+static char preview_name[96];
 static char folder[ES_PATH_MAX]="/documents";
 static char status[72]="SDL restart: read-only";
 static SDL_Surface *screen;
@@ -73,16 +76,29 @@ static void draw(void){
     char line[96];
     bar(0,0,320,240,15,20,31);
     bar(0,0,320,24,28,61,80);
-    label(8,7,"ENDRA SDL 001");
+    label(8,7,"ENDRA SDL 002");
     snprintf(line,sizeof(line),"KEY %u / %d",keys_seen,last_key);
     label(205,7,line);
-    if(show_help){
+    if(preview_active){
+        unsigned i;
+        label(8,29,"TEXT PREVIEW (FIRST 2KB)");
+        bar(0,45,320,1,78,92,107);
+        for(i=0;i<16 && i+preview_position<preview.count;++i)
+            label(8,51+(int)i*10,preview.lines[i+preview_position]);
+        bar(0,211,320,1,78,92,107);
+        snprintf(line,sizeof(line),"%.22s %u/%u%s",preview_name,
+                 preview.count?preview_position+1:0,preview.count,
+                 preview.truncated?" (LIMIT)":"");
+        label(6,215,line);
+        bar(0,230,320,10,28,61,80);
+        label(6,231,"UP/DOWN page  ESC browser");
+    }else if(show_help){
         label(10,38,"READ-ONLY SDL BASELINE");
         label(10,60,"UP/DOWN: SELECT");
         label(10,77,"ENTER: OPEN FOLDER");
         label(10,94,"ESC: PARENT OR EXIT");
         label(10,111,"MENU: THIS HELP");
-        label(10,143,"Files cannot be opened yet.");
+        label(10,143,"TXT/CFG read-only preview.");
         label(10,160,"No ZIP, writes, app launch.");
         label(10,199,"ESC OR MENU: RETURN");
     }else{
@@ -108,6 +124,17 @@ static void draw(void){
 }
 static void on_key(SDLKey k){
     ++keys_seen;last_key=(int)k;
+    if(preview_active){
+        if(k==SDLK_ESCAPE||k==SDLK_RETURN||k==SDLK_KP_ENTER){
+            preview_active=0;
+        }else if(k==SDLK_DOWN){
+            if(preview_position+16<preview.count)preview_position+=16;
+        }else if(k==SDLK_UP){
+            if(preview_position>=16)preview_position-=16;
+            else preview_position=0;
+        }
+        return;
+    }
     if(show_help){
         if(k==SDLK_ESCAPE||k==SDLK_MENU||k==SDLK_RETURN)show_help=0;
         return;
@@ -125,8 +152,20 @@ static void on_key(SDLKey k){
                 snprintf(folder,sizeof(folder),"%s",next);
                 scan_folder();
             }
+        }else if(count && es_preview_supported_name(entries[position].name)){
+            char path[ES_PATH_MAX];
+            if(es_path_join(path,sizeof(path),folder,entries[position].name) &&
+               es_preview_read(path,&preview)){
+                preview_active=1;
+                preview_position=0;
+                snprintf(preview_name,sizeof(preview_name),"%s",
+                         entries[position].name);
+            }else{
+                snprintf(status,sizeof(status),
+                         "Preview refused: binary/unreadable");
+            }
         }else{
-            snprintf(status,sizeof(status),"File previews OFF in SDL001");
+            snprintf(status,sizeof(status),"TXT/CFG only (read-only)");
         }
     }else if(k==SDLK_ESCAPE||k==SDLK_LEFT||k==SDLK_BACKSPACE){
         if(es_path_parent(folder))scan_folder();

@@ -1,4 +1,4 @@
-name: Endra SDL Restart Run001 - minimal read-only file browser
+name: Endra SDL Restart Run002 - bounded read-only text preview
 
 on:
   workflow_dispatch:
@@ -40,12 +40,12 @@ jobs:
       - name: Verify package
         working-directory: Projects/EndraCommanderSDL
         run: |
-          test -s dist/EndraSDL_Run001.tns
+          test -s dist/EndraSDL_Run002.tns
           cp README.md QUICK_START.txt.tns dist/
           cd dist
-          sha256sum EndraSDL_Run001.tns > SHA256SUMS.txt
+          sha256sum EndraSDL_Run002.tns > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraSDL_Run001
+          name: EndraSDL_Run002
           path: Projects/EndraCommanderSDL/dist/
           if-no-files-found: error
