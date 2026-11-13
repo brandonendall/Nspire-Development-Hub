@@ -1,11 +1,24 @@
-# EndraCommander NX — Run 005 (root and preview safety diagnostics)
+# EndraCommander NX — Run 006 (ESC return and stack-pressure diagnostics)
 
 Endra-branded Ndless file manager build for Brandon's TI-Nspire CX II CAS.
 Target device: OS 6.4.0.74 with working Ndless. Built using Ndless r2023.
-Run005 builds on Run004's read-only diagnostic mode; it does not change calculator files automatically.
+Run006 builds on Run005's read-only diagnostic mode; it does not change calculator files automatically.
 The new build requires its own calculator test.
 
-## Run005 full-calculator freeze investigation
+## Run006 root-boundary ESC freeze, 2026-11-13
+
+A photo of Run005 on the CX II CAS shows `A007 H008 K261` after the user pressed ESC to dismiss the safe-mode root warning; the calculator needed a hard reset. `K261` is the ESC key code in our input enum. Root directory scans were already blocked in Run005, so unsafe root listing alone **cannot explain this incident**. Causes remain unconfirmed.
+
+Changes compared with Run005:
+- LEFT at `/documents` now reports "Documents boundary - root disabled" in the information strip. It **does not call the nested navigate/error/modal/ESC code path**.
+- Path normalization uses one 512-byte input scratch buffer, rather than 512-byte input + 512-byte result + up to 1 KiB of segment-offset stack storage. This reduces the maximum stack used inside nested directory scans and errors; new host checks cover '.', '..', repeated separators and in-place normalization.
+- Added on-screen stage marker `S#` alongside `A/H/K`: S0=normal browser, S1=modal dialog, S2=returned from modal, S3=top-level exit sequence. This makes a photo of another freeze more informative.
+- When ESC requests a top-level exit, the application displays "RUN006 EXIT REQUEST" **before** the standard Ndless screen cleanup. If the calculator locks up on that screen, the exit/cleanup path becomes a stronger suspect. Normal Ndless display restoration is preserved.
+- Read-only-on-launch, Documents-only scans, bounded 4 KiB text preview and disabled nested app launching are retained. No hooks, no background logging, no changes to documents.
+
+**WARNING:** This is an unverified hardware diagnostic, *not a proven fix*. The user has already had repeated system-level hard locks. Do not keep testing after another freeze. Back up important data. A routine input/menu test should be preferred over repeated root/ESC reproduction. Disconnect USB.
+
+## Run005 full-calculator freeze investigation (earlier build)
 
 On CX II CAS OS 6.4.0.74, the owner reported hard locks requiring physical resets after (1) navigating from filesystem root toward Documents and (2) using Text Viewer. Because both freeze the entire calculator, do not repeatedly test those pathways on earlier builds.
 
@@ -33,7 +46,7 @@ Run003 lasted through more actions but still froze on a physical CX II CAS. The 
 
 ## Install and first test
 
-1. Transfer `EndraCommanderNX_Run005.tns` into a Documents folder using your
+1. Transfer `EndraCommanderNX_Run006.tns` into a Documents folder using your
    existing calculator transfer app. No additional app data files are required.
 2. With Ndless active, open the file from the calculator's document browser.
 3. First check that both panes appear, arrows navigate, Tab switches panes,
@@ -149,7 +162,7 @@ With a built SDK already available:
 make NDLESS_SDK=/absolute/path/Ndless/ndless-sdk
 ```
 
-Output: `dist/EndraCommanderNX_Run005.tns`. The build compiles ARM machine code,
+Output: `dist/EndraCommanderNX_Run006.tns`. The build compiles ARM machine code,
 processes the ELF using genzehn, and prepends the official Zehn loader.
 `make preview` builds a host-only renderer. Example:
 
