@@ -28,6 +28,7 @@ int main(void){
  CHECK(nx_join(c,base,"concurrent.txt"));strcpy(concurrent_destination,c);nx_progress=create_destination;CHECK(!nx_copy(b,c));nx_progress=NULL;CHECK(equal_text(c,"keep this file"));CHECK(unlink(c)==0);
  CHECK(snprintf(c,sizeof(c),"%s/missing/../normalized",base)<(int)sizeof(c));CHECK(nx_mkdir(c));CHECK(nx_delete(c));
  CHECK(nx_join(c,base,"link"));CHECK(symlink("/etc/passwd",c)==0);CHECK(nx_join(d,base,"linked-copy"));CHECK(!nx_copy(c,d));CHECK(!nx_exists(d));CHECK(!nx_writable(c));CHECK(unlink(c)==0);
+ NxPane forbidden={0};strcpy(forbidden.path,"/");CHECK(!nx_scan(&forbidden));CHECK(strstr(nx_error,"Documents")!=NULL);
  NxPane pane={0};strcpy(pane.path,base);CHECK(nx_scan(&pane));CHECK(pane.count==3);CHECK(pane.items[0].directory);pane.folders_only=1;CHECK(nx_scan(&pane));for(size_t i=0;i<pane.count;++i)CHECK(pane.items[i].directory);strcpy(pane.filter,"source");CHECK(nx_scan(&pane));CHECK(pane.count==1);CHECK(!strcmp(pane.items[0].name,"source"));nx_release(&pane);
  CHECK(nx_join(zip,base,"backup.zip.tns"));CHECK(nx_zip_create(a,zip));CHECK(nx_kind(zip)==3);CHECK(!nx_zip_create(a,zip));CHECK(nx_join(out,base,"unpacked"));CHECK(nx_zip_extract(zip,out));CHECK(nx_join(c,out,"source"));CHECK(nx_join(c,c,"notes.txt.tns"));CHECK(equal_text(c,"hello\nworld\n"));CHECK(!nx_zip_extract(zip,out));
  char listing[4096];CHECK(nx_zip_list(zip,listing,sizeof(listing)));CHECK(strstr(listing,"notes.txt.tns")!=NULL);
