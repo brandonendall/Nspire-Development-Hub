@@ -1,7 +1,7 @@
-ENDRACOMMANDER NX - RUN 002
+ENDRACOMMANDER NX - RUN 003
 First calculator test build
 
-Transfer EndraCommanderNX_Run002.tns
+Transfer EndraCommanderNX_Run003.tns
 to a folder on your TI-Nspire.
 Open it with Ndless already active.
 
@@ -46,3 +46,8 @@ No CPU overclock or resident hook.
 
 This guide is plain text for nTxt or
 EndraCommander NX's text viewer.
+
+RUN003 DIAGNOSTIC NOTE
+No nested Ndless app launching; exit to
+Documents to start another app.
+No clock/date formatting in browser.
