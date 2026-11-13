@@ -22,6 +22,8 @@
 /* Run003 diagnostic: preserve browsing and edits, but do not nest Ndless applications. */
 #define NX_RUN003_SAFE_LAUNCH 1
 static uint16_t pixels[320*240];
+static unsigned diag_actions,diag_heartbeats;
+static int diag_last_key,diag_readonly=1;
 static NxPane panes[2];
 static int active,light,quit;
 static char workspace[NX_PATH]="/documents",status[160]="Ready. MENU shows every action.";
@@ -35,11 +37,24 @@ static void tailtext(int x,int y,const char *s,uint16_t c,int max){size_t n=strl
 static void clear(void){palette();rect(0,0,320,240,bg);}
 static void title(const char *s){rect(0,0,320,20,panel);text(6,6,s,accent,38);}
 static void footer(const char *s){rect(0,222,320,18,panel);text(5,227,s,muted,38);}
-static void present(void){platform_present(pixels);}
+/* Every screen carries an in-RAM breadcrumb; no flash writes or hooks. */
+static void present(void){
+    char stamp[32];
+    rect(164,0,156,20,panel);
+    snprintf(stamp,sizeof(stamp),"A%03u H%03u K%03d",
+        diag_actions%1000,diag_heartbeats%1000,diag_last_key);
+    text(171,6,stamp,gold,18);
+    platform_present(pixels);
+}
+void platform_trace_event(int key){
+    if(key){++diag_actions;diag_last_key=key;}
+    else ++diag_heartbeats;
+    present(); /* display key BEFORE executing the action that might hang */
+}
 static NxEntry *entry(void){NxPane *p=&panes[active];return p->count?p->items+p->cursor:NULL;}
 static int current_path(char *out){NxEntry *e=entry();return e?nx_join(out,panes[active].path,e->name):nx_fail("This folder is empty");}
 static void render(void){
-    clear();title("ENDRACOMMANDER NX");text(257,6,"003",gold,3);
+    clear();title("ENDRACOMMANDER NX");
     for(int k=0;k<2;++k){NxPane *p=&panes[k];int x=k*160;char head[32];
         rect(x,23,160,18,panel);if(k==active)rect(x,23,3,165,accent);
         snprintf(head,sizeof(head),"%c %s %s",k==active?'>':' ',k?"RIGHT":"LEFT",p->folders_only?"DIRS":"FILES");text(x+6,28,head,k==active?accent:muted,18);
@@ -55,7 +70,7 @@ static void render(void){
     for(size_t i=0;i<p->count;++i)if(p->items[i].selected)++count;
     if(e){nx_size(size,sizeof(size),e->size);snprintf(info,sizeof(info),"%s | %u marked",e->directory?"Folder":size,count);}else snprintf(info,sizeof(info),"%lu items | %s sort",(unsigned long)p->count,p->sort==0?"Name":p->sort==1?"Size":"Date");
     tailtext(5,194,p->path,muted,38);text(5,204,e?e->name:status,fg,38);text(5,214,info,muted,38);
-    footer("RUN003 SAFE  TAB pane  MENU actions");present();
+    footer(diag_readonly?"004 SAFE  Q unlock  MENU actions":"004 WRITE  Q lock  MENU actions");present();
 }
 static void wrapped(const char *s,int x,int y,int cols,int rows,uint16_t color){int row=0,col=0;for(;*s&&row<rows;++s){if(*s=='\r')continue;if(*s=='\n'){++row;col=0;continue;}char ch[2]={*s=='\t'?' ':*s,0};text(x+col*8,y+row*10,ch,color,1);if(++col==cols){col=0;++row;}}}
 static void message(const char *heading,const char *body){clear();title(heading);wrapped(body,8,32,38,18,fg);footer("ENTER / ESC back");present();int k;do{k=platform_key();}while(k!=K_ENTER&&k!=K_ESC);}
@@ -114,12 +129,24 @@ static void zip_action(int extract){char src[NX_PATH],name[NX_NAME],dst[NX_PATH]
 }
 static void workspace_set(void){char path[NX_PATH];NxEntry *e=entry();if(e&&e->directory){if(!current_path(path))return;}else strcpy(path,panes[active].path);strcpy(workspace,path);config_save();message("Workspace saved",workspace);}
 static void go_path(void){char path[NX_PATH];strcpy(path,panes[active].path);if(input("Go to folder","Absolute folder path:",path,sizeof(path))&&!navigate(&panes[active],path))error();}
-static void help(void){message("EndraCommander NX | Run 003","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
+static void help(void){message("EndraCommander NX | Run 004","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
 static void action(int k);
-static void menu(void){const char *labels[]={"Open selected","Copy to other pane","Move to other pane","Rename selected","Create folder","Delete marked/selected","Text viewer","Hex viewer","ZIP contents","Create ZIP in other pane","Extract ZIP to other pane","Toggle folders-only","Filter names in this folder","Sort: name / size / date","Save workspace folder","Open saved workspace","Go to folder path","Go to Documents","Toggle light / dark","Device info","Help / credits"};
-    const int keys[]={K_ENTER,'C','M','R','N',K_DELETE,'V','H','Z','P','X','F','S','T','W','B','G','D','Y','I','?'};int chosen=0,top=0;for(;;){if(chosen<top)top=chosen;if(chosen>=top+18)top=chosen-17;clear();title("ACTIONS");for(int j=0;j<18&&top+j<21;++j){int i=top+j;int y=29+j*10;if(i==chosen)rect(4,y-1,312,10,selected);text(10,y,labels[i],i==chosen?accent:fg,37);}footer("UP / DOWN choose   ENTER   ESC back");present();int k=platform_key();if(k==K_ESC)return;if(k==K_UP&&chosen>0)--chosen;if(k==K_DOWN&&chosen<20)++chosen;if(k==K_ENTER){action(keys[chosen]);return;}}
+static void menu(void){const char *labels[]={"Open selected","Copy to other pane","Move to other pane","Rename selected","Create folder","Delete marked/selected","Text viewer","Hex viewer","ZIP contents","Create ZIP in other pane","Extract ZIP to other pane","Toggle folders-only","Filter names in this folder","Sort: name / size / date","Save workspace folder","Open saved workspace","Go to folder path","Go to Documents","Toggle light / dark","Device info","Help / credits","Toggle diagnostic write lock"};
+    const int keys[]={K_ENTER,'C','M','R','N',K_DELETE,'V','H','Z','P','X','F','S','T','W','B','G','D','Y','I','?','Q'};int chosen=0,top=0;for(;;){if(chosen<top)top=chosen;if(chosen>=top+18)top=chosen-17;clear();title("ACTIONS");for(int j=0;j<18&&top+j<22;++j){int i=top+j;int y=29+j*10;if(i==chosen)rect(4,y-1,312,10,selected);text(10,y,labels[i],i==chosen?accent:fg,37);}footer("UP / DOWN choose   ENTER   ESC back");present();int k=platform_key();if(k==K_ESC)return;if(k==K_UP&&chosen>0)--chosen;if(k==K_DOWN&&chosen<21)++chosen;if(k==K_ENTER){action(keys[chosen]);return;}}
 }
-static void action(int key){NxPane *p=&panes[active];int k=key<256?toupper((unsigned char)key):key;char path[NX_PATH];switch(k){
+static void action(int key){NxPane *p=&panes[active];int k=key<256?toupper((unsigned char)key):key;char path[NX_PATH];
+    if(k=='Q'){
+        if(diag_readonly){
+            if(confirm("Unlock file writes?","Run004 diagnostics starts READ ONLY.\n\nOnly unlock to test disposable files. Freezes are still under investigation."))diag_readonly=0;
+        }else diag_readonly=1;
+        return;
+    }
+    if(diag_readonly&&(k=='C'||k=='M'||k==K_DELETE||k=='R'||k=='N'||
+                       k=='P'||k=='X'||k=='W'||k=='Y')){
+        message("Read-only diagnostic","Writes are locked for safe testing.\n\nUse Q or MENU > Toggle diagnostic write lock to enable writes only on disposable files.");
+        return;
+    }
+    switch(k){
     case K_UP:if(p->cursor)--p->cursor;break;
     case K_DOWN:if(p->cursor+1<p->count)++p->cursor;break;
     case K_LEFT:strcpy(path,p->path);nx_parent(path);if(!navigate(p,path))error();break;
@@ -160,6 +187,6 @@ int main(int argc,char **argv){
     render();if(argc>3){if(!strcmp(argv[3],"@menu"))menu();else for(size_t i=0;i<panes[0].count;++i)if(!strcmp(panes[0].items[i].name,argv[3])){panes[0].cursor=i;open_entry();break;}}
     const char *output=argc>2?argv[2]:"preview.ppm";FILE *f=fopen(output,"wb");if(f){fprintf(f,"P6\n320 240\n255\n");for(int i=0;i<320*240;++i){uint16_t c=pixels[i];unsigned char rgb[3]={(unsigned char)(((c>>11)&31)*255/31),(unsigned char)(((c>>5)&63)*255/63),(unsigned char)((c&31)*255/31)};fwrite(rgb,1,3,f);}fclose(f);}quit=1;
 #endif
-    while(!quit){render();action(platform_key());}
+    while(!quit){render();int key=platform_key();if(key)action(key);}
     platform_close();nx_release(&panes[0]);nx_release(&panes[1]);return 0;
 }
