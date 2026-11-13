@@ -5,6 +5,10 @@
 
 typedef struct { int key, menu_open, listing_open; const char *folder; } step_t;
 static const step_t browse_steps[] = {
+ {KEY_NSPIRE_MENU,1,0,"browse"}, /* select folder ZIP from actions */
+ {KEY_NSPIRE_DOWN,1,0,"browse"},
+ {KEY_NSPIRE_DOWN,1,0,"browse"},
+ {KEY_NSPIRE_ENTER,0,0,"browse"}, /* archive child/ with empty dir */
  {KEY_NSPIRE_ENTER,0,0,"child"},
  {KEY_NSPIRE_LEFT,0,0,"browse"},
  {KEY_NSPIRE_RIGHT,0,0,"child"},
