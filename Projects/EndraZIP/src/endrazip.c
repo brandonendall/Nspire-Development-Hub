@@ -15,7 +15,8 @@ static int safe(const char *p){
  const char *s=p; while(*s){const char *e=strchr(s,'/');size_t n=e?(size_t)(e-s):strlen(s);
  if(!n||(n==1&&s[0]=='.')||(n==2&&s[0]=='.'&&s[1]=='.'))return 0;
  for(size_t i=0;i<n;i++)if((unsigned char)s[i]<32||s[i]=='\\')return 0;
- if(!e)break;s=e+1;
+ if(!e||!e[1])break; /* accept one terminal / for ZIP directories */
+ s=e+1;
  }return 1;
 }
 static int dirs(const char *path){
@@ -38,9 +39,41 @@ static int extract(const char *file,const char *dest){
  }
  mz_zip_reader_end(&z);return ok;
 }
-static int add(mz_zip_archive *z,const char *path,const char *name){
- struct stat st;if(stat(path,&st))return 0;
- if(S_ISDIR(st.st_mode)){puts("Folder packing comes in run 002");return 0;}
+/*
+ * EndraZIP 006: stream file contents directly into the ZIP writer and walk
+ * folders recursively. MAX_ZIP_DEPTH bounds stack use and unexpected cycles;
+ * each emitted member retains its path under the selected root folder.
+ * Empty directories are explicit ZIP directory entries.
+ */
+#define MAX_ZIP_DEPTH 24
+#define MAX_ZIP_FILES 8192
+static int add(mz_zip_archive *z,const char *path,const char *name,int depth,
+               unsigned int *file_count){
+ struct stat st;
+ if(depth>MAX_ZIP_DEPTH||!safe(name)||stat(path,&st))return 0;
+ if(S_ISDIR(st.st_mode)){
+  char folder[MAXPATH],child_path[MAXPATH],child_name[MAXPATH];
+  if(depth==MAX_ZIP_DEPTH||
+     snprintf(folder,sizeof(folder),"%s/",name)>=(int)sizeof(folder))return 0;
+  /* miniz calls the write callback even for zero-length entries. */
+  static const unsigned char empty_entry=0;
+  if(!mz_zip_writer_add_mem(z,folder,&empty_entry,0,0))return 0;
+  DIR *dir=opendir(path);
+  if(!dir)return 0;
+  int ok=1;
+  struct dirent *e;
+  while((e=readdir(dir))){
+   if(!strcmp(e->d_name,".")||!strcmp(e->d_name,".."))continue;
+   if(!safe(e->d_name)||
+      snprintf(child_path,sizeof(child_path),"%s/%s",path,e->d_name)>=(int)sizeof(child_path)||
+      snprintf(child_name,sizeof(child_name),"%s/%s",name,e->d_name)>=(int)sizeof(child_name)||
+      !add(z,child_path,child_name,depth+1,file_count)){ok=0;break;}
+  }
+  closedir(dir);
+  return ok;
+ }
+ if(!S_ISREG(st.st_mode)||*file_count>=MAX_ZIP_FILES)return 0;
+ (*file_count)++;
  return mz_zip_writer_add_file(z,name,path,NULL,0,COMPRESSION_LEVEL);
 }
 static int create(const char *file,const char *source){
@@ -49,12 +82,13 @@ static int create(const char *file,const char *source){
  if(!safe(base)||exists(file)||strlen(base)>=sizeof(name))return 0;
  strcpy(name,base);
  if(!mz_zip_writer_init_file(&z,file,0))return 0;
- int ok=add(&z,source,name)&&mz_zip_writer_finalize_archive(&z);
+ unsigned int file_count=0;
+ int ok=add(&z,source,name,0,&file_count)&&mz_zip_writer_finalize_archive(&z);
  mz_zip_writer_end(&z);if(!ok)remove(file);return ok;
 }
 
 
-/* EndraZIP 005: direct browsing and best-compression ZIP creation. */
+/* EndraZIP 006: stable browsing, best compression and recursive folder ZIPs. */
 #define MAXENT 128
 #define W 320
 #define H 240
@@ -165,7 +199,7 @@ static void updir(void){
 }
 static void paint(void){
  box(0,0,W,H,BG);box(0,0,W,31,BAR);box(0,29,W,2,CYAN);
- label(11,7,"ENDRAZIP 005",TEXT,2,18);
+ label(11,7,"ENDRAZIP 006",TEXT,2,18);
  label(214,12,"ZIP MANAGER",CYAN,1,17);
  box(0,31,W,25,PANEL);label(8,40,cwd,MUTED,1,51);
  box(0,57,W,18,0x2126);
@@ -190,7 +224,7 @@ static void paint(void){
  if(menu){
   box(52,58,216,133,0x0000);box(55,61,210,127,PANEL);
   label(67,69,"FILE ACTIONS",CYAN,2,17);
-  const char *options[4]={"OPEN / BROWSE","EXTRACT ZIP","CREATE ZIP - BEST","CANCEL"};
+  const char *options[4]={"OPEN / BROWSE","EXTRACT ZIP","ZIP FILE / FOLDER","CANCEL"};
   for(int i=0;i<4;i++){
    if(menusel==i)box(62,96+i*20,196,18,CYAN);
    label(72,101+i*20,options[i],menusel==i?DARK:TEXT,1,28);
@@ -228,8 +262,8 @@ static void operate(int action){
   else status("Press MENU, then CREATE ZIP for this file");
   return;
  }
- if(entries[selected].directory){status("Folder ZIP comes in next release");return;}
  if(action==1){
+  if(entries[selected].directory){status("Select a ZIP archive");return;}
   if(!zipname(entries[selected].name)){status("Select a ZIP archive");return;}
   char base[MAXPATH];strcpy(base,full);size_t len=strlen(base);
   if(len>=8&&!strcmp(base+len-8,".zip.tns"))base[len-8]=0;
@@ -243,12 +277,17 @@ static void operate(int action){
  if(action==2){
   if(snprintf(out,sizeof(out),"%s.zip.tns",full)>=(int)sizeof(out)){status("Output path is too long");return;}
   if(exists(out)){status("ZIP already exists - not overwritten");return;}
-  status("Compressing - BEST level 10. Please wait...");paint();
+  int source_is_folder=entries[selected].directory;
+  status(source_is_folder?"Packing folder recursively. Please wait...":
+                          "Compressing - BEST level 10. Please wait...");
+  paint();
   int ok=create(out,full);
   refresh();
   if(ok){
    struct stat before,after;
-   if(!stat(full,&before)&&!stat(out,&after)&&before.st_size>0&&after.st_size<before.st_size){
+   if(source_is_folder){
+    status("Folder ZIP ready - includes subfolders");
+   }else if(!stat(full,&before)&&!stat(out,&after)&&before.st_size>0&&after.st_size<before.st_size){
     unsigned long saved=(unsigned long)(((mz_uint64)(before.st_size-after.st_size)*100)/(mz_uint64)before.st_size);
     snprintf(feedback,sizeof(feedback),"ZIP ready - saved %lu%% (BEST level 10)",saved);
    }else status("ZIP ready - no size saving on this file");
