@@ -1,31 +1,31 @@
-# UltraZIP 004 - same Ndless packaging sequence as the working smoke build.
+# EndraZIP 005 - same Ndless packaging sequence as the working smoke build.
 GCC = nspire-gcc
 LD = nspire-ld
 GENZEHN = genzehn
 CFLAGS = -Wall -Wextra -Os -marm -std=c99 -Ivendor/miniz
 LDFLAGS = -Wl,--nspireio,--gc-sections
 MINIZ = vendor/miniz/miniz.o vendor/miniz/miniz_zip.o vendor/miniz/miniz_tinfl.o vendor/miniz/miniz_tdef.o
-OBJS = src/ultrazip.o src/ndless_compat.o $(MINIZ)
+OBJS = src/endrazip.o src/ndless_compat.o $(MINIZ)
 
-all: UltraZIP_004.tns
+all: EndraZIP_005.tns
 
 src/ndless_compat.o: src/ndless_compat.c
 	$(GCC) $(CFLAGS) -c $< -o $@
 
-src/ultrazip.o: src/ultrazip.c
+src/endrazip.o: src/endrazip.c
 	$(GCC) $(CFLAGS) -c $< -o $@
 
 vendor/miniz/%.o: vendor/miniz/%.c
 	$(GCC) $(CFLAGS) -c $< -o $@
 
-UltraZIP_004.elf: $(OBJS)
+EndraZIP_005.elf: $(OBJS)
 	$(LD) $^ -o $@ $(LDFLAGS)
 
-UltraZIP_004.tns: UltraZIP_004.elf
-	$(GENZEHN) --input $< --output $@ --name "UltraZIP 004"
+EndraZIP_005.tns: EndraZIP_005.elf
+	$(GENZEHN) --input $< --output $@ --name "EndraZIP 005"
 
 clean:
-	rm -f $(OBJS) UltraZIP_004.elf UltraZIP_004.tns
+	rm -f $(OBJS) EndraZIP_005.elf EndraZIP_005.tns
 
 test:
 	python3 tests/test_host.py

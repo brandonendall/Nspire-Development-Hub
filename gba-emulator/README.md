@@ -1,3 +1,5 @@
+Current product: **[EndraGBA](../Projects/EndraGBA/README.md)**. This directory retains shared ROM tools and historical notes.
+
 # GBA emulator project
 
 This directory tracks investigation and development of a GBA emulator for the TI-Nspire CX II CAS.

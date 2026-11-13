@@ -54,7 +54,7 @@ static int create(const char *file,const char *source){
 }
 
 
-/* UltraZIP 004: direct browsing and best-compression ZIP creation. */
+/* EndraZIP 005: direct browsing and best-compression ZIP creation. */
 #define MAXENT 128
 #define W 320
 #define H 240
@@ -165,7 +165,7 @@ static void updir(void){
 }
 static void paint(void){
  box(0,0,W,H,BG);box(0,0,W,31,BAR);box(0,29,W,2,CYAN);
- label(11,7,"ULTRAZIP 004",TEXT,2,18);
+ label(11,7,"ENDRAZIP 005",TEXT,2,18);
  label(214,12,"ZIP MANAGER",CYAN,1,17);
  box(0,31,W,25,PANEL);label(8,40,cwd,MUTED,1,51);
  box(0,57,W,18,0x2126);

@@ -1,7 +1,7 @@
-# UltraZIP 004
+# EndraZIP 005
 
 Ndless ZIP utility with a graphical file browser for TI-Nspire CX II CAS.
-Run004 separates browsing from file actions and increases ZIP compression.
+Run005 introduces the Endra name, retaining Run004 controls and ZIP compression.
 
 ## Controls
 
@@ -36,7 +36,7 @@ The host suite exercises the real application's key loop and compression code:
 through both Python and the app, source preservation, existing-output refusal,
 failed-create cleanup, and archive path rejection. ASan and UBSan are enabled.
 
-Representative host fixtures (complete ZIP sizes, in bytes):
+Historical Run004 host fixtures (complete ZIP sizes, in bytes):
 
 | Fixture | Original | Run003 level 1 | Run004 level 10 |
 |---|---:|---:|---:|
@@ -54,18 +54,18 @@ folder with Enter, open actions with Menu, then create and extract a sample ZIP.
 From the repository root:
 
 ```sh
-(cd Projects/UltraZip && python3 tests/test_host.py)
-(cd Projects/UltraZip && sh get_miniz.sh)
-bash toolchain/build.sh Projects/UltraZip
+(cd Projects/EndraZIP && python3 tests/test_host.py)
+(cd Projects/EndraZIP && sh get_miniz.sh)
+bash toolchain/build.sh Projects/EndraZIP
 ```
 
-Output: `Projects/UltraZip/UltraZIP_004.tns`.
-The workflow `.github/workflows/ultrazip.yml` runs host checks, builds with the
-existing pinned Ndless container, and uploads `UltraZIP_004` with a checksum.
+Output: `Projects/EndraZIP/EndraZIP_005.tns`.
+The workflow `.github/workflows/endrazip.yml` runs host checks, builds with the
+existing pinned Ndless container, and uploads `EndraZIP_005` with a checksum.
 If host LeakSanitizer cannot run under a debugger/ptrace container, set
 `ASAN_OPTIONS=detect_leaks=0:halt_on_error=1`; memory access and UBSan checks
 remain enabled. GitHub Actions uses leak detection by default.
 
 Run003's original source restoration is documented in `IMPORT.md` and retained
-in Git history. UltraCommander NX is a separate app under `Projects/UltimateCommander`.
+in Git history. EndraCommander NX is a separate app under `Projects/EndraCommander`.
 

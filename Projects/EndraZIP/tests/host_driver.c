@@ -1,6 +1,6 @@
 /* Exercise the real application's file operations and event loop. */
-#define main ultrazip_app_main
-#include "../src/ultrazip.c"
+#define main endrazip_app_main
+#include "../src/endrazip.c"
 #undef main
 
 typedef struct { int key, menu_open, listing_open; const char *folder; } step_t;
@@ -82,8 +82,8 @@ int main(int argc,char **argv){
  if(!strcmp(argv[1],"extract"))return extract(argv[2],argv[3])?0:1;
  if(!strcmp(argv[1],"ui")){
   if(strlen(argv[2])>=sizeof(cwd))return 2;
-  strcpy(cwd,argv[2]);screen_dir=getenv("ULTRAZIP_SCREEN_DIR");
-  int result=ultrazip_app_main();
+  strcpy(cwd,argv[2]);screen_dir=getenv("ENDRAZIP_SCREEN_DIR");
+  int result=endrazip_app_main();
   if(step_index!=sizeof(browse_steps)/sizeof(browse_steps[0])-1)return 93;
   if(strncmp(feedback,"ZIP ready - saved ",18))return 94;
   printf("Control states checked: %d; Esc exits\n",checked);

@@ -1,13 +1,13 @@
-# UltraCommander NX — Run 001
+# EndraCommander NX — Run 002
 
-First standalone Ndless file manager build for Brandon's TI-Nspire CX II CAS.
+Endra-branded Ndless file manager build for Brandon's TI-Nspire CX II CAS.
 Target device: OS 6.4.0.74 with working Ndless. Built using Ndless r2023.
-This executable has compiled successfully and passed host checks; it has not
-yet been run on a physical calculator or in an Nspire emulator.
+Run002 updates branding while retaining the Run001 file-management behavior.
+The new build requires its own calculator test.
 
 ## Install and first test
 
-1. Transfer `UltraCommanderNX_Run001.tns` into a Documents folder using your
+1. Transfer `EndraCommanderNX_Run002.tns` into a Documents folder using your
    existing calculator transfer app. No additional app data files are required.
 2. With Ndless active, open the file from the calculator's document browser.
 3. First check that both panes appear, arrows navigate, Tab switches panes,
@@ -19,7 +19,8 @@ yet been run on a physical calculator or in an Nspire emulator.
 
 The executable does not install a resident hook or require the old file
 managers to be installed. It does not change the CPU clock. Theme/workspace
-settings are saved in `/documents/UltraCommanderNX/settings.cfg.tns` when used.
+settings retain `/documents/UltraCommanderNX/settings.cfg.tns` for compatibility
+with existing workspaces and themes.
 
 ## What this build incorporates
 
@@ -28,12 +29,12 @@ settings are saved in `/documents/UltraCommanderNX/settings.cfg.tns` when used.
 | Ndless Commander v0.6 | Two panes, sorting, rename, folders, text/hex previews |
 | SDL File Browser | Ndless app launch/return, files and empty-folder deletion |
 | nSonic 5.32 | Folder-only selection and saved workspace folder |
-| UltraZIP direction | Create/list/extract ZIPs; staged extraction and path checks |
+| EndraZIP direction | Create/list/extract ZIPs; staged extraction and path checks |
 
 These are feature adaptations in new code, not a literal merger of the three
 original codebases. The supplied nSonic refresh-address table ends at OS 5.3;
 its native TI browser mount/hide hook is NOT ported or enabled on OS 6.4 in
-Run 001. A saved workspace is a shortcut inside UltraCommander NX, not a
+Run 001. A saved workspace is a shortcut inside EndraCommander NX, not a
 system-wide document-root change.
 
 ## Controls
@@ -113,7 +114,7 @@ With a built SDK already available:
 make NDLESS_SDK=/absolute/path/Ndless/ndless-sdk
 ```
 
-Output: `dist/UltraCommanderNX_Run001.tns`. The build compiles ARM machine code,
+Output: `dist/EndraCommanderNX_Run002.tns`. The build compiles ARM machine code,
 processes the ELF using genzehn, and prepends the official Zehn loader.
 `make preview` builds a host-only renderer. Example:
 

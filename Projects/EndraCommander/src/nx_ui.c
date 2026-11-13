@@ -1,4 +1,4 @@
-/* UltraCommander NX: original unified interface; 320 x 240. */
+/* EndraCommander NX: original unified interface; 320 x 240. */
 #include "nx.h"
 #include "nx_platform.h"
 #include <stdio.h>
@@ -37,7 +37,7 @@ static void present(void){platform_present(pixels);}
 static NxEntry *entry(void){NxPane *p=&panes[active];return p->count?p->items+p->cursor:NULL;}
 static int current_path(char *out){NxEntry *e=entry();return e?nx_join(out,panes[active].path,e->name):nx_fail("This folder is empty");}
 static void render(void){
-    clear();title("ULTRACOMMANDER NX");text(257,6,"001",gold,3);
+    clear();title("ENDRACOMMANDER NX");text(257,6,"002",gold,3);
     for(int k=0;k<2;++k){NxPane *p=&panes[k];int x=k*160;char head[32];
         rect(x,23,160,18,panel);if(k==active)rect(x,23,3,165,accent);
         snprintf(head,sizeof(head),"%c %s %s",k==active?'>':' ',k?"RIGHT":"LEFT",p->folders_only?"DIRS":"FILES");text(x+6,28,head,k==active?accent:muted,18);
@@ -106,7 +106,7 @@ static void zip_action(int extract){char src[NX_PATH],name[NX_NAME],dst[NX_PATH]
 }
 static void workspace_set(void){char path[NX_PATH];NxEntry *e=entry();if(e&&e->directory){if(!current_path(path))return;}else strcpy(path,panes[active].path);strcpy(workspace,path);config_save();message("Workspace saved",workspace);}
 static void go_path(void){char path[NX_PATH];strcpy(path,panes[active].path);if(input("Go to folder","Absolute folder path:",path,sizeof(path))&&!navigate(&panes[active],path))error();}
-static void help(void){message("UltraCommander NX | Run 001","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
+static void help(void){message("EndraCommander NX | Run 002","TAB switch panes\nArrows browse; LEFT goes up\nENTER open; SPACE mark\nC copy   M move   R rename\nN folder DEL delete\nV text   H hex    Z ZIP list\nP make ZIP   X extract ZIP\nF folders-only  S name filter\nT sort   A mark all\nW save workspace  B jump back\nG go to path  D Documents\nY light/dark  I device info\nMENU all actions  ESC quit\n\nInspired by Commander, SDL File\nBrowser and nSonic. Native nSonic\nOS hook is not installed.");}
 static void action(int k);
 static void menu(void){const char *labels[]={"Open selected","Copy to other pane","Move to other pane","Rename selected","Create folder","Delete marked/selected","Text viewer","Hex viewer","ZIP contents","Create ZIP in other pane","Extract ZIP to other pane","Toggle folders-only","Filter names in this folder","Sort: name / size / date","Save workspace folder","Open saved workspace","Go to folder path","Go to Documents","Toggle light / dark","Device info","Help / credits"};
     const int keys[]={K_ENTER,'C','M','R','N',K_DELETE,'V','H','Z','P','X','F','S','T','W','B','G','D','Y','I','?'};int chosen=0,top=0;for(;;){if(chosen<top)top=chosen;if(chosen>=top+18)top=chosen-17;clear();title("ACTIONS");for(int j=0;j<18&&top+j<21;++j){int i=top+j;int y=29+j*10;if(i==chosen)rect(4,y-1,312,10,selected);text(10,y,labels[i],i==chosen?accent:fg,37);}footer("UP / DOWN choose   ENTER   ESC back");present();int k=platform_key();if(k==K_ESC)return;if(k==K_UP&&chosen>0)--chosen;if(k==K_DOWN&&chosen<20)++chosen;if(k==K_ENTER){action(keys[chosen]);return;}}

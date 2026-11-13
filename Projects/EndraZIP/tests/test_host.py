@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test the actual UltraZIP application with host Ndless input/display stubs."""
+"""Test the actual EndraZIP application with host Ndless input/display stubs."""
 import argparse
 import json
 import os
@@ -24,7 +24,7 @@ def check(value, message):
         raise AssertionError(message)
 
 
-with tempfile.TemporaryDirectory(prefix="ultrazip-004-") as temp:
+with tempfile.TemporaryDirectory(prefix="endrazip-004-") as temp:
     tmp = Path(temp)
     export = tmp / "miniz_export.h"
     export.write_text("#define MINIZ_EXPORT\n")
@@ -51,8 +51,8 @@ with tempfile.TemporaryDirectory(prefix="ultrazip-004-") as temp:
     noise = rng.randbytes(262144)
     # Original generated fixtures and this project's own source; no game ROMs.
     fixtures = {
-        "notes.txt.tns": (b"UltraCommander NX: folders, ZIP files, saved workspaces.\n" * 8192),
-        "source.c.tns": (ROOT / "src/ultrazip.c").read_bytes(),
+        "notes.txt.tns": (b"EndraCommander NX: folders, ZIP files, saved workspaces.\n" * 8192),
+        "source.c.tns": (ROOT / "src/endrazip.c").read_bytes(),
         "mixed.bin.tns": b"".join(rng.choice([b"\x00" * 256, bytes(range(256)),
                                              noise[:256]]) for _ in range(4096)),
         "random.bin.tns": noise,
