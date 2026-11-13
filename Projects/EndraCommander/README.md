@@ -1,13 +1,13 @@
-# EndraCommander NX — Run 002
+# EndraCommander NX — Run 003 (freeze diagnostics)
 
 Endra-branded Ndless file manager build for Brandon's TI-Nspire CX II CAS.
 Target device: OS 6.4.0.74 with working Ndless. Built using Ndless r2023.
-Run002 updates branding while retaining the Run001 file-management behavior.
+Run003 is a diagnostic stabilization build based on Run003; it does not change calculator files automatically.
 The new build requires its own calculator test.
 
 ## Install and first test
 
-1. Transfer `EndraCommanderNX_Run002.tns` into a Documents folder using your
+1. Transfer `EndraCommanderNX_Run003.tns` into a Documents folder using your
    existing calculator transfer app. No additional app data files are required.
 2. With Ndless active, open the file from the calculator's document browser.
 3. First check that both panes appear, arrows navigate, Tab switches panes,
@@ -36,6 +36,15 @@ original codebases. The supplied nSonic refresh-address table ends at OS 5.3;
 its native TI browser mount/hide hook is NOT ported or enabled on OS 6.4 in
 Run 001. A saved workspace is a shortcut inside EndraCommander NX, not a
 system-wide document-root change.
+
+## Run003 freeze-isolation changes
+
+- The owner confirmed Run002 renders on CX II CAS but subsequently freezes; the triggering key/action is not yet known.
+- Removed the per-selection `localtime()` conversion from the main render path. Date metadata is still collected for date sorting, but not formatted on each keypress.
+- Temporarily disabled `nl_exec` from inside the file manager. Selecting a recognized Ndless executable shows a message rather than nesting another program. This is a safety diagnostic, not a permanent feature removal.
+- Changed the onscreen footer and version so Run003 can be identified on hardware.
+- **No modifications to original files or settings format**. Run002 remains available for comparison.
+- A successful build cannot verify the freeze is resolved; confirm with a device test. First navigate up/down, Enter into directories, Tab and Menu with no USB connected. Then report which exact key or elapsed time makes the UI unresponsive.
 
 ## Controls
 
@@ -70,7 +79,7 @@ All letters work without Shift for action shortcuts.
 - `.txt.tns`, `.md.tns`, `.png.tns`, `.zip.tns` and similar suffixed files are
   recognized. Normal TI document files do not open as TI documents from this
   app; unrecognized files get a hex preview. ROM launch associations are not
-  implemented yet. App launch depends on the selected app's own compatibility.
+  implemented yet. Run003 temporarily disables nested app launching while diagnosing freezes. Exit to Documents to launch another application.
 - Reads can browse the filesystem. Writes are restricted to entries inside
   `/documents`; the Documents root itself is protected. Existing destinations
   are refused. Folder copy is recursive; folder deletion is empty-only.
@@ -114,7 +123,7 @@ With a built SDK already available:
 make NDLESS_SDK=/absolute/path/Ndless/ndless-sdk
 ```
 
-Output: `dist/EndraCommanderNX_Run002.tns`. The build compiles ARM machine code,
+Output: `dist/EndraCommanderNX_Run003.tns`. The build compiles ARM machine code,
 processes the ELF using genzehn, and prepends the official Zehn loader.
 `make preview` builds a host-only renderer. Example:
 
