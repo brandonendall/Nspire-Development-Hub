@@ -112,3 +112,11 @@ User explicitly clarified that EndraHome itself takes approximately **10 seconds
 ## Run010 — permanent config policy correction, device pending (2026-11-14)
 
 User superseded the earlier per-build naming request: **no Run number in the shortcut config**. Run010 and future releases use `EndraHome_Apps.cfg.tns`. Old Run007/008/009 binaries remain unchanged. User can manually copy their configured file to the permanent filename once. An imported Run007 renderer header could make Run009's Help page show Apps007 despite the loader using 009; Run010 adds a local renderer header, aligning Help with the correct permanent name. The no-`refresh_osscr()` shutdown optimization is still **not yet physically tested**. Start with Esc-only exit; stop on any blank or frozen screen.
+
+## Run010 — confirmed fast exit and working test launch (2026-11-14)
+
+User report after installing Run010: **"Android Home works great. It exits out real fast. It's perfect, really. It launches the file immediately, and then it goes back out."** In context the user means EndraHome (not an Android phone home app). This is a physical-device PASS of fast Esc/exit and the simple Tools handoff, relative to roughly 10-second Run008/009 delays. No exact new speed measurement was supplied, and the no-`refresh_osscr` change is a plausible cause but not rigorously isolated by a direct timing phase trace. User's next requirement: child should return to EndraHome, not stay in TI Documents.
+
+## Run011 — Return Home attempt (2026-11-14, physical test pending)
+
+New `run011` session loop preserves Run010's no-browser-refresh LCD/timer restoration and calls the Ndless API `nl_exec(path,0,NULL)` with the native graphics platform stopped. **If** `nl_exec` returns after the child exits, Run011 clears modal/launch state and restarts the known-good LCD/UI, retaining the selected tile. If a child resets/crashes/terminates its caller, automatic return may not happen. Host tests check that the return state does not relaunch automatically and that Esc still exits. Native CI and physical test tracked separately. Test only the tiny Run006 companion first; preserve Run010 baseline and stop if any freeze.
