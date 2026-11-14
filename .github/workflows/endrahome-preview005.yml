@@ -1,0 +1,59 @@
+name: EndraHome Run005 - Concept-matching UI
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run005/**'
+      - '.github/workflows/endrahome-preview005.yml'
+      - 'Projects/EndraHome/gba-ui/platform.c'
+      - 'Projects/EndraHome/gba-ui/platform.h'
+      - 'Projects/EndraHome/gba-ui/logic.h'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run005/**'
+      - '.github/workflows/endrahome-preview005.yml'
+      - 'Projects/EndraHome/gba-ui/platform.c'
+      - 'Projects/EndraHome/gba-ui/platform.h'
+      - 'Projects/EndraHome/gba-ui/logic.h'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test seven-item navigation and render screens
+        run: |
+          make -C Projects/EndraHome/run005 test
+          make -C Projects/EndraHome/run005 preview
+          test -s Projects/EndraHome/run005/build/home.ppm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run005_Previews
+          path: Projects/EndraHome/run005/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Run005 with the unchanged native platform
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run005
+      - name: Check native executable
+        run: |
+          test -s Projects/EndraHome/run005/EndraHome_Run005_PreviewMatch.tns
+          cd Projects/EndraHome/run005
+          sha256sum EndraHome_Run005_PreviewMatch.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run005_PreviewMatch
+          path: |
+            Projects/EndraHome/run005/EndraHome_Run005_PreviewMatch.tns
+            Projects/EndraHome/run005/README.md
+            Projects/EndraHome/run005/SHA256SUMS.txt
+          if-no-files-found: error
