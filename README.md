@@ -57,3 +57,11 @@ The November 13 complete backup supplied the UltraZIP and UltraCommander source 
 Both generated `.tns` files match the original saved binaries byte for byte.
 Physical calculator testing remains separate. The source import and exact
 checksums are documented in the restoration handoff.
+
+## EndraHome Run011 — Return Home, host and native CI PASS (2026-11-14)
+
+Active source is still on feature/endrahome-run001, draft PR #10 — **do not merge without owner approval**. User confirmed Run010 is fast on the physical calculator: immediate test-app launch and quick exit, with previous approximately 10-second delay absent. Keep Run010 unchanged as a known-good rollback.
+
+Run011 source: Projects/EndraHome/run011/. GitHub Actions run 43634783657 **PASSED both host tests and native build**; artifact EndraHome_Run011_ReturnHome, id 14129471837, includes the signed/no-extra-arguments 28,306-byte .tns and the permanent config template. New state loop releases hardware display/timer before nl_exec(path,0,NULL), and only when that call returns from the child, resets launcher state and redraws the Home screen (selected icon preserved, no automatic relaunch). The Run010 no-refresh optimization remains. Config remains **EndraHome_Apps.cfg.tns**; never overwrite the user's configured version with the empty template.
+
+**Physical Run011 testing PENDING**. First test Esc-only return to TI Documents; then only the tiny EndraHome_Test006.tns companion (Tools), dismiss success popup, look for Home returning and Esc exit. Ndless child return behavior may differ by program; no guarantee for GBA/other apps, and no resident hooks/OS changes. Stop and revert to Run010 on any freeze or visual corruption.
