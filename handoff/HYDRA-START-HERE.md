@@ -16,7 +16,7 @@ Links:
 
 | Project | Source | Status / non-negotiable notes |
 | --- | --- | --- |
-| **EndraHome** | `Projects/EndraHome/` on feature branch | Launcher/UI in development; **no verified safe external app launching**. Runs 001/002 failed on hardware; 003 and 004 user-reported working; 005 new untested seven-icon concept-matching UI. |
+| **EndraHome** | `Projects/EndraHome/` on feature branch | Launcher/UI in development; **no verified safe external app launching**. Runs 001/002 failed on hardware; 003–005 reported working for displayed UI; 006 untested controlled handoff probe. |
 | **UltraGBA → EndraGBA** | `Projects/UltraGBA/`, `vendor/upstream-gpsp/` | Keep Run007 known functionality (GBZ pages, RTC, ROM-local saves). Rename planned, not yet applied to the baseline. |
 | **UltraZIP** | `Projects/UltraZip/` | Historical source restored, build validated; independent device results required. |
 | **UltraCommander NX** | `Projects/UltimateCommander/` | Historical source restored with CI/host validation. Do not assume its device stability based only on CI. |
@@ -32,9 +32,11 @@ Links:
 
 **Run004 — reported working on device:** user photographed the revamped four-icon home screen and said “It works,” but explicitly compared it to a separate original concept with seven glossy icons and a big EndraHome cube logo. The device screenshot is evidence of UI rendering, not automatic proof of every exit or launch code path. App launches remain disabled.
 
-**Run005 — closest new visual target (2026-11-14):** source `Projects/EndraHome/run005/` on `feature/endrahome-run001`. Recreates the original concept with seven icons, cube wordmark, charcoal palette, neon selection and glossy-style dock. Uses **unchanged Run003 `gba-ui/platform.c`** for framebuffer, keyboard and lifecycle; new seven-card navigation in `run005/logic7.c`. Host tests, native build and PPM screenshots passed in [GitHub Actions run 43599465872](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872). **Calculator test still pending.** Actual app execution, filesystem operations and hooks are all disabled. The battery pictogram is decorative, not measured.
+**Run005 — closest new visual target (2026-11-14):** source `Projects/EndraHome/run005/` on `feature/endrahome-run001`. Recreates the original concept with seven icons, cube wordmark, charcoal palette, neon selection and glossy-style dock. Uses **unchanged Run003 `gba-ui/platform.c`** for framebuffer, keyboard and lifecycle; new seven-card navigation in `run005/logic7.c`. Host tests, native build and PPM screenshots passed in [GitHub Actions run 43599465872](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872). **User photographed Run005 on the calculator and reported “It works.”** Seven-card UI renders; long captions overlap. Actual app execution, filesystem operations and hooks are all disabled. The battery pictogram is decorative, not measured.
 
 **Run004 — experiment:** visual-only redesign of Run003 with own renderer in `Projects/EndraHome/run004/` and direct compilation of unmodified `Projects/EndraHome/gba-ui/platform.c` and `logic.c`. Native app launch is still off. Check [Run004 CI](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-visual004.yml) for status. Physical test is **pending**.
+
+**Run006 — experimental Ndless handoff (2026-11-14):** source `Projects/EndraHome/run006/` on active branch; builds TWO binaries, `EndraHome_Run006_LaunchProbe.tns` and `EndraHome_Test006.tns`. User success for Run005 allowed an incremental test: Run006 fixes overlapping seven-card captions and only lets **Tools** request a tiny success-popup program after another Enter confirmation. It does not launch GBA or any other real app. It restores the original screen and timer before calling **`nl_exec(path, 0, NULL)`** (official zero-argument usage), unlike Run001's incorrect extra argv and SDL lifecycle. Original Run003 platform and Run005 seven-card logic are compiled unchanged. [Run006 GitHub Actions run 43601629126](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43601629126) **passed** host + both native builds, but **physical calculator test is NOT REPORTED**. User must first open `EndraHome_Test006.tns` directly, then test the launcher Esc/navigation, then confirm Tools launch. Both .tns must live in the same Documents folder; stop on any freeze. See the [test procedure](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/run006/README.md).
 
 ## Architecture — why Run003 matters
 
@@ -47,10 +49,12 @@ Links:
 
 ## What to do next
 
-1. Preserve Run003 and Run004 known-working binaries. Do **not** change `gba-ui/platform.c` while testing Run005.
-2. Test experimental Run005 on a real CX II CAS: launch and immediate Esc exit first, then navigate all seven icons, Enter/details, Menu/help and back. App launching remains intentionally off.
-3. Record the specific physical test result with the commit and date in the EndraHome device log and update this handoff.
-4. Once UI stability is confirmed, design a separate launcher test with careful OS state cleanup. Do not casually reactivate Run001's `nl_exec` or modify Ndless associations.
+1. Keep **Run003, Run004 and Run005 binaries** untouched as working UI rollback points.
+2. Transfer the TWO `run006` .tns files into the same TI Documents folder. **First open `EndraHome_Test006.tns` directly**, ensuring its native popup works.
+3. Then launch Run006 and immediately Esc. If that works, navigate all seven dock icons and Menu/help; then optionally try **Tools → Enter (details) → Enter (confirmation) → Enter (test)**.
+4. If any freeze recurs, do not repeat the test. Record exactly which action failed. Only after this launcher handoff is proven should a later run consider actual Ndless apps (and GBA last).
+5. Commit the user's device result to project test log, Hydra handoff and root README. CI alone never establishes hardware success.
+
 
 ## How Hydra can use this handoff
 
