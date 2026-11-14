@@ -14,6 +14,7 @@ Repo: `brandonendall/Nspire-Development-Hub`. **Active code branch:** `feature/e
 | Run006 | **User-reported working** | Corrected captions; Tools icon launched the standalone tiny companion test app after confirmation. |
 | Run007 ZIP-only idea | **CANCELLED** | Was compiled but **not user-tested**. Superseded by the user-requested universal design. |
 | **Run007 UNIVERSAL REDO** | **CI verified; device test pending** | Seven configurable app targets; **none** preassigned. No special ZIP behavior. |
+| **Run008 UI polish** | **CI verified; device test pending** | Cleaner seven-icon labels and visible config status; same Run007 config/launch architecture. |
 
 ## The actual Run007: configurable launcher
 
@@ -51,3 +52,13 @@ See [device test log](DEVICE-TEST-RESULTS.md) for all observed user reports, inc
 ## Hydra / AI work policy
 
 Record source version, CI outcome and separate **physical** device result for every build. Preserve Run003–Run006 rollback artifacts, current UltraGBA Run007/RTC/GBZ/save behavior, and all unrelated apps. Keep EndraHome on the development branch and draft PR until ready. Do not report the universal launcher as fully tested merely because the tiny Run006 test handoff worked.
+
+## Run008 — readable labels and visible config status (2026-11-14)
+
+**New source:** [run008/](run008/). [Passing CI run 43606891909](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43606891909) includes host tests for the caption layout and original seven-slot configuration/state tests, 4 full-screen previews, and a native Ndless `.tns` build with SHA256 verification. **Physical device testing is pending.**
+
+The user's Run007 calculator photo showed successful UI rendering, but labels still clipped/overlapped and all seven icons showed unconfigured gray dots; the user has not yet explicitly confirmed that a config file loaded or any Run007 app handoff worked. Run008 is a conservative improvement that shortens default labels to GBA, ZIP, Cmd, Files, Images, Tools, Favs, while preserving full names on detail pages. It also shows `CONFIG FILE MISSING`, `CHECK CONFIG FILE`, or `N / 7 READY` directly on Home; Menu explains configuration status.
+
+**Important:** Run008 deliberately reads `EndraHome_Apps007.cfg.tns`, the same config filename and path semantics as Run007. The user should put that file alongside `EndraHome_Run008_UIPolish.tns` and edit a single slot (preferably the already-working Run006 tiny companion program) to test the universal launcher. All seven slots default disabled. This is NOT app autodiscovery or built-in ZIP functionality. The Run003 native input/video, Run005 seven-way logic, Run007 registry/parser, confirmation overlay and `nl_exec` sequence are compiled unchanged; only Run008 renderer/captions and executable title are new. **Test app launch separately; no GBA/universal-launch success claim until user verifies.**
+
+See [run008/README.md](run008/README.md) for installation and safe test order. Preserve Run003–Run007 binaries and any user save files.

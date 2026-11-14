@@ -38,6 +38,8 @@ Links:
 
 **Run007 — REDO: general configurable Ndless launcher (2026-11-14):** The previous ZIP-only Run007 was replaced **before any physical device test** because it incorrectly treated EndraHome as a ZIP-focused workflow. The current source at `Projects/EndraHome/run007/` creates `EndraHome_Run007_Universal.tns` and the editable `EndraHome_Apps007.cfg.tns`. Every one of seven icons can launch **any explicitly configured compatible Ndless executable under `/documents/`**, regardless of the icon's default appearance. No program is preassigned; no ZIP compression, file manager, ROM, app-discovery or background OS functionality is bundled. A read-only config parser validates paths/labels and disallows traversal. Before calling `nl_exec(path,0,NULL)`, the app restores LCD/timer/OS screen using the Run006-proven exit order. Reuses unchanged Run003 `gba-ui/platform.c` and unchanged Run005 `logic7.c`. The original Run006 tiny companion launch is the recommended first test; GBA may have different resource requirements and should not be tried first. The current universal Run007 is **not yet hardware-verified**. See the [current Run007 README](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/run007/README.md) and [CI workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-universal007.yml).
 
+**Run008 — UI clarity and config diagnostic build (2026-11-14):** User photographed the Run007 universal Home but **did not report testing any configured application launch**. Run008 is an isolated UI/readability improvement: the previously overlapped dock labels become compact GBA / ZIP / Cmd / Files / Images / Tools / Favs; a new banner explains `CONFIG FILE MISSING`, `CHECK CONFIG FILE`, or `N / 7 READY`. Menu displays the actual `EndraHome_Apps007.cfg.tns` filename, which **remains shared between Runs 007 and 008**. Underlying Run003 `gba-ui/platform.c`, Run005 `logic7.c` and Run007 `registry.c` / `ui.c` / `overlay.c` are compiled unmodified. App launch/return order remains the same as Run006/007. New sources are in `Projects/EndraHome/run008/`; [CI workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-run008.yml). [Run008 CI 43606891909](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43606891909) passed host tests, previews and native .tns compilation. Physical hardware test pending, and **universal app launch still unverified**.
+
 ## Architecture — why Run003 matters
 
 - Reference emulator frontend: `vendor/upstream-gpsp/nspire_input.c`, `nspire_keys.c`, `nspire_video_ui.c`, `nspire/nspire.c` and `gui.c`.
@@ -49,11 +51,11 @@ Links:
 
 ## What to do next
 
-1. Preserve working Run003–Run006 .tns binaries and the existing standalone UltraGBA, ZIP, file manager and save data.
-2. Install `EndraHome_Run007_Universal.tns` and `EndraHome_Apps007.cfg.tns` side-by-side inside one TI Documents folder. Edit the config on Android. Initially configure **only one slot**, pointing to the known-working `EndraHome_Test006.tns` companion program.
-3. First test immediate Esc; then arrows, Menu, details, empty/unconfigured tile behavior; then confirm launching the tiny test and returning to TI Documents.
-4. Only after that success test one other independently-working lightweight Ndless app. Keep GBA for a later isolated compatibility trial. Stop if any freeze occurs; collect exact last screen/key.
-5. Update the project log and root handoff with observed hardware result. The ZIP-only Run007 was **never user-tested and is not the current code**. Do not revive that specialized branch or treat EndraHome as a ZIP utility. No `ndless.cfg.tns`, hooks, clock or system-root modifications.
+1. Keep original user-tested Run006 and other known-working programs unchanged; do not touch UltraGBA ROM/saves.
+2. Install Run008 along with `EndraHome_Apps007.cfg.tns` in the same TI Documents folder. Run008 **reuses Run007's config filename**. Keep the binary under its own name.
+3. Verify Run008 ESC exit, all seven readable labels, Menu help, and clear status reporting for missing/empty/configured paths. At this point there is only proof of UI.
+4. Configure one slot to the real path of the small `EndraHome_Test006.tns` (Run006 known working), then test the full confirmation/launch/return sequence. If that works, test one other small Ndless program, never everything at once.
+5. Log outcomes with the exact affected build; no GBA or hardware-level success claim without explicit user confirmation. No config writes, hooks or OS replacement.
 
 
 ## How Hydra can use this handoff
