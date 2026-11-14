@@ -1,0 +1,46 @@
+name: EndraHome Run003 - GBA-style UI experiment
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/gba-ui/**'
+      - '.github/workflows/endrahome-gba-ui003.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/gba-ui/**'
+      - '.github/workflows/endrahome-gba-ui003.yml'
+permissions:
+  contents: read
+jobs:
+  logic-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test navigation state machine
+        run: make -C Projects/EndraHome/gba-ui test
+  native-build:
+    needs: logic-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build experimental GBA-style EndraHome
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/gba-ui
+      - name: Verify binary checksum
+        run: |
+          test -s Projects/EndraHome/gba-ui/EndraHome_Run003_GBAUI.tns
+          cd Projects/EndraHome/gba-ui
+          sha256sum EndraHome_Run003_GBAUI.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run003_GBAUI_Experimental
+          path: |
+            Projects/EndraHome/gba-ui/EndraHome_Run003_GBAUI.tns
+            Projects/EndraHome/gba-ui/README.md
+            Projects/EndraHome/gba-ui/SHA256SUMS.txt
+          if-no-files-found: error
