@@ -1,7 +1,7 @@
 /*
  * EndraHome Run010 (UI polish): the universal seven-shortcut launcher with clearer captions/status.
- * Run003's proven GBA-native LCD and keys are compiled UNMODIFIED.
- * No hard-coded targets; Run010 exclusively uses EndraHome_Apps010.cfg.tns.
+ * Run003's GBA-derived LCD and keypad are preserved in a locally isolated Run010 platform copy.
+ * No hard-coded targets; Run010 and future runs use EndraHome_Apps.cfg.tns.
  */
 #include "../gba-ui/platform.h"
 #include "registry.h"

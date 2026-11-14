@@ -33,3 +33,7 @@ User supplied a photograph of a Timex stopwatch with **9.94 s** visible, immedia
 ## Run010 — suspected refresh overhead (2026-11-14)
 
 User clarification: **"It takes our Endra home about 10 seconds to close out."** We must not assume `nl_exec` itself accounts for ~10 seconds. Run009's platform exit includes `refresh_osscr()` and its main includes another call after child execution; Ndless docs reserve this for document-browser updates after file create/delete. Because Home never creates/deletes files, Run010 tests whether **skipping unnecessary browser refreshes after preserving hardware register/timer restoration** accelerates exit. This is a hypothesis, not the verified cause. Run010 uses `EndraHome_Apps010.cfg.tns` and is currently native-built/physical-test pending. **Measure Esc-only return to usable TI Documents separately from final Enter → child popup.** If screen restore misbehaves, stop and revert to known working Run009.
+
+## Shared config filename decision (2026-11-14)
+
+Owner's final preference is a permanent unnumbered file: **`EndraHome_Apps.cfg.tns`** for Run010 and future versions. Older binaries still use their earlier numbered configs. This naming change is separate from the Run010 no-browser-refresh performance experiment; measure its exit time before claiming a speed improvement.

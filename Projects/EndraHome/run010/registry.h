@@ -4,7 +4,7 @@
 #define EH7_SLOT_COUNT 7
 #define EH7_LABEL_CAP 16
 #define EH7_PATH_CAP 256
-#define EH7_CONFIG_FILE "EndraHome_Apps010.cfg.tns"
+#define EH7_CONFIG_FILE "EndraHome_Apps.cfg.tns"
 typedef struct {
  char label[EH7_LABEL_CAP];
  char path[EH7_PATH_CAP];

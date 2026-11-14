@@ -17,12 +17,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Validate versioned config, UI state, no refresh and screenshot previews
+      - name: Validate permanent config, UI state, no refresh and previews
         run: |
           make -C Projects/EndraHome/run010 test
           make -C Projects/EndraHome/run010 preview
           test -s Projects/EndraHome/run010/build/home.ppm
-          grep -Fq 'EndraHome_Apps010.cfg.tns' Projects/EndraHome/run010/registry.h
+          grep -Fq 'EndraHome_Apps.cfg.tns' Projects/EndraHome/run010/registry.h
+          grep -Fq 'EH7_CONFIG_FILE' Projects/EndraHome/run010/render.c
+          test -s Projects/EndraHome/run010/render.h
+          ! grep -Eq 'Apps(007|009|010)\.cfg\.tns' Projects/EndraHome/run010/main.c Projects/EndraHome/run010/registry.h
           ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run010/platform.c Projects/EndraHome/run010/main.c
           grep -Fq 'restore_timer();' Projects/EndraHome/run010/platform.c
           grep -Fq 'WRITE(LCD_BASE,original_base)' Projects/EndraHome/run010/platform.c
@@ -46,14 +49,14 @@ jobs:
         run: |
           cd Projects/EndraHome/run010
           test -s EndraHome_Run010_NoRefresh.tns
-          test -s EndraHome_Apps010.cfg.tns
+          test -s EndraHome_Apps.cfg.tns
           sha256sum EndraHome_Run010_NoRefresh.tns > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: EndraHome_Run010_NoRefresh
           path: |
             Projects/EndraHome/run010/EndraHome_Run010_NoRefresh.tns
-            Projects/EndraHome/run010/EndraHome_Apps010.cfg.tns
+            Projects/EndraHome/run010/EndraHome_Apps.cfg.tns
             Projects/EndraHome/run010/README.md
             Projects/EndraHome/run010/SHA256SUMS.txt
           if-no-files-found: error

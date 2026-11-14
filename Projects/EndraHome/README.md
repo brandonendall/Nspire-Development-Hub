@@ -87,3 +87,9 @@ User clarified on November 14, 2026: **"It takes our Endra home about 10 seconds
 [Run010 source](run010/) copies the working Run009 display/input platform locally and **removes only the `refresh_osscr()` calls** in the local platform stop and main exit code. All hardware LCD/timer/OS base restoration, existing UI/key logic, config rules, and `nl_exec(path,0,NULL)` are preserved. Run010 requires **`EndraHome_Apps010.cfg.tns`** beside `EndraHome_Run010_NoRefresh.tns`; do not modify the working Run009 config.
 
 **Primary device test:** launch Run010 with no app selected and press **Esc**, timing return to usable TI Documents. Stop if the screen is blank, garbled or frozen; use Run009 as rollback. Only if Esc works, time Tools' tiny `EndraHome_Test006.tns` launch. This isolates whether the OS browser refresh caused ~10s. **No Run010 physical result yet.**
+
+## Stable app shortcuts config — user-requested (2026-11-14)
+
+**Supersedes the previous “match the RunNNN number in the config” rule.** From Run010 onward EndraHome reads **`EndraHome_Apps.cfg.tns`**, without a number. Only the launcher executable uses a Run number. The config remains in the same TI Documents folder as the launcher and is read-only from EndraHome. Users can copy their configured 007/009 file once to the stable name; older builds retain their older expectations. Do not auto-modify or delete their files.
+
+Run010 includes a local renderer header to fix an old-help-filename issue seen in Run009: its Help screen showed Apps007 even though the actual Run009 loader expected Apps009. Run010's Help and loader both use the stable filename. The separate Run010 **no-browser-refresh** exit-speed experiment remains untested on physical hardware. [Test instructions](run010/README.md).

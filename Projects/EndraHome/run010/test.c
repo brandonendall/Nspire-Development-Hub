@@ -23,8 +23,10 @@ int main(void){
  assert(!apps.slots[4].path[0]);
  assert(eh7_registry_parse(&apps,"8=X|/documents/Apps/a.tns")==-1);
  char cfg[300];
- assert(eh7_config_path(cfg,sizeof(cfg),"/documents/Endra/EndraHome_Run010_FastHandoff.tns"));
- assert(!strcmp(cfg,"/documents/Endra/EndraHome_Apps010.cfg.tns"));
+ assert(eh7_config_path(cfg,sizeof(cfg),"/documents/Endra/EndraHome_Run010_NoRefresh.tns"));
+ assert(!strcmp(cfg,"/documents/Endra/EndraHome_Apps.cfg.tns"));
+ assert(!strstr(cfg,"Apps010"));
+ assert(!strstr(cfg,"Apps007"));
  assert(!eh7_config_path(cfg,10,"/documents/Endra/Start.tns"));
  EhUniversalUI ui;eh7_ui_init(&ui,&apps);
  /* Home Enter -> details, then Enter -> confirm, ESC cancel */
@@ -56,6 +58,6 @@ int main(void){
  assert(last.confirm==7);
  eh7_ui_handle(&last,EH_KEY_ENTER);
  assert(last.request==7);
- puts("Run010 versioned-config registry and launch-state tests passed");
+ puts("Run010 permanent-config registry and launch-state tests passed");
  return 0;
 }
