@@ -1,0 +1,35 @@
+name: EndraDiagnostics Run001 - Ndless Native
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run001/**'
+      - '.github/workflows/endradiagnostics-run001.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build using established shared Ndless container
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run001 clean all'
+      - name: Verify binary
+        run: |
+          test -s Projects/EndraDiagnostics/run001/EndraDiagnostics_Run001.tns
+          file Projects/EndraDiagnostics/run001/EndraDiagnostics_Run001.tns
+          sha256sum Projects/EndraDiagnostics/run001/EndraDiagnostics_Run001.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run001_tns
+          path: Projects/EndraDiagnostics/run001/EndraDiagnostics_Run001.tns
+          if-no-files-found: error
