@@ -2,7 +2,7 @@
 
 Run005 has been **reported working on the TI-Nspire CX II CAS**. The user supplied a photograph of the seven-icon screen; several long captions overlap visually. This Run006 fixes caption spacing and then provides an *opt-in, one-target-only* Ndless application handoff test.
 
-**Run006 is NOT yet tested on physical hardware and is not a general-purpose launcher.** Previous Run001 freezes occurred in the original SDL launcher and during GBA launch, so do NOT test the GBA via this version.
+**Run006 has now been user-reported working on physical hardware** (November 14, 2026: “Everything works” after the complete test sequence). It remains a limited, test-only launcher—not a general-purpose launcher and not a verified GBA launcher. Previous Run001 freezes occurred in the original SDL launcher and during GBA launch, so do NOT test the GBA via this version.
 
 ## Preserve working baseline
 
@@ -37,3 +37,7 @@ Every other tile stays preview-only. No GBA, no ZIP, no file manager launches ye
 - Source graphics use the bitmap font and GPL-covered GBA-derived architecture; no ROMs, user data or proprietary images are included.
 
 Keep Run005 as fallback. Report success/failure separately for **direct target launch**, **Run006 navigation**, and **nested test launch**. A successful GitHub Actions job is NOT a physical device test.
+
+## Hardware test update (2026-11-14)
+
+The user reported **“Everything works”** after receiving the full direct-test, ESC, navigation and guarded Tools launch procedure. This is taken as a user-reported pass of Run006's controlled tiny Ndless companion handoff, with no individual step log. Run007 was created as a separate source directory so the tested Run006 binary remains unchanged.

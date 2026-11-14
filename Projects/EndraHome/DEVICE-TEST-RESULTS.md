@@ -62,3 +62,11 @@ User supplied a new photo of EndraHome Run005 displayed on the TI-Nspire CX II C
 - Tools > Enter (details) > Enter (confirm) > Enter (test) is the only path that calls `nl_exec`. Before launching, the launcher restores OS video/timer; it passes zero additional arguments. No GBA or other real apps are launched.
 - Tiny caption readability fix: split Endra/GBA, Endra/ZIP and Endra/Cmd labels into two lines.
 - Host state tests and preview screenshots are tracked in workflow `endrahome-launch006.yml`. **Calculator test not yet reported.** First test companion directly, then launcher ESC, then navigation, then confirm launch. Stop at any freeze.
+
+## Run006 — user-reported device PASS (2026-11-14)
+
+After the Run006 companion-app, launcher navigation/ESC, and guarded Tools launch instructions were provided, the user reported **“Everything works.”** Record this as a **user-reported pass of the full Run006 test sequence**, including the small `EndraHome_Test006.tns` handoff. No detailed step-by-step logs or crash traces were provided, so this does not prove stability across different Ndless applications or GBA execution. Preserve Run006 as a known user-reported working baseline.
+
+## Run007 — real ZIP app controlled test (new, hardware untested)
+
+Run007 adds ZIP-only real app execution after a separate confirmation, preserving unchanged Run003 display+keyboard platform, unchanged Run005 navigation and Run006 corrected icon captions. The ZIP app is **not bundled**: user explicitly copies a working ZIP executable alongside the launcher under `EndraHome_ZIP007.tns`. Tools repeats the small companion test; EndraGBA and every other icon remain preview-only. Test direct ZIP first, launcher ESC second, Tools test third, ZIP nested launch last. This is *not* evidence that other apps can launch safely.
