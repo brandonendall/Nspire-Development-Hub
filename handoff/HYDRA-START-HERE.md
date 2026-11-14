@@ -16,7 +16,7 @@ Links:
 
 | Project | Source | Status / non-negotiable notes |
 | --- | --- | --- |
-| **EndraHome** | `Projects/EndraHome/` on feature branch | Launcher/UI in development; **no verified safe external app launching**. Runs 001/002 failed on hardware; 003 user-reported working visual/navigation foundation; 004 experimental visual update. |
+| **EndraHome** | `Projects/EndraHome/` on feature branch | Launcher/UI in development; **no verified safe external app launching**. Runs 001/002 failed on hardware; 003 and 004 user-reported working; 005 new untested seven-icon concept-matching UI. |
 | **UltraGBA → EndraGBA** | `Projects/UltraGBA/`, `vendor/upstream-gpsp/` | Keep Run007 known functionality (GBZ pages, RTC, ROM-local saves). Rename planned, not yet applied to the baseline. |
 | **UltraZIP** | `Projects/UltraZip/` | Historical source restored, build validated; independent device results required. |
 | **UltraCommander NX** | `Projects/UltimateCommander/` | Historical source restored with CI/host validation. Do not assume its device stability based only on CI. |
@@ -30,7 +30,9 @@ Links:
 
 **Run003 — reported working:** rebuilt display and keypad using the established gpSP/UltraGBA architecture. The user posted a photo of the EndraHome UI with ZIP tile selected and said “Works like a champ but boy is it ugly.” Treat as a successful real-device screen + selection report, NOT proof that every exit/multi-screen path is covered. No `nl_exec`, folder listing, file writes or hooks in Run003.
 
-**Run004 — experiment:** visual-only redesign of Run003 with own renderer in `Projects/EndraHome/run004/` and direct compilation of unmodified `Projects/EndraHome/gba-ui/platform.c` and `logic.c`. Native app launch is still off. Check [Run004 CI](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-visual004.yml) for status. Physical test is **pending**.
+**Run004 — reported working on device:** user photographed the revamped four-icon home screen and said “It works,” but explicitly compared it to a separate original concept with seven glossy icons and a big EndraHome cube logo. The device screenshot is evidence of UI rendering, not automatic proof of every exit or launch code path. App launches remain disabled.
+
+**Run005 — closest new visual target (2026-11-14):** source `Projects/EndraHome/run005/` on `feature/endrahome-run001`. Recreates the original concept with seven icons, cube wordmark, charcoal palette, neon selection and glossy-style dock. Uses **unchanged Run003 `gba-ui/platform.c`** for framebuffer, keyboard and lifecycle; new seven-card navigation in `run005/logic7.c`. Host tests, native build and PPM screenshots passed in [GitHub Actions run 43599465872](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872). **Calculator test still pending.** Actual app execution, filesystem operations and hooks are all disabled. The battery pictogram is decorative, not measured.
 
 ## Architecture — why Run003 matters
 
@@ -43,10 +45,10 @@ Links:
 
 ## What to do next
 
-1. Verify Run004 GitHub Actions host tests, PPM previews and native Ndless compilation **without changing the original Run003 sources**.
-2. Keep Run003 `.tns` as the working rollback; put Run004 in a separate Documents folder and test appearance, arrows, Menu, Enter, Esc and clean return to TI's browser. Stop after any hard freeze.
-3. Update source README, this handoff, and the root index with the exact user-reported device result. Do not say “device-tested” merely because a GitHub Actions job passed.
-4. Only after visual/navigation success, design an isolated **separate** app-launch test. Do not re-enable `nl_exec` casually or modify Ndless associations.
+1. Preserve Run003 and Run004 known-working binaries. Do **not** change `gba-ui/platform.c` while testing Run005.
+2. Test experimental Run005 on a real CX II CAS: launch and immediate Esc exit first, then navigate all seven icons, Enter/details, Menu/help and back. App launching remains intentionally off.
+3. Record the specific physical test result with the commit and date in the EndraHome device log and update this handoff.
+4. Once UI stability is confirmed, design a separate launcher test with careful OS state cleanup. Do not casually reactivate Run001's `nl_exec` or modify Ndless associations.
 
 ## How Hydra can use this handoff
 

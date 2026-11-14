@@ -36,9 +36,17 @@ Only reintroduce SDL and then launcher execution in **separate subsequent builds
 - This supports successful display rendering and at least tile selection/navigation on the actual device. It does not prove every help/detail/exit interaction was independently checked.
 - External Ndless app execution was intentionally **not implemented**.
 
-## Run004 — new visual-only experimental build
+## Run004 — user-confirmed working visual redesign
 
 - Same Run003 platform/input/logic source compiled unchanged, with a new `run004/render.c`, `run004/main.c` and four improved screens.
 - Host navigation tests, native compiler job, PPM screenshot artifact are tracked by `.github/workflows/endrahome-visual004.yml`.
-- **Physical device verification pending.** No app launching, ZIP, hooks, configuration modification or filesystem access.
+- **User provided a photo of Run004 on actual CX II CAS and said “It works,” while comparing it to a more sophisticated original seven-icon visual concept.** This confirms a successful home-screen rendering and the user's overall working report; it does not independently verify every detail/exit path. No app launching, ZIP, hooks, config modification or filesystem access.
 - Maintain Run003 as recovery baseline; do not silently replace or rename it.
+
+## Run005 — concept-inspired seven-icon UI (2026-11-14)
+
+- User supplied a side-by-side photo showing Run004 physically working and a more polished visual reference with a big EndraHome cube, seven glossy icons, and a refined footer.
+- Added `run005/` retaining unmodified Run003 native video/input module, with new seven-card state logic and its own RGB565 concept-inspired renderer.
+- GitHub Actions run [43599465872](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872) **passed** host 7-item navigation tests, four preview images and Ndless native .tns compilation.
+- **Physical calculator test: NOT YET REPORTED.** Seven cards are preview-only; do not claim they launch apps. The status pictogram is decorative.
+- Keep working Run003/Run004. First test Run005's immediate ESC return, then other navigation controls; stop on any freeze.

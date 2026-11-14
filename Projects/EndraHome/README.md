@@ -1,40 +1,45 @@
-# EndraHome — current development status
+# EndraHome — project status (2026-11-14)
 
-Updated 2026-11-14. Repository: `brandonendall/Nspire-Development-Hub`. Active branch: `feature/endrahome-run001`; draft [PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10). Do not assume these sources are merged into `main`.
+Repository: `brandonendall/Nspire-Development-Hub`. Active source branch: `feature/endrahome-run001`, in [draft PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10); main contains the current Hydra handoff.
 
-**Hydra / other AI collaborators:** read `/AGENTS.md` and `/handoff/HYDRA-START-HERE.md` at repository root, then this file and `DEVICE-TEST-RESULTS.md`. Check the latest PR commit and Actions run before continuing.
+Hydra / collaborating AI: first read `AGENTS.md` and `handoff/HYDRA-START-HERE.md` at repository root; then read this README and the [device history](DEVICE-TEST-RESULTS.md). All verification assertions below distinguish physical calculator tests from CI builds.
 
-## Physical device test status
+## Run status
 
-| Build | Architecture | Real-device observation | Recommendation |
+| Run | Key change | Hardware observation | Action |
 | --- | --- | --- | --- |
-| Run001 | SDL/nSDL launcher + direct Ndless keyboard | Full calculator freeze on Settings, then another on attempted GBA launch | **FAILED. Do not use.** |
-| Run002 | Ndless lcd_init/lcd_blit UI with Menu and software countdown | User photographed Home and Menu, reported full freeze after entering Menu | **FAILED. Do not use.** |
-| **Run003** | UltraGBA/gpSP-derived native display + keypad + pure page state | User photographed home screen with ZIP tile selected and said "Works like a champ" | **Preserve this baseline.** Other exit/transition paths not independently confirmed. |
-| **Run004** | New visual renderer + **unchanged Run003 platform/input/logic** | Native compilation and host tests have passed; physical device test pending | **Experimental visual test only.** |
+| **001** | SDL launcher with `nl_exec` app launch | **FAIL:** hard freeze on Settings and attempted GBA launch | Do NOT use |
+| **002** | Ndless `lcd_init/lcd_blit` diagnostic | **FAIL:** froze after Menu, possible exit-path failure | Do NOT use |
+| **003** | UltraGBA/gpSP-derived native input/display engine | **PASS reported:** user photo of selected ZIP icon, “Works like a champ” | Keep as known-working baseline |
+| **004** | Styled 4-icon Home, unchanged 003 platform/logic | **PASS reported:** photo on device and user says “It works” | Preserve; fails user's target *visual similarity*, not functional test |
+| **005** | User-concept-inspired 7 colorful icons, large cube brand, seven-item navigation | **PENDING device test**; GitHub Actions host tests+preview+native compile passed | New UI experiment, no app launch |
 
-## Current target: Run004 visual-only
+## Current experiment — Run005
 
-Source: `run004/`. Separate renderer with styled header, rich hero, rounded cards, custom RGB565 pixel icons, selection accent and polished detail/help/about views. Build uses **exact same** `gba-ui/platform.c` and `gba-ui/logic.c` as user-reported working Run003. No SDL, no file I/O, no external app launch (`nl_exec` is absent), no hooks, no settings writes, and no CPU clock modifications.
+[Run005 source](run005/) and [Run005 CI](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872) (successful build, **not** a physical calculator test). `EndraHome_Run005_PreviewMatch.tns` is uploaded as the Actions artifact.
 
-- CI: [EndraHome Run004 workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-visual004.yml)
-- Local native compile: `bash toolchain/build.sh Projects/EndraHome/run004`
-- Host preview generation: `make -C Projects/EndraHome/run004 preview` (four `.ppm` screen renders)
-- Host state tests: `make -C Projects/EndraHome/run004 test`
-- Output: `Projects/EndraHome/run004/EndraHome_Run004_Visual.tns` (in GitHub Actions artifact, not checked into source control)
+Visual design directly references the user-supplied original mockup with the large 3D cube, centered `EndraHome` wordmark, muted subtitle, seven colored icon cards, cyan active border, and bottom Enter/Menu pill. It is programmed at the calculator's native **320×240 logical resolution**, so some small typography, anti-aliasing and light effects differ from the enlarged photographic concept. The screenshot is NOT embedded in our source.
 
-**First physical test:** keep Run003 untouched, install Run004 alongside it, verify opening and immediate Esc exit, then arrows, Enter/details, Menu/help, and exiting back to the TI documents interface. Stop if the calculator freezes. No GBA launch can happen from Run004.
+Run005 compiles the **unaltered `gba-ui/platform.c`** from working Run003 for all hardware video, touchpad input, timer and return-to-OS logic. It uses a new **7-slot** pure page state handler (`run005/logic7.c`) and 100% software RGB565 renderer (`run005/render.c`).
 
-## Preserved diagnostic source and explanation
+**Important:** the seven icons are **UI placeholders, not working shortcuts**. Enter shows details; no external Ndless application is executed in Run005. No filesystem I/O, no `ndless.cfg.tns` modifications, no hooks, no SDL. Battery icon is decorative, not a live reading.
 
-- `src/` — original Run001 SDL experiment (failed real-device tests).
-- `recovery/` — Run002 native diagnostic (failed real-device test).
-- `gba-ui/` — Run003 GBA-inspired tested UI and platform, **baseline to preserve**.
-- `run004/` — isolated visual redesign using the Run003 platform and logic source.
-- [Architecture analysis](GBA-ARCHITECTURE-ANALYSIS.md) and [device failures/success log](DEVICE-TEST-RESULTS.md).
+### Physical test order
+1. Keep **both Run003 and Run004** installed as rollback.
+2. Install Run005 separately; test immediate Esc exit to the TI browser first.
+3. Relaunch; move across all 7 icons, Menu help, Enter details, Esc back, then clean exit.
+4. If hard freeze occurs, stop and report the exact last key and screen.
 
-## Next after Run004 physical confirmation
+Only after successfully testing Run005 will actual app launching be developed independently in a new run and verified with a small known-working nonemulator app before GBA.
 
-Plan an independent app-launch prototype with explicit exit/restore semantics; do not copy Run001's `nl_exec` call indiscriminately. Validate launches with one disposable program before considering EndraGBA, preserve all emulator saves and use existing `ndless.cfg.tns` mappings without modifying them.
+## Files
 
-This documentation is versioned with source changes; it does **not** auto-update without future commits.
+- `src/`: failed Run001 SDL launcher, retained only for forensic comparison.
+- `recovery/`: failed Run002 diagnostic, retained only for forensic comparison.
+- `gba-ui/`: user-confirmed Run003 native platform and navigation baseline. **DO NOT modify in cosmetic changes.**
+- `run004/`: last user-confirmed working polished UI with 4 icons.
+- `run005/`: new 7-icon closer-to-concept UI, physical test pending.
+- [GBA design analysis](GBA-ARCHITECTURE-ANALYSIS.md).
+- [Physical test log](DEVICE-TEST-RESULTS.md).
+
+The GitHub README and Hydra handoff are versioned project documentation and **are not automatically synchronized outside actual commits**.
