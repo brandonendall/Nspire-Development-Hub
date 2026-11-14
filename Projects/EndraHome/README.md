@@ -13,7 +13,7 @@ Hydra / collaborating AI: first read `AGENTS.md` and `handoff/HYDRA-START-HERE.m
 | **003** | UltraGBA/gpSP-derived native input/display engine | **PASS reported:** user photo of selected ZIP icon, “Works like a champ” | Keep as known-working baseline |
 | **004** | Styled 4-icon Home, unchanged 003 platform/logic | **PASS reported:** photo on device and user says “It works” | Preserve; fails user's target *visual similarity*, not functional test |
 | **005** | User-concept-inspired 7 bright icons, large cube brand, seven-item navigation | **PASS reported:** real-device photo + “It works”; tiny icon captions collide | Preserve as last user-tested 7-icon UI |
-| **006** | Corrects captions, adds a *guarded single-test-app* handoff | **PENDING device test**; host tests passed, native build tracked in CI | Keep GBA launch disabled; test 2-binary probe only |
+| **006** | Corrects captions, adds a *guarded single-test-app* handoff | **PENDING device test**; [CI run 43601629126](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43601629126) passed host tests and BOTH native binaries | Keep GBA launch disabled; test 2-binary probe only |
 
 ## Current experiment — Run006 (guarded handoff)
 

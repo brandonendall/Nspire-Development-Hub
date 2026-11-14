@@ -12,10 +12,11 @@ This file is for Hydra and any AI collaborator inspecting this repository.
 - EndraHome uses TI-Nspire CX II CAS + Ndless. Report successful GitHub Actions **separately** from actual calculator results.
 
 ## Current EndraHome evidence (2026-11-14)
-- Run001 and Run002 **froze on physical hardware**; do not recommend reinstalling or running them.
-- Run003: user showed a screenshot with selection moved to ZIP and said “works like a champ.” App-launch implementation was deliberately absent.
-- Run004: visual-only experiment over **unchanged** Run003 platform/input/logic, pending device verification. It does not launch apps.
-- See the detailed [handoff](handoff/HYDRA-START-HERE.md) and feature branch project documentation.
+- Run001 and Run002 **hard-froze** on physical calculator; do NOT recommend running them.
+- Run003, Run004 and Run005: user shared actual-device photographs and reported the home interfaces working. No real app launches were possible in these builds.
+- Run005 seven-icon UI had overlapping captions on the small screen; fixed in Run006.
+- Run006: `Projects/EndraHome/run006/` guarded **Tools-only companion launch probe**. Host tests and native CI build passed ([run 43601629126](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43601629126)), but **not yet user-tested on hardware**. Only test program, no GBA. Direct-test tiny companion first, then launcher Esc, then optional Tools probe.
+- See the detailed [handoff](handoff/HYDRA-START-HERE.md) for exact test evidence, procedure and preservation requirements.
 
 ## Engineering guardrails
 1. Preserve the working UltraGBA Run007 source, ROM-local saves, GBZ paging, RTC handling and existing user data paths. `EndraGBA` is a future rename, not license to replace the baseline.
