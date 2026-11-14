@@ -1,0 +1,61 @@
+name: EndraHome Run009 - Versioned config and fast handoff
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run009/**'
+      - 'Projects/EndraHome/run007/ui.c'
+      - 'Projects/EndraHome/gba-ui/platform.c'
+      - '.github/workflows/endrahome-run009.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run009/**'
+      - 'Projects/EndraHome/run007/ui.c'
+      - 'Projects/EndraHome/gba-ui/platform.c'
+      - '.github/workflows/endrahome-run009.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test versioned config, path validation, caption layout and preview
+        run: |
+          make -C Projects/EndraHome/run009 test
+          make -C Projects/EndraHome/run009 preview
+          test -s Projects/EndraHome/run009/build/home.ppm
+          grep -Fq 'EndraHome_Apps009.cfg.tns' Projects/EndraHome/run009/registry.h
+          ! grep -q 'EndraHome_Apps007.cfg.tns' Projects/EndraHome/run009/main.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run009_Previews
+          path: Projects/EndraHome/run009/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native with established GBA display platform
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run009
+      - name: Verify and hash output
+        run: |
+          cd Projects/EndraHome/run009
+          test -s EndraHome_Run009_FastHandoff.tns
+          test -s EndraHome_Apps009.cfg.tns
+          sha256sum EndraHome_Run009_FastHandoff.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run009_FastHandoff
+          path: |
+            Projects/EndraHome/run009/EndraHome_Run009_FastHandoff.tns
+            Projects/EndraHome/run009/EndraHome_Apps009.cfg.tns
+            Projects/EndraHome/run009/README.md
+            Projects/EndraHome/run009/SHA256SUMS.txt
+          if-no-files-found: error
