@@ -1,0 +1,79 @@
+name: EndraGBA Run009 - FastExit Trial
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/endragba-run009-fastexit.yml'
+      - 'Projects/EndraGBA/run009_fast_exit.py'
+      - 'Projects/EndraGBA/run008_branding.py'
+      - 'Projects/UltraGBA/run007_patch.py'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply Run007, Run008 branding and single-change FastExit trial
+        run: |
+          set -euxo pipefail
+          cp -a vendor/upstream-gpsp upstream-gpsp
+          python3 -m py_compile Projects/EndraGBA/run009_fast_exit.py
+          python3 Projects/EndraGBA/run009_fast_exit.py
+          # Vendor snapshot has no .git; avoid git -C diff checks here.
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('upstream-gpsp/nspire/nspire.c').read_text()
+          assert s.count('Run009 FastExit experiment') == 1
+          assert 'refresh_osscr();' not in s
+          assert 'timer_restore();' in s
+          assert 'enableAlignmentExceptions();' in s
+          print('Native exit replacement verified')
+          PY
+          ! grep -q 'refresh_osscr();' upstream-gpsp/nspire/nspire.c
+          grep -q 'timer_restore();' upstream-gpsp/nspire/nspire.c
+          grep -q 'nspire_restore();' upstream-gpsp/nspire_host_main.c
+
+      - name: Compile TI-Nspire CX II CAS Ndless executable
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh upstream-gpsp
+
+      - name: Package an isolated trial and rollback instructions
+        run: |
+          set -euxo pipefail
+          test -s upstream-gpsp/gpsp_libretro.tns
+          mkdir -p dist
+          cp upstream-gpsp/gpsp_libretro.tns dist/EndraGBA_Run009_FastExitTrial.tns
+          sha256sum dist/*.tns > dist/SHA256SUMS.txt
+          cat > dist/README.txt <<'EOF'
+          EndraGBA Run009 FastExit trial (TI-Nspire CX II CAS)
+          EXPERIMENTAL: Not hardware-tested yet. Do not delete the working Run007/Run008.
+          Only exit-path change: skip refresh_osscr() in nspire_restore().
+          Native LCD base/timings, timer and alignment restore stay untouched.
+          The known Run007 GBZ, custom RTC, ROM-local saves and states are retained.
+          Keep executable in same folder as previous emulator, using UltraGBA_Data.
+          No Ndless config/hook changes; direct ROM association remains unresolved.
+          After saving a game, a new save file may be invisible in native Documents
+          until reopening/refreshing the document browser. Saved bytes remain written.
+          First test: quit from normal emulator menu to responsive Documents.
+          Next test: launch from EndraHome and return there. Note times separately.
+          Then test a safe ROM's save/load, a GBZ title and custom RTC.
+          If the LCD is blank, calculator freezes, or saves stop working, hard
+          reset only if necessary and revert to the previous working emulator.
+          Do not replace or delete saves, configs, hooks or ROMs.
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraGBA_Run009_FastExitTrial
+          path: dist/
+          if-no-files-found: error
