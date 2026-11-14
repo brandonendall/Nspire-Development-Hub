@@ -70,3 +70,14 @@ After the Run006 companion-app, launcher navigation/ESC, and guarded Tools launc
 ## Run007 — real ZIP app controlled test (new, hardware untested)
 
 Run007 adds ZIP-only real app execution after a separate confirmation, preserving unchanged Run003 display+keyboard platform, unchanged Run005 navigation and Run006 corrected icon captions. The ZIP app is **not bundled**: user explicitly copies a working ZIP executable alongside the launcher under `EndraHome_ZIP007.tns`. Tools repeats the small companion test; EndraGBA and every other icon remain preview-only. Test direct ZIP first, launcher ESC second, Tools test third, ZIP nested launch last. This is *not* evidence that other apps can launch safely.
+
+## Run007 — ZIP-only plan superseded (2026-11-14)
+
+A compiled ZIP-target-only Run007 was proposed but the user explicitly rejected ZIP-specific behavior: EndraHome is meant to be a **general purpose home screen and configurable app launcher**, not a ZIP utility. This ZIP-only build was **not physically tested** and is now superseded; its source remains only in Git commit history for audit.
+
+## Run007 — UNIVERSAL REDO (2026-11-14, physical test pending)
+
+- New Run007 source in `run007/` accepts seven independent app shortcuts from a read-only `EndraHome_Apps007.cfg.tns` file beside `EndraHome_Run007_Universal.tns`.
+- All paths start empty. The user must assign `/documents/.../*.tns` targets and optional labels; each selection requires a separate confirmation. There is **no ZIP-only logic**, no built-in utilities, file scanning, hooks, or config writes.
+- Preserves unchanged GBA-derived Run003 platform, Run005 navigation and Run006 display-restore-before-`nl_exec` sequence.
+- GitHub Actions [run 43604524140](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43604524140) **passed** host logic tests, render previews and native Ndless build. Physical calculator test **not reported**. First recommended target is the previously working small Run006 companion; arbitrary Ndless/GBA launches remain unverified.
