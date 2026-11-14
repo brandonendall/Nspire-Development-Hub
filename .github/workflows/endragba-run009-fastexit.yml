@@ -27,7 +27,16 @@ jobs:
           cp -a vendor/upstream-gpsp upstream-gpsp
           python3 -m py_compile Projects/EndraGBA/run009_fast_exit.py
           python3 Projects/EndraGBA/run009_fast_exit.py
-          git -C upstream-gpsp diff --check
+          # Vendor snapshot has no .git; avoid git -C diff checks here.
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('upstream-gpsp/nspire/nspire.c').read_text()
+          assert s.count('Run009 FastExit experiment') == 1
+          assert 'refresh_osscr();' not in s
+          assert 'timer_restore();' in s
+          assert 'enableAlignmentExceptions();' in s
+          print('Native exit replacement verified')
+          PY
           ! grep -q 'refresh_osscr();' upstream-gpsp/nspire/nspire.c
           grep -q 'timer_restore();' upstream-gpsp/nspire/nspire.c
           grep -q 'nspire_restore();' upstream-gpsp/nspire_host_main.c
@@ -54,7 +63,7 @@ jobs:
           Keep executable in same folder as previous emulator, using UltraGBA_Data.
           No Ndless config/hook changes; direct ROM association remains unresolved.
           After saving a game, a new save file may be invisible in native Documents
-          until reopening/refeshing the document browser. Saved bytes remain written.
+          until reopening/refreshing the document browser. Saved bytes remain written.
           First test: quit from normal emulator menu to responsive Documents.
           Next test: launch from EndraHome and return there. Note times separately.
           Then test a safe ROM's save/load, a GBZ title and custom RTC.
