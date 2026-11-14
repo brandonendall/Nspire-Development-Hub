@@ -73,3 +73,7 @@ See [run008/README.md](run008/README.md) for installation and safe test order. P
 **Run009 launch change:** after the tested LCD/timer/OS restore, no more redundant `fopen/fclose` of the target and no extra 180-ms pause before `nl_exec(path,0,NULL)`. Loader handles missing targets and errors. Keep this as a **measured experiment only**; removing 180 ms cannot by itself account for the observed 10.04 seconds. Native/device compatibility must still be tested.
 
 **Next test:** run same tiny program from Run009 and time *final Enter → success popup*, then compare to the 10.04-second Run008 measurement. Also time direct launch of the program in TI Documents: this helps estimate how much delay comes from the app loader rather than EndraHome itself. Stop immediately after a freeze, preserving working Run006/Run008.
+
+## Run009 stopwatch evidence
+
+A new stopwatch photograph shows **9.94 seconds** in the context of the Run009 launch-speed test. Assuming it measured the same final confirmation Enter → test app popup interval as Run008, the result improves on **10.04 seconds by 0.10 seconds (about 1%)**. The photo only shows the watch and does not independently identify the build or endpoints; record as **candidate Run009 measurement** rather than definitive proof of improvement. See [launch performance log](LAUNCH-PERFORMANCE.md). Next diagnostic: direct launch of the test executable from TI Documents, with the same timing conventions, to estimate platform loader time.

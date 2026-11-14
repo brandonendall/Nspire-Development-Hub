@@ -6,7 +6,7 @@ Updated 2026-11-14; TI-Nspire CX II CAS. This file separates **measured end-to-e
 | --- | --- | --- | --- | --- |
 | Run006 | Small `EndraHome_Test006.tns` | Confirmed Tools shortcut → success popup | Not timed | User reported “Everything works.” |
 | **Run008** | Same small `EndraHome_Test006.tns` | **Final Enter on “LAUNCH APPLICATION?” → success popup** | **10.04 seconds** | User photos verify successful execution; delay is unsatisfactory. |
-| Run009 | Same small target (planned) | Final Enter → success popup | **Not yet tested** | Fast-path experiment: remove redundant preflight open and fixed 180-ms sleep. |
+| **Run009** | Same small target (context of current test) | Final Enter → success popup, assuming same timing procedure | **9.94 seconds shown on stopwatch** | Photo supplied after Run009 test instructions; timing appears 0.10 seconds (≈1.0%) faster than Run008. Need confirmation of same measurement endpoints. |
 | Direct TI Documents | Same target (planned) | Open directly → success popup | **Not yet tested** | Compare to estimate Ndless loader/OS time. |
 
 ## Code-level observations
@@ -25,3 +25,7 @@ A fixed 180ms pause is **only 1.8% of 10.04 seconds**, so this alone cannot fix 
 - Do not bypass the verified video restoration to save a second; the original launcher repeatedly hard-froze when it mixed graphics and child launching.
 - Do not alter hardware clocks, Ndless hooks, root files, or ROM association to chase loading speed.
 
+
+## New stopwatch photo — 2026-11-14
+
+User supplied a photograph of a Timex stopwatch with **9.94 s** visible, immediately after the Run009 trial instructions. Context strongly suggests this is the Run009 final-Enter-to-test-popup time, but the photograph shows **only the stopwatch**, not Run009 or the success popup. Accordingly, record **9.94 s as the photographed candidate Run009 measurement**, with the measurement protocol and exact build attribution not independently visible. Compared with Run008's user-reported 10.04 s, that is **0.10 s (100 ms) faster, about 1.0%**—far smaller than the overall ≈10-second delay and well within the range where run-to-run variation may matter. Do not claim a meaningful speed fix or root cause. Still need a direct-from-Documents target timing and ideally repeated runs.

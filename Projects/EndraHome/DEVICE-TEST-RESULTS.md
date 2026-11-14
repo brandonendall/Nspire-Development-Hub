@@ -96,3 +96,7 @@ The user supplied photographs showing (1) EndraHome Run008's Tools detail panel 
 - Removes redundant preflight target open/close and the explicit 180-ms pause before `nl_exec`, **without altering** the proven native LCD/timer/OS restore-before-launch sequence or keypad/platform module.
 - Expected performance savings are uncertain and **cannot be assumed to explain 10.04 seconds**. Compare Run009 final Enter-to-popup time against the Run008 10.04-second baseline and, ideally, direct TI Documents launch time.
 - Physical test pending. Preserve working old builds and record exact result.
+
+## Run009 — stopwatch photograph (2026-11-14)
+
+The user submitted a Timex CHRONO photo showing **9.94 seconds** after the Run009 speed-test request. This is consistent with a Run009 final-Enter-to-test-popup interval, but the stopwatch image alone does not prove which build was running or the exact start/stop events. Tentative comparison to Run008's 10.04-second interval: **0.10 seconds (about 1.0%) lower**. App-loader speed remains effectively unresolved; no proof of a substantial optimization. Next: time launching the same tiny test program directly from TI Documents, optionally repeat timing for Run008 and Run009.
