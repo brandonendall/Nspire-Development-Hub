@@ -77,3 +77,13 @@ See [run008/README.md](run008/README.md) for installation and safe test order. P
 ## Run009 stopwatch evidence
 
 A new stopwatch photograph shows **9.94 seconds** in the context of the Run009 launch-speed test. Assuming it measured the same final confirmation Enter → test app popup interval as Run008, the result improves on **10.04 seconds by 0.10 seconds (about 1%)**. The photo only shows the watch and does not independently identify the build or endpoints; record as **candidate Run009 measurement** rather than definitive proof of improvement. See [launch performance log](LAUNCH-PERFORMANCE.md). Next diagnostic: direct launch of the test executable from TI Documents, with the same timing conventions, to estimate platform loader time.
+
+## Run010 — isolate EndraHome's slow shutdown (device test pending)
+
+User clarified on November 14, 2026: **"It takes our Endra home about 10 seconds to close out."** This changes the working diagnostic hypothesis from generic child loading to the launcher shutdown/OS handoff. The prior end-to-end measurements were 10.04 seconds (Run008) and a stopwatch photo showing 9.94 seconds (following Run009); neither separately measured the exit phase.
+
+**Code review of the actual Run009 source** showed `eh_platform_stop()` calls `refresh_osscr()` immediately after restoring the original LCD registers and timer; Run009 `main()` calls `refresh_osscr()` AGAIN after child execution. Ndless documentation describes `refresh_osscr` as a document-browser refresh when files are created/deleted, while EndraHome only reads its configuration. Nspire community advice warns it is slow on calculators with many files. That is a **specific plausible cause**, not proven.
+
+[Run010 source](run010/) copies the working Run009 display/input platform locally and **removes only the `refresh_osscr()` calls** in the local platform stop and main exit code. All hardware LCD/timer/OS base restoration, existing UI/key logic, config rules, and `nl_exec(path,0,NULL)` are preserved. Run010 requires **`EndraHome_Apps010.cfg.tns`** beside `EndraHome_Run010_NoRefresh.tns`; do not modify the working Run009 config.
+
+**Primary device test:** launch Run010 with no app selected and press **Esc**, timing return to usable TI Documents. Stop if the screen is blank, garbled or frozen; use Run009 as rollback. Only if Esc works, time Tools' tiny `EndraHome_Test006.tns` launch. This isolates whether the OS browser refresh caused ~10s. **No Run010 physical result yet.**
