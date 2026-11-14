@@ -11,7 +11,7 @@ static void box(uint16_t *f,int x,int y,int w,int h,uint16_t col){
  if(w<=0||h<=0||x>=320||y>=240)return;
  if(x+w>320)w=320-x;
  if(y+h>240)h=240-y;
- for(int j=y;j<y+h;j++)for(int i=x;i<x+w;i++)f[(y+j)*320+x+i]=col;
+ for(int j=y;j<y+h;j++)for(int i=x;i<x+w;i++)f[j*320+i]=col;
 }
 static void label(uint16_t *f,int x,int y,const char *s,uint16_t col,int max){
  for(int k=0;s&&s[k]&&k<max;k++){
