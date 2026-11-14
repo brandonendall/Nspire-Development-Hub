@@ -37,6 +37,8 @@ int main(void){
  EhRegistry reg;eh7_registry_init(&reg);
  assert(eh7_registry_parse(&reg,"5=Tools|/documents/EndraHome_Test006.tns")==1);
  write_file(cfg,"# Keep my comments\n5=Tools|/documents/EndraHome_Test006.tns\n0=MyGBA|/documents/GBA/Game.tns\n");
+ /* Mirror the real launcher: load saved labels and other slots before edit. */
+ assert(eh7_registry_load(&reg,cfg)>=0);
  Eh14SaveError err={EH14_OK,0};
  assert(eh14_assign_save(&reg,5,"/documents/Apps/NewTool.tns",cfg,&err));
  assert(!strcmp(reg.slots[5].path,"/documents/Apps/NewTool.tns"));
