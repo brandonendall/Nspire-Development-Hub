@@ -193,7 +193,7 @@ void eh_render004(uint16_t *fb,const EhUI *state){
   if(!fb||!state)return;
   screen=fb;
   if(state->page==EH_PAGE_HOME){
-    home(state);
+    background();brand();home(state);
   }else if(state->page==EH_PAGE_HELP){
     background();brand();help();
   }else{
