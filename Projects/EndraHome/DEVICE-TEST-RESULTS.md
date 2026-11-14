@@ -128,3 +128,9 @@ User reports successful Run011 return-home test: **"It worked perfectly."** Test
 ## Run012 — one-press launch (hardware test pending)
 
 New user-requested controls: Enter on Home launches configured app immediately, Menu opens selected app info, Menu from info shows config help; no confirmation prompt. Run011's child return and Run010's fast exit preserved. Config stays EndraHome_Apps.cfg.tns, with Run011 preserved as rollback. See run012/README.md.
+
+## Run012 — physical pass, Run013 Assign Picker pending (2026-11-14)
+
+After Run012 quick-launch was tested with the small Tools companion, user confirmed: **"Yes, it was super fast."** This is user-reported physical pass of one-press launch speed, not a precise timed benchmark and not an arbitrary third-party app compatibility guarantee. New requirement: replace manual config path typing with EndraHome Menu → Info → Assign App → browse calculator Documents → select .tns → automatically persist slot.
+
+Run013 is implemented on feature/endrahome-run001 at Projects/EndraHome/run013/; adds a bounded native Documents file picker using opendir/readdir/stat and a one-slot configuration update with a staged temporary file and rename. The existing permanent EndraHome_Apps.cfg.tns is modified **only on user-initiated assignment**. Existing labels, paths in other slots, and other lines/comments are preserved; if persistence fails, original config is left unchanged, and the UI displays SAVE FAILED. Run012/011 stay untouched as known-working fallbacks. **Run013 requires physical testing** even when host tests and native compilation pass, especially configuration writes on actual Ndless storage. Before testing, back up the user's configured EndraHome_Apps.cfg.tns; do not upload blank template over it. Start by assigning the tiny EndraHome_Test006.tns to Tools and verify persistence across restart; no GBA test yet.
