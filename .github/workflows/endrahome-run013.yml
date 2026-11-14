@@ -1,0 +1,60 @@
+name: EndraHome Run013 - Assign via file picker
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run013/**'
+      - '.github/workflows/endrahome-run013.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run013/**'
+      - '.github/workflows/endrahome-run013.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify safe picker, assignment, original UI and preview
+        run: |
+          make -C Projects/EndraHome/run013 test
+          make -C Projects/EndraHome/run013 preview
+          test -s Projects/EndraHome/run013/build/home.ppm
+          test -s Projects/EndraHome/run013/build/info.ppm
+          test -s Projects/EndraHome/run013/build/picker.ppm
+          grep -Fq 'EndraHome_Apps.cfg.tns' Projects/EndraHome/run013/registry.h
+          grep -Fq 'eh11_resume_home(&ui)' Projects/EndraHome/run013/main.c
+          ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run013/platform.c Projects/EndraHome/run013/main.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run013_Previews
+          path: Projects/EndraHome/run013/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native Ndless app picker build
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run013
+      - name: Validate TNS and produce checksum
+        run: |
+          cd Projects/EndraHome/run013
+          test -s EndraHome_Run013_AppPicker.tns
+          test -s EndraHome_Apps.cfg.tns
+          sha256sum EndraHome_Run013_AppPicker.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run013_AppPicker
+          path: |
+            Projects/EndraHome/run013/EndraHome_Run013_AppPicker.tns
+            Projects/EndraHome/run013/EndraHome_Apps.cfg.tns
+            Projects/EndraHome/run013/README.md
+            Projects/EndraHome/run013/SHA256SUMS.txt
+          if-no-files-found: error
