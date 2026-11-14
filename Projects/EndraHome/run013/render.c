@@ -214,16 +214,16 @@ static void item(int index,int chosen){
  /* Quiet cyan dot: shortcut is configured; gray dot: not configured. */
  rect(x+16,209,4,2,ready(index)?P(80,234,202):P(81,94,109));
 }
-static void foot(void){
+static void foot(int mode){
  rr(11,213,298,22,9,P(34,41,59));
  border(12,214,296,20,8,P(46,66,88),P(33,39,56));
  border(52,217,36,15,5,P(65,201,248),P(20,45,62));
  small(57,222,"Enter",P(111,221,248),5);
- text(92,221,"Launch",white,1,6);
+ text(92,221,mode==1?"Assign":mode==2?"Back":"Launch",white,1,6);
  rect(164,217,1,13,P(35,139,207));
  border(185,217,36,15,5,P(65,201,248),P(20,45,62));
  small(191,222,"Menu",P(111,221,248),4);
- text(226,221,"Info",white,1,4);
+ text(226,221,mode==1?"Help":"Info",white,1,4);
 }
 static void home(const EhUI7 *s){
  bg();header();title();
@@ -242,7 +242,7 @@ static void home(const EhUI7 *s){
   }
  }
  for(int i=0;i<7;i++)item(i,i==s->selected);
- foot();
+ foot(0);
 }
 static void subpage(const EhUI7 *s){
  bg();header();
@@ -273,10 +273,13 @@ static void subpage(const EhUI7 *s){
   }else{
    text(29,128,descs[s->selected],muted,1,29);
   }
-  text(29,165,"ENTER ASSIGN / MENU HELP",cyan,1,29);
-  text(29,182,"ESC BACK   HOME ENTER LAUNCH",white,1,29);
+  /* Obvious Assign button in the selected app's Menu/Info page. */
+  border(29,154,129,27,6,P(40,164,199),P(18,71,91));
+  text(42,163,"ASSIGN APP",white,1,11);
+  text(170,163,"ENTER SELECT",cyan,1,14);
+  text(29,185,"ESC BACK / MENU HELP",muted,1,27);
  }
- foot();
+ foot(s->page==EH_PAGE_DETAIL?1:2);
 }
 void eh7_render(uint16_t *frame,const EhUI7 *s,const EhRegistry *apps){
  if(!frame||!s||!apps)return;
