@@ -12,9 +12,16 @@ Hydra / collaborating AI: first read `AGENTS.md` and `handoff/HYDRA-START-HERE.m
 | **002** | Ndless `lcd_init/lcd_blit` diagnostic | **FAIL:** froze after Menu, possible exit-path failure | Do NOT use |
 | **003** | UltraGBA/gpSP-derived native input/display engine | **PASS reported:** user photo of selected ZIP icon, “Works like a champ” | Keep as known-working baseline |
 | **004** | Styled 4-icon Home, unchanged 003 platform/logic | **PASS reported:** photo on device and user says “It works” | Preserve; fails user's target *visual similarity*, not functional test |
-| **005** | User-concept-inspired 7 colorful icons, large cube brand, seven-item navigation | **PENDING device test**; GitHub Actions host tests+preview+native compile passed | New UI experiment, no app launch |
+| **005** | User-concept-inspired 7 bright icons, large cube brand, seven-item navigation | **PASS reported:** real-device photo + “It works”; tiny icon captions collide | Preserve as last user-tested 7-icon UI |
+| **006** | Corrects captions, adds a *guarded single-test-app* handoff | **PENDING device test**; host tests passed, native build tracked in CI | Keep GBA launch disabled; test 2-binary probe only |
 
-## Current experiment — Run005
+## Current experiment — Run006 (guarded handoff)
+
+[Run006 source](run006/) includes a caption fix and a **controlled test of real Ndless app launching**. Only the Tools icon can open a dedicated tiny companion app, `EndraHome_Test006.tns`, after a separate Enter-confirmation screen. All actual apps, including GBA, remain preview-only. The launcher restores the native LCD and timer before calling `nl_exec(path,0,NULL)`, the correct API for zero extra arguments; Run001 previously used incorrect arguments as well as SDL. **The test is experimental and not yet validated on the calculator.** Transfer *both* binaries together and follow [the test sequence](run006/README.md) beginning with the companion app by itself.
+
+The hardware platform and touchpad input are compiled unchanged from Run003; the seven-way navigation is compiled unchanged from Run005. No ROMs, saved data, hooks, or Ndless configuration files are touched.
+
+## Previously tested — Run005
 
 [Run005 source](run005/) and [Run005 CI](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872) (successful build, **not** a physical calculator test). `EndraHome_Run005_PreviewMatch.tns` is uploaded as the Actions artifact.
 

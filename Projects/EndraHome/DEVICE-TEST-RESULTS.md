@@ -50,3 +50,15 @@ Only reintroduce SDL and then launcher execution in **separate subsequent builds
 - GitHub Actions run [43599465872](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43599465872) **passed** host 7-item navigation tests, four preview images and Ndless native .tns compilation.
 - **Physical calculator test: NOT YET REPORTED.** Seven cards are preview-only; do not claim they launch apps. The status pictogram is decorative.
 - Keep working Run003/Run004. First test Run005's immediate ESC return, then other navigation controls; stop on any freeze.
+
+## Run005 — actual calculator report (2026-11-14)
+
+User supplied a new photo of EndraHome Run005 displayed on the TI-Nspire CX II CAS with the cube logo and all seven icons; user explicitly said **“It works build the next one.”** This validates physical home-screen rendering at minimum, and user-reported operation. It is not direct evidence of every menu/exit edge case. The photo shows that long icon captions run into neighboring captions, which Run006 attempts to correct. No actual app launch was possible in Run005.
+
+## Run006 — initial controlled launch probe (2026-11-14)
+
+- New `run006/` source builds a small independent `EndraHome_Test006.tns` and gated `EndraHome_Run006_LaunchProbe.tns`.
+- GBA-style native platform from Run003 and Run005 navigation core remain unchanged.
+- Tools > Enter (details) > Enter (confirm) > Enter (test) is the only path that calls `nl_exec`. Before launching, the launcher restores OS video/timer; it passes zero additional arguments. No GBA or other real apps are launched.
+- Tiny caption readability fix: split Endra/GBA, Endra/ZIP and Endra/Cmd labels into two lines.
+- Host state tests and preview screenshots are tracked in workflow `endrahome-launch006.yml`. **Calculator test not yet reported.** First test companion directly, then launcher ESC, then navigation, then confirm launch. Stop at any freeze.
