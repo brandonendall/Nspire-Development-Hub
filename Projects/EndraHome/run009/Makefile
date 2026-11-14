@@ -28,11 +28,11 @@ build/platform.o: ../gba-ui/platform.c ../gba-ui/platform.h | build
 build/$(APP).elf: $(OBJS)
 	$(LD) -marm $^ -o $@ -lm
 $(APP).tns: build/$(APP).elf
-	$(GENZEHN) --version 12 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome UI 008" --input $< --output $@
+	$(GENZEHN) --version 12 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Fast 009" --input $< --output $@
 build/test_caption: caption.c caption.h test_caption.c | build
 	$(HOST_CC) -std=c11 -Wall -Wextra -Werror caption.c test_caption.c -o $@
 build/test_registry: registry.c ../run007/ui.c ../run005/logic7.c test.c | build
-	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -I../run007 -I../run005 -I../gba-ui registry.c ../run007/ui.c ../run005/logic7.c ../run007/test.c -o $@
+	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -I../run007 -I../run005 -I../gba-ui registry.c ../run007/ui.c ../run005/logic7.c test.c -o $@
 test: build/test_caption build/test_registry
 	./build/test_caption
 	./build/test_registry

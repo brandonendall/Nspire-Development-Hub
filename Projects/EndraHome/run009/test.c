@@ -23,7 +23,7 @@ int main(void){
  assert(!apps.slots[4].path[0]);
  assert(eh7_registry_parse(&apps,"8=X|/documents/Apps/a.tns")==-1);
  char cfg[300];
- assert(eh7_config_path(cfg,sizeof(cfg),"/documents/Endra/EndraHome_Run007_Universal.tns"));
+ assert(eh7_config_path(cfg,sizeof(cfg),"/documents/Endra/EndraHome_Run009_FastHandoff.tns"));
  assert(!strcmp(cfg,"/documents/Endra/EndraHome_Apps009.cfg.tns"));
  assert(!eh7_config_path(cfg,10,"/documents/Endra/Start.tns"));
  EhUniversalUI ui;eh7_ui_init(&ui,&apps);

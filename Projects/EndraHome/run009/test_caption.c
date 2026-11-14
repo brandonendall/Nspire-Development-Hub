@@ -12,6 +12,6 @@ int main(void){
  eh8_caption("ReallyLongApplicationName",a,b);assert(strlen(a)<=6&&strlen(b)<=6&&b[5]=='.');
  eh8_caption("My_Photos",a,b);assert(!strcmp(a,"My")&&!strcmp(b,"Photos"));
  eh8_caption("",a,b);assert(!strcmp(a,"App"));
- puts("Run008 caption layout tests passed");
+ puts("Run009 caption layout tests passed");
  return 0;
 }
