@@ -1,32 +1,19 @@
-# EndraHome - Run001
+# EndraHome — development status
 
-A native, dark-themed SDL home launcher for TI-Nspire CX II CAS and Ndless.
-This is a standalone program, not an operating system replacement.
+**WARNING — Run001 is NOT safe for further calculator testing.**
+On November 14, 2026, the TI-Nspire CX II CAS repeatedly froze while Run001 was active: once on its shortcut settings screen, and once immediately after attempting to launch a GBA app through it. A hardware reset was required each time. **Do not relaunch Run001** even though its GitHub Actions compilation and host tests passed.
 
-Run001 has four dock shortcuts: EndraGBA, Files, ZIP and Apps.
-Left/Right or Up/Down selects, Enter or touchpad click launches,
-Menu shows configuration help, Esc exits.
+See [device test results](DEVICE-TEST-RESULTS.md) for observed behavior and open hypotheses.
 
-Every icon starts disabled. To use the dock, copy shortcuts.example.cfg.tns
-to /documents/EndraHome/shortcuts.cfg.tns on your calculator.
-Edit that text file on your phone to set each actual .tns executable path.
+## Recommended next build: Run002 Safe diagnostic
 
-Example (replace these with real locations before trying):
-0=EndraGBA|/documents/EndraGBA/EndraGBA.tns
-1=Files|/documents/UltraCommander/UltraCommanderNX_Run001.tns
-2=ZIP|/documents/UltraZip/UltraZIP_003.tns
-3=Apps|
+The new separate diagnostic build is at [recovery/](recovery/). It uses Ndless native framebuffer drawing (no SDL), provides arrows/Menu/ESC input tests, and **does not launch any applications** or access files. It exits automatically after approximately 30 seconds if its loop remains responsive; auto-exit is not a hardware watchdog.
 
-The launcher accepts only explicit absolute paths inside /documents,
-rejects dot-dot traversal, and does not scan folders or modify any
-system configuration. It does not install hooks or run in the background.
+GitHub Actions workflow: `.github/workflows/endrahome-safe002.yml`.
+Binary artifact: `EndraHome_Run002_Safe.tns`.
 
-Build with make in an Ndless SDK environment or run:
-bash toolchain/build.sh Projects/EndraHome
-The executable is EndraHome_Run001.tns.
-Host parser tests: make test.
+## Original Run001 prototype (archived for diagnosis)
 
-CAUTION: A GitHub Actions build is not the same as a successful physical
-calculator test. First test the screen and Esc exit, then launch ONE known
-working Ndless app and confirm it returns without locking the calculator.
-OS 6.4.0.74 and Ndless compatibility must be verified on the device.
+Run001 attempted a 320x240 SDL/nSDL home screen with four configurable icons: EndraGBA, Files, ZIP and Apps. It used `nl_exec` to launch selected apps from `/documents`, and used direct Ndless keyboard polling inside an SDL-based UI.
+
+Its source and CI are retained for diagnosis **but it is not approved for use on the physical calculator** until the root cause has been isolated and fixed. Do not configure or install the Run001 launcher again.
