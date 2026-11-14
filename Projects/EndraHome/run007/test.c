@@ -1,47 +1,61 @@
+#include "registry.h"
 #include "ui.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 int main(void){
- EhUI7Launch s;eh7launch_init(&s);
- /* Test Tools launch and cancel */
- for(int i=0;i<5;i++)eh7launch_handle(&s,EH_KEY_RIGHT);
- assert(s.page.selected==EH7_TOOLS);
- eh7launch_handle(&s,EH_KEY_ENTER);
- assert(s.page.page==EH_PAGE_DETAIL);
- eh7launch_handle(&s,EH_KEY_ENTER);
- assert(s.confirm_target==EH7_TOOLS&&!s.request_target);
- eh7launch_handle(&s,EH_KEY_ESC);assert(!s.confirm_target);
- eh7launch_handle(&s,EH_KEY_ENTER);
- eh7launch_handle(&s,EH_KEY_ENTER);
- assert(s.request_target==EH7_TOOLS);
- assert(!eh7launch_handle(&s,EH_KEY_ENTER));
- /* Test ZIP launch and double-confirm */
- EhUI7Launch z;eh7launch_init(&z);
- eh7launch_handle(&z,EH_KEY_RIGHT);
- eh7launch_handle(&z,EH_KEY_ENTER);
- eh7launch_handle(&z,EH_KEY_ENTER);
- assert(z.confirm_target==EH7_ZIP && !z.request_target);
- eh7launch_handle(&z,EH_KEY_MENU);assert(!z.confirm_target);
- eh7launch_handle(&z,EH_KEY_ENTER);
- eh7launch_handle(&z,EH_KEY_ENTER);
- assert(z.request_target==EH7_ZIP);
- /* GBA and other tiles have no launch path */
- EhUI7Launch g;eh7launch_init(&g);
- eh7launch_handle(&g,EH_KEY_ENTER);
- eh7launch_handle(&g,EH_KEY_ENTER);
- assert(g.page.page==EH_PAGE_ABOUT && !g.request_target);
- /* Confirm path is /documents, relative to this launcher, not supplied by UI */
- char p[512];
- assert(eh7launch_sibling(p,sizeof(p),"/documents/EndraHome/Run007.tns",EH7_ZIP));
- assert(!strcmp(p,"/documents/EndraHome/EndraHome_ZIP007.tns"));
- assert(eh7launch_sibling(p,sizeof(p),"/documents/EndraHome/Run007.tns",EH7_TOOLS));
- assert(!strcmp(p,"/documents/EndraHome/EndraHome_Test006.tns"));
- assert(!eh7launch_sibling(p,sizeof(p),"/documents/../z.tns",EH7_ZIP));
- assert(!eh7launch_sibling(p,sizeof(p),"/root/Run007.tns",EH7_ZIP));
- assert(!eh7launch_sibling(p,sizeof(p),"/documents/Run007.txt",EH7_ZIP));
- assert(!eh7launch_sibling(p,10,"/documents/a.tns",EH7_ZIP));
- assert(!eh7launch_sibling(p,sizeof(p),"/documents/g.tns",0));
- puts("Run007 safe one-real-app gate tests passed");
+ EhRegistry apps;eh7_registry_init(&apps);
+ assert(!strcmp(apps.slots[0].label,"EndraGBA"));
+ assert(!apps.slots[0].path[0]);
+ assert(eh7_valid_path("/documents/Emulators/UltraGBA_Run007.tns"));
+ assert(!eh7_valid_path("/documents/../bad.tns"));
+ assert(!eh7_valid_path("/documents//bad.tns"));
+ assert(!eh7_valid_path("/root/not.tns"));
+ assert(!eh7_valid_path("/documents/text.txt"));
+ assert(!eh7_registry_parse(&apps,"# hello\n"));
+ assert(eh7_registry_parse(&apps,"0=Game|/documents/Apps/SomeApp.tns\n")==1);
+ assert(!strcmp(apps.slots[0].label,"Game"));
+ assert(!strcmp(apps.slots[0].path,"/documents/Apps/SomeApp.tns"));
+ assert(eh7_registry_parse(&apps,"6=Faves|/documents/Nspire/faves.tns\r\n")==1);
+ assert(eh7_registry_parse(&apps,"1=ZIP|")==1);
+ assert(!apps.slots[1].path[0]);
+ assert(eh7_registry_parse(&apps,"4=X|/documents/../unsafe.tns")==-1);
+ assert(!apps.slots[4].path[0]);
+ assert(eh7_registry_parse(&apps,"8=X|/documents/Apps/a.tns")==-1);
+ char cfg[300];
+ assert(eh7_config_path(cfg,sizeof(cfg),"/documents/Endra/EndraHome_Run007_Universal.tns"));
+ assert(!strcmp(cfg,"/documents/Endra/EndraHome_Apps007.cfg.tns"));
+ assert(!eh7_config_path(cfg,10,"/documents/Endra/Start.tns"));
+ EhUniversalUI ui;eh7_ui_init(&ui,&apps);
+ /* Home Enter -> details, then Enter -> confirm, ESC cancel */
+ assert(eh7_ui_handle(&ui,EH_KEY_ENTER));
+ assert(ui.page.page==EH_PAGE_DETAIL);
+ assert(eh7_ui_handle(&ui,EH_KEY_ENTER));
+ assert(ui.confirm==1&&!ui.request);
+ assert(eh7_ui_handle(&ui,EH_KEY_ESC));
+ assert(!ui.confirm&&!ui.request);
+ assert(eh7_ui_handle(&ui,EH_KEY_ENTER));
+ assert(ui.confirm==1);
+ assert(eh7_ui_handle(&ui,EH_KEY_ENTER));
+ assert(ui.request==1);
+ assert(!eh7_ui_handle(&ui,EH_KEY_ENTER));
+ /* Unconfigured slots never launch */
+ EhUniversalUI missing;eh7_ui_init(&missing,&apps);
+ eh7_ui_handle(&missing,EH_KEY_RIGHT);
+ eh7_ui_handle(&missing,EH_KEY_ENTER);
+ eh7_ui_handle(&missing,EH_KEY_ENTER);
+ assert(missing.missing&&!missing.request);
+ eh7_ui_handle(&missing,EH_KEY_ENTER);
+ assert(!missing.request&&!missing.missing);
+ /* All seven slots are available, not hard-wired by app type */
+ EhUniversalUI last;eh7_ui_init(&last,&apps);
+ for(int i=0;i<6;i++)eh7_ui_handle(&last,EH_KEY_RIGHT);
+ assert(last.page.selected==6);
+ eh7_ui_handle(&last,EH_KEY_ENTER);
+ eh7_ui_handle(&last,EH_KEY_ENTER);
+ assert(last.confirm==7);
+ eh7_ui_handle(&last,EH_KEY_ENTER);
+ assert(last.request==7);
+ puts("Run007 universal registry and launch-state tests passed");
  return 0;
 }

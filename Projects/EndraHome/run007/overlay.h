@@ -1,5 +1,6 @@
-#ifndef EH7_LAUNCH_OVERLAY_H
-#define EH7_LAUNCH_OVERLAY_H
+#ifndef EH007_OVERLAY_H
+#define EH007_OVERLAY_H
 #include <stdint.h>
-void eh7launch_dialog(uint16_t *frame,int target);
+#include "ui.h"
+void eh7_overlay(uint16_t *frame,const EhUniversalUI *s);
 #endif

@@ -1,42 +1,62 @@
-# EndraHome Run007 — first **real** application launch (ZIP only)
+# EndraHome Run007 — universal configurable Ndless app launcher (REDO)
 
-Date: 2026-11-14. **Experimental until physically tested.** User reported that every step of the prior **Run006** controlled companion launch test worked on the TI-Nspire CX II CAS. That is the first successful user report of an Ndless app handoff from EndraHome.
+**Supersedes the former ZIP-only Run007 experiment** (preserved in Git history, never approved as user-tested). EndraHome is a *home screen and generic launcher*, NOT a ZIP utility. EndraZIP is only one possible, user-configured application shortcut, exactly like EndraGBA or any other Ndless app.
 
-## Strictly limited new capability
+**Status:** Host and native build verification in GitHub Actions; physical TI-Nspire CX II CAS test **pending**. Previous Run006's tiny test program was reported working on hardware. Universal launching different apps, especially EndraGBA, is not yet verified.
 
-Run007 retains the **unaltered Run003 GBA-native video/keypad code**, the **unaltered Run005 7-icon navigation**, the **Run006 corrected two-line icon captions**, and the same confirmed exit-before-`nl_exec(path,0,NULL)` sequence.
+## What changed (and what stayed unchanged)
 
-Only two icons have launch behavior:
-- **Tools** repeats the proven test, opening the included `EndraHome_Test006.tns` after confirmation.
-- **ZIP** can open a separate preexisting, working ZIP Ndless app **but only if you place a COPY of it in the same Documents folder, renamed `EndraHome_ZIP007.tns`**. The ZIP tool is not included because user projects may have different working versions. No zip data or user documents are bundled.
+- **New:** Seven configurable app shortcuts, each with a user-editable display label and absolute `/documents/... .tns` path. All seven default to DISABLED. The launcher does not scan root or automatically discover programs.
+- **New:** Read-only `EndraHome_Apps007.cfg.tns` file placed beside `EndraHome_Run007_Universal.tns` in Documents. Simple text, easily edited on Android/Termux. No changes to Ndless configuration files or hooks.
+- **New:** Custom dynamic labels, configured/disabled status indicator, per-app detail view and confirmation before any launch. The same seven colorful icon designs are preserved.
+- **Unchanged:** Real-device working `../gba-ui/platform.c` native video/input/timer code from Run003 and `../run005/logic7.c` navigation, and Run006's proven sequence: **restore TI LCD/clock + OS screen before calling `nl_exec(path,0,NULL)`**.
+- **Unchanged:** External apps return to normal TI Documents when they exit; EndraHome is not resident in memory and does not automatically reappear. A future version can study return-to-home behavior separately.
+- **No built-in ZIP/archive/file management.** Any configured executable is a separate program, and the launcher doesn't perform its operations.
 
-All other icons, **including EndraGBA**, are information-only. ZIP launch is a new risk that requires real-device validation. User action opens the ZIP app; this launcher does not perform compression, ZIP writes, or alter any other files.
+## Files to install (both in the same folder)
 
-## Files to put on the calculator
+1. `EndraHome_Run007_Universal.tns`
+2. `EndraHome_Apps007.cfg.tns` (plain text, user edited)
 
-Keep the existing, working Run005 and Run006 binaries unchanged. In an ordinary `/documents/EndraHome/` folder, place:
-1. `EndraHome_Run007_ZIPLauncher.tns` (from this build)
-2. `EndraHome_Test006.tns` (provided for Tools regression test)
-3. Optional **copy of your known-working ZIP executable**, named exactly `EndraHome_ZIP007.tns`. Make a **copy**, not a move; don't overwrite your working ZIP program.
+The launcher finds the config next to its own executable. **If the config is missing or all slots have empty paths, nothing can launch.** You can still navigate safely.
 
-The launcher resolves both paths relative to its own `argv[0]`; it refuses non-Documents and traversal paths. A missing ZIP executable produces an error message after the launcher exits safely. It does **not** search the calculator root or change `ndless.cfg.tns`.
+### Config format
 
-## Step-by-step test
+Each line: `slot=VisibleLabel|/documents/Folder/Program.tns`, with slot 0 to 6. For example:
 
-1. Open the original ZIP app directly from the TI Documents browser to confirm that it works on its own, then exit; do not try the launcher if it fails.
-2. Open Run007; **immediately Esc** to confirm a clean exit back to Documents.
-3. Reopen Run007; test arrow navigation, Menu/Help and preview-only icons.
-4. Select **Tools → Enter (details) → Enter (confirm) → Enter (run)**. The tiny test program should show the known success message and return to Documents.
-5. Only if all prior steps pass, select **ZIP → Enter (details) → Enter (confirm) → Enter (run)**. The copied ZIP app should open. Exit the ZIP app normally and verify it returns to TI Documents, not a frozen or blank screen.
-6. If any freeze occurs, stop. Report exactly which action triggered it. Never test on irreplaceable ZIP archives; the launcher does not perform file writes itself, but the launched ZIP app might.
+```ini
+# This is just an example: use a path confirmed to exist on your own calculator.
+0=EndraGBA|
+1=EndraZIP|
+2=EndraCmd|
+3=Files|
+4=Images|
+5=Tools|/documents/EndraHome/EndraHome_Test006.tns
+6=Favorites|
+```
 
-Do not claim that this proves GBA launching works. EndraGBA may use different memory, ROM-loading, or graphics behavior. A successful ZIP app handoff will be a second incremental proof toward a future general launcher.
+Paths shown in examples are NOT assertions about your device. The user must copy the true absolute path of a working program; the launcher refuses empty/untrusted paths and only reads files under `/documents/`.
 
-## Build / verify
+The first seven icons are **shortcuts, not installed apps**. Assign each any compatible Ndless `.tns` you choose; labels are cosmetic and do not restrict executable types. No application scanning, installation or automatic label discovery is implemented in Run007.
 
-- Host logic: `make -C Projects/EndraHome/run007 test`
-- Host previews: `make -C Projects/EndraHome/run007 preview`
-- Native: `bash toolchain/build.sh Projects/EndraHome/run007`
-- Workflow: `.github/workflows/endrahome-zip007.yml`, produces both launcher and test TNS binaries plus checksum.
+## Device test sequence
 
-No SDL, filesystem traversal, system writes, hooks, clock changes or persistent app processes are introduced.
+1. **Keep Run006 installed and unchanged as the proven rollback.**
+2. Make a copy of the already-working `EndraHome_Test006.tns` companion app into a Documents folder, if needed.
+3. Put the new launcher and config together in that folder. Edit the **Tools slot (5)** to point to the actual companion app path.
+4. Open Run007 and immediately press Esc: verify correct exit to TI Documents.
+5. Launch again, navigate, Menu/help, Enter/details; verify unconfigured slots show a setup notice.
+6. Select **Tools → Enter (details) → Enter (confirm) → Enter (launch)**. Verify the tiny companion success popup appears, then exit it.
+7. **Only once that works,** configure another, independently working, low-risk Ndless program. Test it first from Documents, then from EndraHome with confirmation.
+8. Avoid testing your GBA emulator until simple, smaller programs have passed. A working test-app launch does not guarantee emulator memory/video compatibility. If any freeze recurs, stop and report the last action.
+
+Note: The seven icons are not a filesystem browser. Future releases may add an in-app shortcut editor and app discovery, but those capabilities are not claimed here.
+
+## Build/CI
+
+- `make -C Projects/EndraHome/run007 test`: host parser and UI state unit tests.
+- `make -C Projects/EndraHome/run007 preview`: four RGB565 screenshot previews.
+- `bash toolchain/build.sh Projects/EndraHome/run007`: native compiler in pinned Ndless SDK.
+- CI: `.github/workflows/endrahome-universal007.yml`; packages the single `.tns`, editable config and README.
+
+This code uses the gpSP-derived platform under the existing GPL-2.0-or-later project licensing; the bitmap font is public domain.
