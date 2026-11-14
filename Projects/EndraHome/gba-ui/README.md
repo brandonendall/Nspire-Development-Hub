@@ -35,3 +35,9 @@ Run003 reproduces the relevant concepts in its own standalone platform and navig
 This project adapts the original GPL-2.0-or-later gpSP Nspire platform design. The original code and its license are retained under `vendor/upstream-gpsp/` (notably `vendor/upstream-gpsp/libretro-gpsp/COPYING`). The adapted Run003 sources are distributed under GPL-2.0-or-later. Public-domain 8x8 font comes from `Projects/UltimateCommander/vendor/font8x8_basic.h`. No ROMs or game saves are embedded.
 
 Build with `bash toolchain/build.sh Projects/EndraHome/gba-ui`.
+
+## Device observation — November 14, 2026
+
+User supplied a photograph of Run003 on the TI-Nspire CX II CAS with the ZIP tile selected and said **"Works like a champ but boy is it ugly."** This is real-device confirmation of screen rendering and selection/navigation, but is **not** a claim that every code path and clean return to the TI OS has been separately verified. External app launch was not included in Run003.
+
+**Do not modify the original Run003 `platform.c` and `logic.c` merely to change appearance.** Run004 compiles those exact source files and adds its own renderer under `../run004/` so new visual changes can be tested independently.

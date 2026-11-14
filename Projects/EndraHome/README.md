@@ -1,19 +1,40 @@
-# EndraHome — development status
+# EndraHome — current development status
 
-**WARNING — Run001 is NOT safe for further calculator testing.**
-On November 14, 2026, the TI-Nspire CX II CAS repeatedly froze while Run001 was active: once on its shortcut settings screen, and once immediately after attempting to launch a GBA app through it. A hardware reset was required each time. **Do not relaunch Run001** even though its GitHub Actions compilation and host tests passed.
+Updated 2026-11-14. Repository: `brandonendall/Nspire-Development-Hub`. Active branch: `feature/endrahome-run001`; draft [PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10). Do not assume these sources are merged into `main`.
 
-See [device test results](DEVICE-TEST-RESULTS.md) for observed behavior and open hypotheses.
+**Hydra / other AI collaborators:** read `/AGENTS.md` and `/handoff/HYDRA-START-HERE.md` at repository root, then this file and `DEVICE-TEST-RESULTS.md`. Check the latest PR commit and Actions run before continuing.
 
-## Recommended next build: Run002 Safe diagnostic
+## Physical device test status
 
-The new separate diagnostic build is at [recovery/](recovery/). It uses Ndless native framebuffer drawing (no SDL), provides arrows/Menu/ESC input tests, and **does not launch any applications** or access files. It exits automatically after approximately 30 seconds if its loop remains responsive; auto-exit is not a hardware watchdog.
+| Build | Architecture | Real-device observation | Recommendation |
+| --- | --- | --- | --- |
+| Run001 | SDL/nSDL launcher + direct Ndless keyboard | Full calculator freeze on Settings, then another on attempted GBA launch | **FAILED. Do not use.** |
+| Run002 | Ndless lcd_init/lcd_blit UI with Menu and software countdown | User photographed Home and Menu, reported full freeze after entering Menu | **FAILED. Do not use.** |
+| **Run003** | UltraGBA/gpSP-derived native display + keypad + pure page state | User photographed home screen with ZIP tile selected and said "Works like a champ" | **Preserve this baseline.** Other exit/transition paths not independently confirmed. |
+| **Run004** | New visual renderer + **unchanged Run003 platform/input/logic** | Native compilation and host tests have passed; physical device test pending | **Experimental visual test only.** |
 
-GitHub Actions workflow: `.github/workflows/endrahome-safe002.yml`.
-Binary artifact: `EndraHome_Run002_Safe.tns`.
+## Current target: Run004 visual-only
 
-## Original Run001 prototype (archived for diagnosis)
+Source: `run004/`. Separate renderer with styled header, rich hero, rounded cards, custom RGB565 pixel icons, selection accent and polished detail/help/about views. Build uses **exact same** `gba-ui/platform.c` and `gba-ui/logic.c` as user-reported working Run003. No SDL, no file I/O, no external app launch (`nl_exec` is absent), no hooks, no settings writes, and no CPU clock modifications.
 
-Run001 attempted a 320x240 SDL/nSDL home screen with four configurable icons: EndraGBA, Files, ZIP and Apps. It used `nl_exec` to launch selected apps from `/documents`, and used direct Ndless keyboard polling inside an SDL-based UI.
+- CI: [EndraHome Run004 workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-visual004.yml)
+- Local native compile: `bash toolchain/build.sh Projects/EndraHome/run004`
+- Host preview generation: `make -C Projects/EndraHome/run004 preview` (four `.ppm` screen renders)
+- Host state tests: `make -C Projects/EndraHome/run004 test`
+- Output: `Projects/EndraHome/run004/EndraHome_Run004_Visual.tns` (in GitHub Actions artifact, not checked into source control)
 
-Its source and CI are retained for diagnosis **but it is not approved for use on the physical calculator** until the root cause has been isolated and fixed. Do not configure or install the Run001 launcher again.
+**First physical test:** keep Run003 untouched, install Run004 alongside it, verify opening and immediate Esc exit, then arrows, Enter/details, Menu/help, and exiting back to the TI documents interface. Stop if the calculator freezes. No GBA launch can happen from Run004.
+
+## Preserved diagnostic source and explanation
+
+- `src/` — original Run001 SDL experiment (failed real-device tests).
+- `recovery/` — Run002 native diagnostic (failed real-device test).
+- `gba-ui/` — Run003 GBA-inspired tested UI and platform, **baseline to preserve**.
+- `run004/` — isolated visual redesign using the Run003 platform and logic source.
+- [Architecture analysis](GBA-ARCHITECTURE-ANALYSIS.md) and [device failures/success log](DEVICE-TEST-RESULTS.md).
+
+## Next after Run004 physical confirmation
+
+Plan an independent app-launch prototype with explicit exit/restore semantics; do not copy Run001's `nl_exec` call indiscriminately. Validate launches with one disposable program before considering EndraGBA, preserve all emulator saves and use existing `ndless.cfg.tns` mappings without modifying them.
+
+This documentation is versioned with source changes; it does **not** auto-update without future commits.
