@@ -1,0 +1,58 @@
+name: EndraHome Run008 - UI readability and config status
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run008/**'
+      - 'Projects/EndraHome/run007/**'
+      - 'Projects/EndraHome/gba-ui/platform.c'
+      - '.github/workflows/endrahome-run008.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run008/**'
+      - 'Projects/EndraHome/run007/**'
+      - 'Projects/EndraHome/gba-ui/platform.c'
+      - '.github/workflows/endrahome-run008.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test label rendering and universal shortcut logic
+        run: |
+          make -C Projects/EndraHome/run008 test
+          make -C Projects/EndraHome/run008 preview
+          test -s Projects/EndraHome/run008/build/home.ppm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run008_ScreenPreviews
+          path: Projects/EndraHome/run008/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Run008 using proven GBA-native platform
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run008
+      - name: Verify native TNS and hash
+        run: |
+          cd Projects/EndraHome/run008
+          test -s EndraHome_Run008_UIPolish.tns
+          sha256sum EndraHome_Run008_UIPolish.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run008_UIPolish
+          path: |
+            Projects/EndraHome/run008/EndraHome_Run008_UIPolish.tns
+            Projects/EndraHome/run008/SHA256SUMS.txt
+            Projects/EndraHome/run008/README.md
+            Projects/EndraHome/run008/EndraHome_Apps007.cfg.tns
+          if-no-files-found: error
