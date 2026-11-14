@@ -27,12 +27,12 @@ static void leave_critical(unsigned previous) {
     restore=(curr & ~0xc0u) | (previous & 0xc0u);
     __asm__ volatile("msr cpsr_c, %0"::"r"(restore):"memory","cc");
 }
-static int admissible(void *ctx,uint32_t at,uint32_t bytes,unsigned kind) {
+static bool admissible(void *ctx,uint32_t at,uint32_t bytes,unsigned kind) {
     Reader *r=(Reader *)ctx;
     (void)kind;
     return r->valid && arm926_ram_span(at,bytes,r->table_alias,mmu_word,NULL,NULL);
 }
-static int read_checked(void *ctx,uint32_t at,uint32_t *out) {
+static bool read_checked(void *ctx,uint32_t at,uint32_t *out) {
     if(!out || !admissible(ctx,at,4u,PORTABLE_DATA))return 0;
     *out=mmu_word(at,NULL);
     return 1;
