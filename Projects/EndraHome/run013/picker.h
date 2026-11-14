@@ -3,6 +3,7 @@
 #include "registry.h"
 #include "../gba-ui/logic.h"
 #include <stddef.h>
+#include <stdint.h>
 #define EH13_PICKER_MAX 768
 #define EH13_NAME_MAX 104
 #define EH13_VIEW_ROWS 8

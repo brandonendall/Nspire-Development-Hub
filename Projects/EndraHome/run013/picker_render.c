@@ -1,6 +1,7 @@
 /* Text-only fixed-size UI on Run010 native RGB565 framebuffer. */
 #include "picker.h"
-#include "font8x8_basic.h"
+/* Font pixels are defined by render.c; avoid a duplicate global definition. */
+extern char font8x8_basic[128][8];
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>

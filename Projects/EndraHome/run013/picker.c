@@ -42,7 +42,8 @@ static int scan(Eh13Picker *p){
   if(!join(full,sizeof(full),p->dir,de->d_name))continue;
   if(stat(full,&st)!=0)continue;
   int directory=S_ISDIR(st.st_mode);
-  if(!directory&&(!S_ISREG(st.st_mode)||!is_tns(de->d_name)))continue;
+  if(!directory&&(!S_ISREG(st.st_mode)||!is_tns(de->d_name)||
+        !strcmp(de->d_name,EH7_CONFIG_FILE)))continue;
   if(n==EH13_PICKER_MAX){overflow=1;continue;}
   strcpy(list[n].name,de->d_name);
   list[n].directory=(unsigned char)directory;
