@@ -51,7 +51,7 @@ test: build/test_caption build/test_registry build/test_return build/test_picker
 	./build/test_return
 	./build/test_picker
 build/preview: render.c caption.c overlay.c picker_render.c registry.c ui.c ../run005/logic7.c preview.c | build
-	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -I../../UltimateCommander/vendor -I../gba-ui -I../run005 render.c caption.c overlay.c picker_render.c registry.c ui.c ../run005/logic7.c preview.c -o $@
+	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -g -fsanitize=address -fno-omit-frame-pointer -I../../UltimateCommander/vendor -I../gba-ui -I../run005 render.c caption.c overlay.c picker_render.c registry.c ui.c ../run005/logic7.c preview.c -o $@
 preview: build/preview
 	./build/preview
 clean:
