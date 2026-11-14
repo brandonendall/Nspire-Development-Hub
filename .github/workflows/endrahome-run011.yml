@@ -1,0 +1,58 @@
+name: EndraHome Run011 - Return to Home after child
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run011/**'
+      - '.github/workflows/endrahome-run011.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run011/**'
+      - '.github/workflows/endrahome-run011.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test safe session return and preview
+        run: |
+          make -C Projects/EndraHome/run011 test
+          make -C Projects/EndraHome/run011 preview
+          test -s Projects/EndraHome/run011/build/home.ppm
+          grep -Fq 'EndraHome_Apps.cfg.tns' Projects/EndraHome/run011/registry.h
+          grep -Fq 'eh11_resume_home(&ui)' Projects/EndraHome/run011/main.c
+          ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run011/platform.c Projects/EndraHome/run011/main.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run011_Previews
+          path: Projects/EndraHome/run011/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native Return Home program
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run011
+      - name: Verify release
+        run: |
+          cd Projects/EndraHome/run011
+          test -s EndraHome_Run011_ReturnHome.tns
+          test -s EndraHome_Apps.cfg.tns
+          sha256sum EndraHome_Run011_ReturnHome.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run011_ReturnHome
+          path: |
+            Projects/EndraHome/run011/EndraHome_Run011_ReturnHome.tns
+            Projects/EndraHome/run011/EndraHome_Apps.cfg.tns
+            Projects/EndraHome/run011/README.md
+            Projects/EndraHome/run011/SHA256SUMS.txt
+          if-no-files-found: error

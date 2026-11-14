@@ -1,0 +1,55 @@
+name: EndraHome Run004 - Visual-only redesign
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run004/**'
+      - '.github/workflows/endrahome-visual004.yml'
+      - 'Projects/EndraHome/gba-ui/**'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run004/**'
+      - '.github/workflows/endrahome-visual004.yml'
+      - 'Projects/EndraHome/gba-ui/**'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test original Run003 navigation and render previews
+        run: |
+          make -C Projects/EndraHome/run004 test
+          make -C Projects/EndraHome/run004 preview
+          test -s Projects/EndraHome/run004/build/home.ppm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run004_Previews
+          path: Projects/EndraHome/run004/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with original Run003 engine
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run004
+      - name: Check binary + checksum
+        run: |
+          test -s Projects/EndraHome/run004/EndraHome_Run004_Visual.tns
+          cd Projects/EndraHome/run004
+          sha256sum EndraHome_Run004_Visual.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run004_Visual
+          path: |
+            Projects/EndraHome/run004/EndraHome_Run004_Visual.tns
+            Projects/EndraHome/run004/SHA256SUMS.txt
+            Projects/EndraHome/run004/README.md
+          if-no-files-found: error

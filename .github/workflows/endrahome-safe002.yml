@@ -1,0 +1,46 @@
+name: EndraHome Run002 Safe - Input Recovery
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/recovery/**'
+      - '.github/workflows/endrahome-safe002.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/recovery/**'
+      - '.github/workflows/endrahome-safe002.yml'
+permissions:
+  contents: read
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify input transition state machine
+        run: make -C Projects/EndraHome/recovery test
+  calculator-build:
+    needs: host-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native framebuffer diagnostic
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/recovery
+      - name: Verify and checksum
+        run: |
+          test -s Projects/EndraHome/recovery/EndraHome_Run002_Safe.tns
+          cd Projects/EndraHome/recovery
+          sha256sum EndraHome_Run002_Safe.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run002_Safe
+          path: |
+            Projects/EndraHome/recovery/EndraHome_Run002_Safe.tns
+            Projects/EndraHome/recovery/README.md
+            Projects/EndraHome/recovery/SHA256SUMS.txt
+          if-no-files-found: error

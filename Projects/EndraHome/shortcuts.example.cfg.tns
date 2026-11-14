@@ -1,0 +1,7 @@
+# Copy into /documents/EndraHome/ on the calculator.
+# Rename this file shortcuts.cfg.tns.
+# Fill in your actual app paths; empty paths do nothing.
+0=EndraGBA|
+1=Files|
+2=ZIP|
+3=Apps|

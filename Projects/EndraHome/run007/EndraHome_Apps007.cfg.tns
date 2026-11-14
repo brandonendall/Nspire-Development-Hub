@@ -1,0 +1,14 @@
+# EndraHome Run007: editable shortcuts. ONE per line, 0-6.
+# IMPORTANT: paths are examples until YOU fill them in.
+# Format: slot=DisplayName|/documents/path/to/YourProgram.tns
+# All seven app slots are DISABLED until you set their absolute .tns paths.
+# These names are only labels; no app or ZIP functionality is built in.
+0=EndraGBA|
+1=EndraZIP|
+2=EndraCmd|
+3=Files|
+4=Images|
+5=Tools|
+6=Favorites|
+# Example: 5=Tools|/documents/EndraHome/EndraHome_Test006.tns
+# Place this file BESIDE EndraHome_Run007_Universal.tns.

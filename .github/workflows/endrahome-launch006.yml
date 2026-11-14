@@ -1,0 +1,55 @@
+name: EndraHome Run006 - Controlled launch probe
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run006/**'
+      - '.github/workflows/endrahome-launch006.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run006/**'
+      - '.github/workflows/endrahome-launch006.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host state/path tests and screenshots
+        run: |
+          make -C Projects/EndraHome/run006 test
+          make -C Projects/EndraHome/run006 preview
+          test -s Projects/EndraHome/run006/build/confirm.ppm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run006_Previews
+          path: Projects/EndraHome/run006/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Run006 launcher and tiny companion executable
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run006
+      - name: Verify two TNS files
+        run: |
+          cd Projects/EndraHome/run006
+          test -s EndraHome_Run006_LaunchProbe.tns
+          test -s EndraHome_Test006.tns
+          sha256sum EndraHome_Run006_LaunchProbe.tns EndraHome_Test006.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run006_ProbeAndTarget
+          path: |
+            Projects/EndraHome/run006/EndraHome_Run006_LaunchProbe.tns
+            Projects/EndraHome/run006/EndraHome_Test006.tns
+            Projects/EndraHome/run006/SHA256SUMS.txt
+            Projects/EndraHome/run006/README.md
+          if-no-files-found: error
