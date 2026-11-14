@@ -40,6 +40,10 @@ Links:
 
 **Run008 — UI clarity and config diagnostic build (2026-11-14):** User photographed the Run007 universal Home but **did not report testing any configured application launch**. Run008 is an isolated UI/readability improvement: the previously overlapped dock labels become compact GBA / ZIP / Cmd / Files / Images / Tools / Favs; a new banner explains `CONFIG FILE MISSING`, `CHECK CONFIG FILE`, or `N / 7 READY`. Menu displays the actual `EndraHome_Apps007.cfg.tns` filename, which **remains shared between Runs 007 and 008**. Underlying Run003 `gba-ui/platform.c`, Run005 `logic7.c` and Run007 `registry.c` / `ui.c` / `overlay.c` are compiled unmodified. App launch/return order remains the same as Run006/007. New sources are in `Projects/EndraHome/run008/`; [CI workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-run008.yml). [Run008 CI 43606891909](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43606891909) passed host tests, previews and native .tns compilation. Physical hardware test pending, and **universal app launch still unverified**.
 
+**Run008 — real-device validated tiny-app launch and latency (2026-11-14):** New user photographs show the Tools shortcut configured and marked READY, the launch confirmation, and `EndraHome_Test006.tns` reporting SUCCESS over the TI Documents browser. The user **timed exactly 10.04 seconds from final Enter on the confirmation dialog to the target appearing**. Mark Run008 **PASS** for this one tiny Ndless program with a major performance issue. It does *not* verify launching UltraGBA, ZIP, or other apps. The observed latency is NOT explained by any measured root cause yet.
+
+**Run009 — new experimental performance compare and config-file release policy (2026-11-14):** `Projects/EndraHome/run009/` source and native build passed [GitHub Actions run 43611250479](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43611250479). Run009 loads **only** `EndraHome_Apps009.cfg.tns` (must be next to `EndraHome_Run009_FastHandoff.tns`). Future Run`NNN` builds must similarly expect `EndraHome_AppsNNN.cfg.tns`; user wants to manually rename/copy on device, so **do not auto-edit existing config**. Underlying Run003 native display + Run005 input and Run007 seven-slot UI remain intact. Run009 removes the redundant target `fopen/fclose` check and explicit `msleep(180)`, but **preserves** LCD/timer/OS restoration *before* `nl_exec(path,0,NULL)`. **Device test pending.** Measure the same final-Enter-to-success interval against **10.04s baseline**, and separately measure opening the test app directly from TI Documents. See [launch performance ledger](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/LAUNCH-PERFORMANCE.md).
+
 ## Architecture — why Run003 matters
 
 - Reference emulator frontend: `vendor/upstream-gpsp/nspire_input.c`, `nspire_keys.c`, `nspire_video_ui.c`, `nspire/nspire.c` and `gui.c`.
@@ -51,11 +55,11 @@ Links:
 
 ## What to do next
 
-1. Keep original user-tested Run006 and other known-working programs unchanged; do not touch UltraGBA ROM/saves.
-2. Install Run008 along with `EndraHome_Apps007.cfg.tns` in the same TI Documents folder. Run008 **reuses Run007's config filename**. Keep the binary under its own name.
-3. Verify Run008 ESC exit, all seven readable labels, Menu help, and clear status reporting for missing/empty/configured paths. At this point there is only proof of UI.
-4. Configure one slot to the real path of the small `EndraHome_Test006.tns` (Run006 known working), then test the full confirmation/launch/return sequence. If that works, test one other small Ndless program, never everything at once.
-5. Log outcomes with the exact affected build; no GBA or hardware-level success claim without explicit user confirmation. No config writes, hooks or OS replacement.
+1. Keep Run006 and Run008 installed as the currently device-confirmed tiny-app launch paths. Preserve all GBA ROMs/saves and application data.
+2. **Run009 expects `EndraHome_Apps009.cfg.tns` exclusively.** Copy/rename the already edited 007 config to 009 beside Run009's binary. Do not overwrite 007: Run008 still uses it.
+3. Test Run009 opening and immediate ESC exit, then verify `1 / 7 READY` and Menu shows Apps009. The only initially configured target should be the known-working `EndraHome_Test006.tns`.
+4. Time **final Enter confirmation → success popup**, comparing Run009 to **Run008 10.04 s**; separately time direct opening the target from TI Documents to isolate Ndless/OS startup overhead.
+5. Update the physical device log with new measurements; do not claim speedup or general app compatibility without the result. Never bypass known-safe display restoration, change Ndless hooks/config, or alter system-root files to chase speed.
 
 
 ## How Hydra can use this handoff
