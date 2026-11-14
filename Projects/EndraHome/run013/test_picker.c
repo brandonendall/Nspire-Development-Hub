@@ -11,7 +11,7 @@ static void write_file(const char *path,const char *content){
  assert(fputs(content,f)>=0);assert(!fclose(f));
 }
 int main(void){
- char folder[256],sub[256],file[256],cfg[256];
+ char folder[128],sub[160],file[192],cfg[192];
  snprintf(folder,sizeof(folder),"/tmp/eh013_%ld",(long)getpid());
  snprintf(sub,sizeof(sub),"%s/Apps",folder);
  snprintf(file,sizeof(file),"%s/Example.tns",sub);
@@ -19,7 +19,7 @@ int main(void){
  assert(!mkdir(folder,0700));
  assert(!mkdir(sub,0700));
  write_file(file,"test dummy bytes");
- char other[256];
+ char other[192];
  snprintf(other,sizeof(other),"%s/not-an-app.txt",folder);
  write_file(other,"not an application");
  Eh13Picker p;
