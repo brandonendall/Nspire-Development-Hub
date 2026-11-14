@@ -15,7 +15,8 @@ This file is for Hydra and any AI collaborator inspecting this repository.
 - Run001 and Run002 **hard-froze** on physical calculator; do NOT recommend running them.
 - Run003, Run004 and Run005: user shared actual-device photographs and reported the home interfaces working. No real app launches were possible in these builds.
 - Run005 seven-icon UI had overlapping captions on the small screen; fixed in Run006.
-- Run006: `Projects/EndraHome/run006/` guarded **Tools-only companion launch probe**. Host tests and native CI build passed ([run 43601629126](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43601629126)), but **not yet user-tested on hardware**. Only test program, no GBA. Direct-test tiny companion first, then launcher Esc, then optional Tools probe.
+- Run006: `Projects/EndraHome/run006/` limited **Tools companion launch probe**. Host+native CI passed, and user reported **“Everything works”** after the prescribed Run006 tests. Treat as user-reported success for that exact tiny program, not proof that arbitrary Ndless/GBA apps launch.
+- Run007: `Projects/EndraHome/run007/` controlled **ZIP app only** test (and Tools regression), built successfully in [workflow run 43603146050](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43603146050). Zip target is deliberately NOT bundled; user must copy a separately verified ZIP app into the launcher's Documents folder as `EndraHome_ZIP007.tns`. **Not physically tested**; do not state that real ZIP app launching works yet. EndraGBA icon is still disabled.
 - See the detailed [handoff](handoff/HYDRA-START-HERE.md) for exact test evidence, procedure and preservation requirements.
 
 ## Engineering guardrails
