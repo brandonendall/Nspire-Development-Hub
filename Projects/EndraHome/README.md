@@ -14,7 +14,8 @@ Repo: `brandonendall/Nspire-Development-Hub`. **Active code branch:** `feature/e
 | Run006 | **User-reported working** | Corrected captions; Tools icon launched the standalone tiny companion test app after confirmation. |
 | Run007 ZIP-only idea | **CANCELLED** | Was compiled but **not user-tested**. Superseded by the user-requested universal design. |
 | **Run007 UNIVERSAL REDO** | **CI verified; device test pending** | Seven configurable app targets; **none** preassigned. No special ZIP behavior. |
-| **Run008 UI polish** | **CI verified; device test pending** | Cleaner seven-icon labels and visible config status; same Run007 config/launch architecture. |
+| **Run008 UI polish** | **DEVICE PASS for tiny Tools app:** photos show configured Tools, confirmation screen, and success popup. Measured **10.04 s** from final Enter to target opening. | General GBA/large app compatibility not yet tested. |
+| **Run009 Fast Handoff** | **CI verification and device test pending** | Expects exactly `EndraHome_Apps009.cfg.tns`, skips redundant target pre-open and 180-ms sleep; compare timed launch to 10.04 s baseline. |
 
 ## The actual Run007: configurable launcher
 
@@ -55,10 +56,20 @@ Record source version, CI outcome and separate **physical** device result for ev
 
 ## Run008 — readable labels and visible config status (2026-11-14)
 
-**New source:** [run008/](run008/). [Passing CI run 43606891909](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43606891909) includes host tests for the caption layout and original seven-slot configuration/state tests, 4 full-screen previews, and a native Ndless `.tns` build with SHA256 verification. **Physical device testing is pending.**
+**New source:** [run008/](run008/). [Passing CI run 43606891909](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43606891909) includes host tests for the caption layout and original seven-slot configuration/state tests, 4 full-screen previews, and a native Ndless `.tns` build with SHA256 verification. **User-provided photographs now confirm that Run008 correctly displays Tools as configured, shows the launch confirmation, and successfully starts the Run006 companion app. Measured final-confirmation-to-app interval: 10.04 seconds.** This does not establish that arbitrary Ndless applications (particularly the emulator) will work.
 
 The user's Run007 calculator photo showed successful UI rendering, but labels still clipped/overlapped and all seven icons showed unconfigured gray dots; the user has not yet explicitly confirmed that a config file loaded or any Run007 app handoff worked. Run008 is a conservative improvement that shortens default labels to GBA, ZIP, Cmd, Files, Images, Tools, Favs, while preserving full names on detail pages. It also shows `CONFIG FILE MISSING`, `CHECK CONFIG FILE`, or `N / 7 READY` directly on Home; Menu explains configuration status.
 
 **Important:** Run008 deliberately reads `EndraHome_Apps007.cfg.tns`, the same config filename and path semantics as Run007. The user should put that file alongside `EndraHome_Run008_UIPolish.tns` and edit a single slot (preferably the already-working Run006 tiny companion program) to test the universal launcher. All seven slots default disabled. This is NOT app autodiscovery or built-in ZIP functionality. The Run003 native input/video, Run005 seven-way logic, Run007 registry/parser, confirmation overlay and `nl_exec` sequence are compiled unchanged; only Run008 renderer/captions and executable title are new. **Test app launch separately; no GBA/universal-launch success claim until user verifies.**
 
 See [run008/README.md](run008/README.md) for installation and safe test order. Preserve Run003–Run007 binaries and any user save files.
+
+## Run009 — current speed experiment & required release numbering
+
+[Run009 setup](run009/README.md) and [CI workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-run009.yml). The user timed **10.04 seconds** from final Enter confirmation in Run008 until the tiny test program actually appeared. Run008 therefore has a **successful real device test for this one target, with unacceptable launch latency**. The cause of the bulk of that delay remains unknown.
+
+**Strict naming policy, starting Run009:** EndraHome Run`NNN` must load only `EndraHome_AppsNNN.cfg.tns`. Thus Run009 requires `EndraHome_Apps009.cfg.tns`, not 007 or 008. On the calculator, the user will copy/rename their existing edited 007 config to 009. Paths and labels inside remain unchanged. The program and its Menu help derive the same suffix from `EH7_CONFIG_FILE`, backed by a test assertion. Keep earlier versioned files installed so older builds still work independently.
+
+**Run009 launch change:** after the tested LCD/timer/OS restore, no more redundant `fopen/fclose` of the target and no extra 180-ms pause before `nl_exec(path,0,NULL)`. Loader handles missing targets and errors. Keep this as a **measured experiment only**; removing 180 ms cannot by itself account for the observed 10.04 seconds. Native/device compatibility must still be tested.
+
+**Next test:** run same tiny program from Run009 and time *final Enter → success popup*, then compare to the 10.04-second Run008 measurement. Also time direct launch of the program in TI Documents: this helps estimate how much delay comes from the app loader rather than EndraHome itself. Stop immediately after a freeze, preserving working Run006/Run008.

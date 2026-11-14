@@ -85,3 +85,14 @@ A compiled ZIP-target-only Run007 was proposed but the user explicitly rejected 
 ## Run008 — readability + setup diagnostics (2026-11-14)
 
 The user showed a Run007 Universal home photo: rendering confirmed, no explicit device test of app launching yet. Long dock captions were still crowded. Run008 retains the Run003 GBA-native input+LCD layer, Run005 navigation and Run007 universal config/launch code unchanged, but abbreviates default captions and adds home/menu configuration status. It uses the SAME `EndraHome_Apps007.cfg.tns` file as Run007. [GitHub Actions run 43606891909](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/43606891909) passed host and native verification. **Run008 physical device test still pending.** Initial test should be immediate ESC + labels/status, then only the known-working Run006 tiny program as configured shortcut. Do not assert real GBA/other app launching works.
+
+## Run008 — real device successful test + timing (2026-11-14)
+
+The user supplied photographs showing (1) EndraHome Run008's Tools detail panel reporting “Shortcut configured” and “READY – ENTER TO LAUNCH,” (2) its “LAUNCH APPLICATION?” confirmation screen, and (3) the **EndraHome Test 006 success message** displayed over the regular TI Documents browser. **This confirms the universal config-enabled launch path for the tiny Run006 companion program on physical hardware.** User then measured **exactly 10.04 seconds between the final confirmation Enter and the test application's appearance.** This is a significant usability performance issue, not a failure to launch. Do not claim any other app or GBA is safe without its own test.
+
+## Run009 — new experimental timing comparison (2026-11-14)
+
+- Source: `run009/`. A version-matched filename is now mandatory: `EndraHome_Apps009.cfg.tns` next to `EndraHome_Run009_FastHandoff.tns`. No fallback to 007/008. New builds should always increment the three-digit suffix in the configuration filename.
+- Removes redundant preflight target open/close and the explicit 180-ms pause before `nl_exec`, **without altering** the proven native LCD/timer/OS restore-before-launch sequence or keypad/platform module.
+- Expected performance savings are uncertain and **cannot be assumed to explain 10.04 seconds**. Compare Run009 final Enter-to-popup time against the Run008 10.04-second baseline and, ideally, direct TI Documents launch time.
+- Physical test pending. Preserve working old builds and record exact result.
