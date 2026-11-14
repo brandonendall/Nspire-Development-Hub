@@ -1,0 +1,38 @@
+name: EndraDiagnostics Run005 - Battery Scan Completion
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run005/**'
+      - '.github/workflows/endradiagnostics-run005.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraDiagnostics/run005/**'
+      - '.github/workflows/endradiagnostics-run005.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native Ndless using pinned SDK
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run005 clean all'
+      - name: Verify executable SHA-256
+        run: |
+          test -s Projects/EndraDiagnostics/run005/EndraDiagnostics_Run005.tns
+          sha256sum Projects/EndraDiagnostics/run005/EndraDiagnostics_Run005.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run005_tns
+          path: Projects/EndraDiagnostics/run005/EndraDiagnostics_Run005.tns
+          if-no-files-found: error
