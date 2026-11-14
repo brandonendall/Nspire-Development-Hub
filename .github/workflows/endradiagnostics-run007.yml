@@ -1,0 +1,34 @@
+name: EndraDiagnostics Run007 - Exit A-B
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run007/**'
+      - '.github/workflows/endradiagnostics-run007.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Run007 native
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run007 clean all'
+      - name: Verify
+        run: |
+          test -s Projects/EndraDiagnostics/run007/EndraDiagnostics_Run007.tns
+          sha256sum Projects/EndraDiagnostics/run007/EndraDiagnostics_Run007.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run007_tns
+          path: Projects/EndraDiagnostics/run007/EndraDiagnostics_Run007.tns
+          if-no-files-found: error
