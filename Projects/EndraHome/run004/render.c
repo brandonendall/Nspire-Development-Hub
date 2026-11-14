@@ -32,7 +32,6 @@ static void rect(int x,int y,int w,int h,pixel c){
     for(int xx=x;xx<x+w;xx++)row[xx]=c;
   }
 }
-static void dot(int x,int y,pixel c){if(x>=0&&x<W&&y>=0&&y<H)screen[y*W+x]=c;}
 static void rr(int x,int y,int w,int h,int r,pixel color){
   if(r<1){rect(x,y,w,h,color);return;}
   for(int yy=y;yy<y+h;yy++){
@@ -68,7 +67,6 @@ static void label(int x,int y,const char *s,pixel col,int scale,int max){
     glyph(xx,y,(unsigned char)s[i],col,scale);
   }
 }
-static pixel dark(void){return C(11,20,34);}
 static pixel muted(void){return C(139,163,188);}
 static pixel white(void){return C(238,247,251);}
 static pixel mint(void){return C(85,238,214);}
@@ -148,10 +146,6 @@ static void footer(void){
   label(127,227,"ENTER OPEN",mint(),1,10);
   label(243,227,"MENU HELP",muted(),1,9);
 }
-static void top_text(const char *section){
-  background();brand();
-  label(15,47,section,mint(),1,24);
-}
 static void home(const EhUI *s){
   rr(12,46,296,76,12,C(19,43,61));
   rr(14,48,292,72,11,C(20,41,59));
@@ -199,7 +193,7 @@ void eh_render004(uint16_t *fb,const EhUI *state){
   if(!fb||!state)return;
   screen=fb;
   if(state->page==EH_PAGE_HOME){
-    background();brand();home(state);
+    home(state);
   }else if(state->page==EH_PAGE_HELP){
     background();brand();help();
   }else{
