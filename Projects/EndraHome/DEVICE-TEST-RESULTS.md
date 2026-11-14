@@ -120,3 +120,11 @@ User report after installing Run010: **"Android Home works great. It exits out r
 ## Run011 — Return Home attempt (2026-11-14, physical test pending)
 
 New `run011` session loop preserves Run010's no-browser-refresh LCD/timer restoration and calls the Ndless API `nl_exec(path,0,NULL)` with the native graphics platform stopped. **If** `nl_exec` returns after the child exits, Run011 clears modal/launch state and restarts the known-good LCD/UI, retaining the selected tile. If a child resets/crashes/terminates its caller, automatic return may not happen. Host tests check that the return state does not relaunch automatically and that Esc still exits. Native CI and physical test tracked separately. Test only the tiny Run006 companion first; preserve Run010 baseline and stop if any freeze.
+
+## Run011 — hardware test PASS (2026-11-14)
+
+User reports successful Run011 return-home test: **"It worked perfectly."** Test followed previous request to launch small EndraHome_Test006.tns through Tools and return to EndraHome, with the transfer verified as 28,306 bytes by Endra Push v2. This is a USER-REPORTED PHYSICAL PASS for the tiny test child, not yet for GBA or third-party apps.
+
+## Run012 — one-press launch (hardware test pending)
+
+New user-requested controls: Enter on Home launches configured app immediately, Menu opens selected app info, Menu from info shows config help; no confirmation prompt. Run011's child return and Run010's fast exit preserved. Config stays EndraHome_Apps.cfg.tns, with Run011 preserved as rollback. See run012/README.md.
