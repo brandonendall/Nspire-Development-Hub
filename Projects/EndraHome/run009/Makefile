@@ -9,9 +9,9 @@ OBJS=build/main.o build/render.o build/caption.o build/overlay.o build/registry.
 all: $(APP).tns
 build:
 	mkdir -p build
-build/main.o: main.c registry.h ../run007/ui.h | build
+build/main.o: main.c registry.h render.h ../run007/ui.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/render.o: render.c caption.h registry.h ../run007/render.h ../../UltimateCommander/vendor/font8x8_basic.h | build
+build/render.o: render.c caption.h registry.h render.h ../../UltimateCommander/vendor/font8x8_basic.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/caption.o: caption.c caption.h | build
 	$(CC) $(CFLAGS) -c $< -o $@

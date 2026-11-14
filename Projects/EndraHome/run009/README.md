@@ -46,3 +46,9 @@ Avoid interpreting a new fast-feeling confirmation dialog as evidence of faster 
 - [Workflow](https://github.com/brandonendall/Nspire-Development-Hub/actions/workflows/endrahome-run009.yml) builds, tests and publishes the `.tns` plus the matching config file.
 
 App-specific GPL-2.0-or-later obligations continue from the adapted gpSP display platform.
+
+## Correction: Run009 Help screen printed 007 (2026-11-14)
+
+The owner photographed Run009's Help screen showing `CONFIG: FILE LOADED`, then the **wrong label** `EndraHome_Apps007.cfg.tns`, and `Beside EndraHome Run009`. Source review identified an include-order bug: `run009/render.c` included the Run007 `render.h` before its own versioned registry header, so the shared header guard caused the **renderer** to inherit the **Apps007** macro even though the **Run009 loader in `main.c` uses Apps009**. The screen label was misleading; it does not establish that Run009 opened an Apps007 file.
+
+**Fix:** add a local `run009/render.h` which includes the local 009 registry first; point `main.c` and `preview.c` to it, and have CI verify the actual compiled preview **and** native ELF contain `EndraHome_Apps009.cfg.tns` but not `EndraHome_Apps007.cfg.tns`. This is a non-invasive display/build fix; the native key/display platform and launch lifecycle are unchanged. This revision still expects `EndraHome_Apps009.cfg.tns` alongside the launcher. The physical calculator screenshot was from the earlier revision; the corrected rebuild still needs user test.

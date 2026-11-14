@@ -100,3 +100,7 @@ The user supplied photographs showing (1) EndraHome Run008's Tools detail panel 
 ## Run009 — stopwatch photograph (2026-11-14)
 
 The user submitted a Timex CHRONO photo showing **9.94 seconds** after the Run009 speed-test request. This is consistent with a Run009 final-Enter-to-test-popup interval, but the stopwatch image alone does not prove which build was running or the exact start/stop events. Tentative comparison to Run008's 10.04-second interval: **0.10 seconds (about 1.0%) lower**. App-loader speed remains effectively unresolved; no proof of a substantial optimization. Next: time launching the same tiny test program directly from TI Documents, optionally repeat timing for Run008 and Run009.
+
+## Run009 — mislabeled help screen diagnosed (2026-11-14)
+
+Photo of Run009 Help shows `CONFIG: FILE LOADED`, **`EndraHome_Apps007.cfg.tns`**, and `Beside EndraHome Run009`. The source loader is actually built with the versioned **Apps009** macro; but the renderer inherited Run007's old header before the 009 header could define the correct name, due to a common header guard. This explains the mixed text. The Run009 code was patched to use its own `run009/render.h` with a version-matched header, plus compiled-artifact CI checks for 009 present and 007 absent. Do not tell the user that this photo proves Run009 loaded the 007 config. The new binary requires physical confirmation.

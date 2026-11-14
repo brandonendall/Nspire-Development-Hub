@@ -26,6 +26,10 @@ jobs:
           make -C Projects/EndraHome/run009 test
           make -C Projects/EndraHome/run009 preview
           test -s Projects/EndraHome/run009/build/home.ppm
+          # Verify the strings compiled into the actual preview, not just
+          # source text: the old header previously leaked the 007 name.
+          strings Projects/EndraHome/run009/build/preview | grep -Fq 'EndraHome_Apps009.cfg.tns'
+          ! strings Projects/EndraHome/run009/build/preview | grep -Fq 'EndraHome_Apps007.cfg.tns'
           grep -Fq 'EndraHome_Apps009.cfg.tns' Projects/EndraHome/run009/registry.h
           ! grep -q 'EndraHome_Apps007.cfg.tns' Projects/EndraHome/run009/main.c
       - uses: actions/upload-artifact@v4
@@ -49,6 +53,8 @@ jobs:
           cd Projects/EndraHome/run009
           test -s EndraHome_Run009_FastHandoff.tns
           test -s EndraHome_Apps009.cfg.tns
+          strings build/EndraHome_Run009_FastHandoff.elf | grep -Fq 'EndraHome_Apps009.cfg.tns'
+          ! strings build/EndraHome_Run009_FastHandoff.elf | grep -Fq 'EndraHome_Apps007.cfg.tns'
           sha256sum EndraHome_Run009_FastHandoff.tns > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
