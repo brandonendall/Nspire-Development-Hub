@@ -16,6 +16,11 @@ int eh15_update_shortcut(EhRegistry *apps,int slot,const char *label,const char 
   strcpy(next.slots[slot].label,label);
  }
  if(path&&path[0]&&!eh7_valid_path(path))return reject(err);
- if(!eh14_assign_save(&next,slot,path?path:next.slots[slot].path,cfg,err))return 0;
+ /* Use an independent buffer when renaming: strcpy() in the transactional
+  * save routine must never read/write the exact same backing array. */
+ char value[EH7_PATH_CAP];
+ if(path)strcpy(value,path);
+ else strcpy(value,next.slots[slot].path);
+ if(!eh14_assign_save(&next,slot,value,cfg,err))return 0;
  *apps=next;return 1;
 }
