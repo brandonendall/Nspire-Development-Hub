@@ -1,5 +1,6 @@
 #include "overlay.h"
-#include "font8x8_basic.h"
+/* Font bytes are defined once by the renderer to avoid duplicate globals. */
+extern char font8x8_basic[128][8];
 #include <stdint.h>
 #define C(r,g,b) ((uint16_t)((((r)>>3)<<11)|(((g)>>2)<<5)|((b)>>3)))
 static void rect(uint16_t *fb,int x,int y,int w,int h,uint16_t c){
