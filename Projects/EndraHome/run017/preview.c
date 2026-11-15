@@ -3,6 +3,7 @@
 #include "overlay.h"
 #include "picker.h"
 #include "manager.h"
+#include "files.h"
 #include <stdio.h>
 #include <string.h>
 static uint16_t fb[320*240];
@@ -49,5 +50,8 @@ int main(void){
  strcpy(entries[1].name,"EndraHome_Test006.tns");entries[1].directory=0;
  p.items=entries;p.count=2;p.selected=1;
  eh13_picker_render(fb,&p,&reg);
- return save("build/picker.ppm");
+ if(save("build/picker.ppm"))return 1;
+ p.show_all=1;
+ eh13_picker_render(fb,&p,&reg);
+ return save("build/files.ppm");
 }

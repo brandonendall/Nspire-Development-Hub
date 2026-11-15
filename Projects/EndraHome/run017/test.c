@@ -73,6 +73,17 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_DOWN);
  eh7_ui_handle(&info,EH_KEY_ENTER);
  assert(info.page.page==EH_PAGE_HELP&&info.subview);
- puts("Run016 QWERTY text, backspace, Enter save, cancel, max label, fast launch passed");
+ EhUniversalUI fm;eh7_ui_init(&fm,&r);
+ for(int i=0;i<3;i++)eh7_ui_handle(&fm,EH_KEY_RIGHT);
+ assert(fm.page.selected==3);
+ assert(eh7_ui_handle(&fm,EH_KEY_ENTER));
+ assert(fm.open_files&&!fm.request&&!fm.assign_slot);
+ EhRegistry ext_apps;eh7_registry_init(&ext_apps);
+ assert(eh7_registry_parse(&ext_apps,"3=Files|/documents/OtherBrowser.tns")==1);
+ EhUniversalUI ext;eh7_ui_init(&ext,&ext_apps);
+ for(int i=0;i<3;i++)eh7_ui_handle(&ext,EH_KEY_RIGHT);
+ eh7_ui_handle(&ext,EH_KEY_ENTER);
+ assert(ext.request==4&&!ext.open_files);
+ puts("Run017 QWERTY, quick launch, built-in Files and external override passed");
  return 0;
 }

@@ -1,4 +1,4 @@
-/* EndraHome Run016: assign .tns shortcut via bounded Documents picker.
+/* EndraHome Run017: assign .tns shortcut via bounded Documents picker.
  * Run012 immediate home launch, Run011 return-home and Run010 fast shutdown
  * remain preserved. Never transfer control while LCD hardware is owned.
  */
@@ -12,14 +12,18 @@
 #include "edit.h"
 #include "manager.h"
 #include "text_input.h"
+#include "files.h"
 #include "session.h"
 #include <libndls.h>
 #include <string.h>
 #include <stdio.h>
 void __attribute__((weak)) _fini(void){}
+/* BSS, not stack: 4KiB bounded text preview */
+static Eh17Files built_files;
 static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  uint16_t *fb=eh_framebuffer();
- if(picker->active)eh13_picker_render(fb,picker,s->apps);
+ if(built_files.active)eh17_files_render(fb,&built_files,s->apps);
+ else if(picker->active)eh13_picker_render(fb,picker,s->apps);
  else{
   eh7_render(fb,&s->page,s->apps);
   if(s->page.page!=EH_PAGE_HOME||s->renaming||s->confirm_remove)
@@ -33,13 +37,13 @@ static void launch_selected(const EhUniversalUI *ui,int argc,char **argv){
  if(slot<0||slot>=EH7_SLOT_COUNT)return;
  const char *path=ui->apps->slots[slot].path;
  if(!eh7_valid_path(path)){
-  show_msgbox("EndraHome 016","Invalid path. Reassign under Menu.");return;
+  show_msgbox("EndraHome 017","Invalid path. Reassign under Menu.");return;
  }
  if(argc>0&&argv&&argv[0]&&!strcmp(path,argv[0])){
-  show_msgbox("EndraHome 016","Cannot launch EndraHome itself.");return;
+  show_msgbox("EndraHome 017","Cannot launch EndraHome itself.");return;
  }
  int result=nl_exec(path,0,NULL);
- if(result<0)show_msgbox("EndraHome 016","App failed. Check assigned path and Ndless.");
+ if(result<0)show_msgbox("EndraHome 017","App failed. Check assigned path and Ndless.");
 }
 int main(int argc,char **argv){
  EhRegistry apps;eh7_registry_init(&apps);
@@ -62,7 +66,10 @@ int main(int argc,char **argv){
   while(!ui.page.should_exit&&!ui.request){
    EhKey key=eh_platform_readkey();
    int typed=eh16_textkey(); /* read each frame; one fresh QWERTY event */
-   if(picker.active){
+   if(built_files.active){
+    int action=eh17_files_handle(&built_files,key);
+    if(action)paint(&ui,&picker);
+   }else if(picker.active){
     char chosen[EH7_PATH_CAP];
     int action=eh13_picker_handle(&picker,key,chosen,sizeof(chosen));
     if(action==2){
@@ -95,6 +102,11 @@ int main(int argc,char **argv){
      * Calling after the key handler permits Enter-to-save immediately. */
     if(ui.renaming&&typed)redraw|=eh16_ui_type(&ui,typed);
     if(redraw){
+     if(ui.open_files){
+      ui.open_files=0;
+      if(!eh17_files_open(&built_files,"/documents"))
+       strcpy(ui.notice,"CANNOT OPEN BUILT-IN FILES");
+     }
      if(ui.assign_slot){
       int slot=ui.assign_slot-1;ui.assign_slot=0;
       if(!cfg[0]){
@@ -114,7 +126,9 @@ int main(int argc,char **argv){
         ok=eh15_update_shortcut(&apps,slot,NULL,"",cfg,&diag);
       }
       if(ok){
-       strcpy(ui.notice,action==EH15_RENAME?"SHORTCUT RENAMED":"SHORTCUT UNASSIGNED");
+       if(action==EH15_RENAME)strcpy(ui.notice,"SHORTCUT RENAMED");
+       else if(slot==3)strcpy(ui.notice,"BUILT-IN FILES ENABLED");
+       else strcpy(ui.notice,"SHORTCUT UNASSIGNED");
        ui.page.page=EH_PAGE_HOME;
       }else if(!cfg[0])strcpy(ui.notice,"CONFIG PATH UNAVAILABLE");
       else snprintf(ui.notice,sizeof(ui.notice),"%s E%d",
@@ -126,6 +140,7 @@ int main(int argc,char **argv){
    if(!ui.page.should_exit&&!ui.request)eh_platform_sleep();
   }
   eh13_picker_close(&picker);
+  eh17_files_close(&built_files);
   eh_platform_stop(); /* preserve fast no-refresh LCD/timer restore */
   if(ui.page.should_exit||!ui.request)return 0;
   launch_selected(&ui,argc,argv);
