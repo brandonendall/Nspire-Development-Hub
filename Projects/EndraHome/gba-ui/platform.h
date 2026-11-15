@@ -10,4 +10,6 @@ uint16_t *eh_framebuffer(void);
 void eh_platform_flip(void);
 EhKey eh_platform_readkey(void);
 void eh_platform_sleep(void);
+/* Finger-slide delta from the most recent key scan; contact is returned. */
+int eh_platform_touch_pan(int *dx,int *dy);
 #endif
