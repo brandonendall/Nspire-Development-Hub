@@ -1,0 +1,50 @@
+name: EndraDiagnostics Run023 - Auto Diagnostics and Interactive Tabs
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run023/**'
+      - '.github/workflows/endradiagnostics-run023.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify stable display, no new OS writes, automatic baseline
+        run: |
+          set -euo pipefail
+          cmp Projects/EndraDiagnostics/run022/platform.c Projects/EndraDiagnostics/run023/platform.c
+          grep -F 'heap_check();' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'docs_scan();' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'cpu_id_checks++' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'heap_probe();' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'tach(54,76,31,(int)cpu_test_pct)' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'tach(266,76,31,(int)ram_test_pct)' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'RAM USED:N/A' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'LOAD:N/A' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'center_text(160,38,titles[tab]' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'eh_platform_stop_mode(0)' Projects/EndraDiagnostics/run023/main.c
+          grep -F 'const size_t n=4096u;' Projects/EndraDiagnostics/run023/main.c
+          ! grep -E 'if\(page==|auto_exit|MAX_STEPS|refresh_osscr\(' Projects/EndraDiagnostics/run023/main.c
+      - name: Build native Ndless Run023 TNS
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run023 clean all'
+      - name: Check artifact
+        run: |
+          test -s Projects/EndraDiagnostics/run023/EndraDiagnostics_Run023.tns
+          sha256sum Projects/EndraDiagnostics/run023/EndraDiagnostics_Run023.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run023_tns
+          path: Projects/EndraDiagnostics/run023/EndraDiagnostics_Run023.tns
+          if-no-files-found: error
