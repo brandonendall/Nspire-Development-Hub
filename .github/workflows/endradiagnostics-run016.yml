@@ -1,0 +1,43 @@
+name: EndraDiagnostics Run016 - RAM and Storage
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run016/**'
+      - '.github/workflows/endradiagnostics-run016.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check unchanged proven hardware layer and bounded reads
+        run: |
+          set -euo pipefail
+          cmp Projects/EndraDiagnostics/run015/platform.c Projects/EndraDiagnostics/run016/platform.c
+          grep -F 'eh_platform_stop_mode(0)' Projects/EndraDiagnostics/run016/main.c
+          grep -F 'const size_t n=4096u;' Projects/EndraDiagnostics/run016/main.c
+          grep -F '#define DOC_MAX_ENTRIES 384u' Projects/EndraDiagnostics/run016/main.c
+          grep -F 'doc_seek_checks<48u' Projects/EndraDiagnostics/run016/main.c
+          ! grep -E 'MAX_STEPS|auto_exit|refresh_osscr\(' Projects/EndraDiagnostics/run016/main.c
+      - name: Compile native Ndless Run016
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run016 clean all'
+      - name: Verify native executable
+        run: |
+          test -s Projects/EndraDiagnostics/run016/EndraDiagnostics_Run016.tns
+          sha256sum Projects/EndraDiagnostics/run016/EndraDiagnostics_Run016.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run016_tns
+          path: Projects/EndraDiagnostics/run016/EndraDiagnostics_Run016.tns
+          if-no-files-found: error
