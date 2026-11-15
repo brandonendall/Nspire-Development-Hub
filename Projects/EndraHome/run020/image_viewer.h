@@ -17,6 +17,7 @@ int eh18_image_open(Eh18Image *image,const char *path);
 void eh18_image_close(Eh18Image *image);
 int eh18_image_zoom(Eh18Image *image,int direction);
 int eh18_image_key(Eh18Image *image,EhKey key);
+int eh18_image_pan(Eh18Image *image,int dx,int dy);
 void eh18_image_render(uint16_t *frame,const Eh18Image *image);
 /* Ndless edge-detected zoom input: multiply or plus=in, divide or minus=out. */
 int eh18_zoomkey(void);
