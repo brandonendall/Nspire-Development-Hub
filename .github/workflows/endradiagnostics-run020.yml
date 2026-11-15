@@ -1,0 +1,44 @@
+name: EndraDiagnostics Run020 - Auto Diagnostics and Interactive Tabs
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run020/**'
+      - '.github/workflows/endradiagnostics-run020.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify stable display, no new OS writes, automatic baseline
+        run: |
+          set -euo pipefail
+          cmp Projects/EndraDiagnostics/run019/platform.c Projects/EndraDiagnostics/run020/platform.c
+          grep -F 'heap_check();' Projects/EndraDiagnostics/run020/main.c
+          grep -F 'docs_scan();' Projects/EndraDiagnostics/run020/main.c
+          grep -F 'center_text(160,38,titles[tab]' Projects/EndraDiagnostics/run020/main.c
+          grep -F 'eh_platform_stop_mode(0)' Projects/EndraDiagnostics/run020/main.c
+          grep -F 'const size_t n=4096u;' Projects/EndraDiagnostics/run020/main.c
+          ! grep -E 'if\(page==|auto_exit|MAX_STEPS|refresh_osscr\(' Projects/EndraDiagnostics/run020/main.c
+      - name: Build native Ndless Run020 TNS
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run020 clean all'
+      - name: Check artifact
+        run: |
+          test -s Projects/EndraDiagnostics/run020/EndraDiagnostics_Run020.tns
+          sha256sum Projects/EndraDiagnostics/run020/EndraDiagnostics_Run020.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run020_tns
+          path: Projects/EndraDiagnostics/run020/EndraDiagnostics_Run020.tns
+          if-no-files-found: error
