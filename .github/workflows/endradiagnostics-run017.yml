@@ -1,0 +1,46 @@
+name: EndraDiagnostics Run017 - Gauges and Honest Telemetry
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run017/**'
+      - '.github/workflows/endradiagnostics-run017.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline verification of native gauge and original shutdown code
+        run: |
+          set -euo pipefail
+          cmp Projects/EndraDiagnostics/run016/platform.c Projects/EndraDiagnostics/run017/platform.c
+          grep -F 'dial(82,80,-1,"CPU LOAD"' Projects/EndraDiagnostics/run017/main.c
+          grep -F 'dial(238,80,-1,"RAM USED"' Projects/EndraDiagnostics/run017/main.c
+          grep -F 'dial(238,164,-1,"STORAGE"' Projects/EndraDiagnostics/run017/main.c
+          grep -F 'dial(82,164,level_known()' Projects/EndraDiagnostics/run017/main.c
+          grep -F 'eh_platform_stop_mode(0)' Projects/EndraDiagnostics/run017/main.c
+          grep -F 'const size_t n=4096u;' Projects/EndraDiagnostics/run017/main.c
+          grep -F 'DOC_MAX_ENTRIES 384u' Projects/EndraDiagnostics/run017/main.c
+          ! grep -E 'MAX_STEPS|auto_exit|refresh_osscr\(|"%llu"' Projects/EndraDiagnostics/run017/main.c
+      - name: Build actual native Ndless executable
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run017 clean all'
+      - name: Verify executable output
+        run: |
+          test -s Projects/EndraDiagnostics/run017/EndraDiagnostics_Run017.tns
+          sha256sum Projects/EndraDiagnostics/run017/EndraDiagnostics_Run017.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run017_tns
+          path: Projects/EndraDiagnostics/run017/EndraDiagnostics_Run017.tns
+          if-no-files-found: error
