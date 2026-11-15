@@ -8,7 +8,8 @@ extern char font8x8_basic[128][8];
 static void box(uint16_t *f,int x,int y,int w,int h,uint16_t c){
  if(x<0){w+=x;x=0;}if(y<0){h+=y;y=0;}
  if(x>=320||y>=240||w<=0||h<=0)return;
- if(x+w>320)w=320-x;if(y+h>240)h=240-y;
+ if(x+w>320)w=320-x;
+ if(y+h>240)h=240-y;
  for(int j=y;j<y+h;j++)for(int i=x;i<x+w;i++)f[j*320+i]=c;
 }
 static void txt(uint16_t *f,int x,int y,const char *s,uint16_t c,int n){
