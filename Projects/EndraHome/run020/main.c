@@ -71,6 +71,15 @@ int main(int argc,char **argv){
     int zoom=eh18_zoomkey();
     if(built_files.screen==3&&zoom)
      action=eh18_image_zoom(&built_files.image,zoom);
+    if(built_files.screen==3){
+     int dx=0,dy=0;
+     int contact=eh_platform_touch_pan(&dx,&dy);
+     if(contact){
+      action|=eh18_image_pan(&built_files.image,dx*2,-dy*2);
+      /* Touchpad movement is not a physical arrow press. */
+      if(key==EH_KEY_UP||key==EH_KEY_DOWN||key==EH_KEY_LEFT||key==EH_KEY_RIGHT)key=EH_KEY_NONE;
+     }
+    }
     action|=eh17_files_handle(&built_files,key);
     if(action)paint(&ui,&picker);
    }else if(picker.active){
