@@ -1,0 +1,3 @@
+# Run023 — active truthful diagnostic gauges
+
+Both needles now display real **diagnostic test completion** percentages, not CPU utilization or system RAM occupancy. CPU: 10 bounded deterministic integer batches, 0–100% completion. RAM: 4 KiB owned heap test earns 50%, then 8 KiB owned heap test earns 100% if both pass. A 100% reading means tests complete, **NOT** full CPU load or RAM use. CPU utilization, MHz, system RAM used/free remain N/A. Preserves physical-tested Run022 baseline, automatic document scan, immediate first paint, tabs, and Esc/Enter exit. Hardware testing pending. No undocumented OS reads or writes.
