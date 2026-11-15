@@ -75,7 +75,7 @@ int main(int argc,char **argv){
      int dx=0,dy=0;
      int contact=eh_platform_touch_pan(&dx,&dy);
      if(contact){
-      action|=eh18_image_pan(&built_files.image,dx*2,-dy*2);
+      action|=eh18_image_pan(&built_files.image,-dx*2,dy*2);
       /* Touchpad movement is not a physical arrow press. */
       if(key==EH_KEY_UP||key==EH_KEY_DOWN||key==EH_KEY_LEFT||key==EH_KEY_RIGHT)key=EH_KEY_NONE;
      }
