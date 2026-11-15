@@ -1,3 +1,3 @@
-# EndraHome Run020 — Fullscreen Image and Pan
+# EndraHome Run020 — Fullscreen canvas, original photo aspect ratio
 
-User confirmed Run019 JPG displays and zoom works. User requests true full-screen image without title/footer and functional arrows. Viewer now renders over all 320x240 pixels and uses cover-scale on open/reset (center-cropped where aspect ratios differ). Arrow pan moves within crop or when zoomed in; pan is naturally clamped where no overflow exists. ESC returns to Files. All other Run019 features retained. Device test pending. Keep Run019 rollback.
+User clarified: no image stretching or cover crop. The photo starts fully visible, centered, preserving aspect ratio, with unused canvas black and NO title/footer bars. Zoom magnifies from fit; arrows pan once image exceeds screen dimensions. ESC returns to Files. Keep Run019 fallback. Physical test pending.
