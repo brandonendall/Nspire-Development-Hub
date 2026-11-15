@@ -1,0 +1,60 @@
+name: EndraHome Run016 - QWERTY Rename
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run016/**'
+      - '.github/workflows/endrahome-run016.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run016/**'
+      - '.github/workflows/endrahome-run016.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test QWERTY rename behavior and native previews
+        run: |
+          make -C Projects/EndraHome/run016 test
+          make -C Projects/EndraHome/run016 preview
+          for p in home manager rename settings picker; do test -s "Projects/EndraHome/run016/build/$p.ppm"; done
+          grep -Fq 'EndraHome_Apps.cfg.tns' Projects/EndraHome/run016/registry.h
+          grep -Fq 'eh16_textkey()' Projects/EndraHome/run016/main.c
+          grep -Fq 'eh16_ui_type(&ui,typed)' Projects/EndraHome/run016/main.c
+          grep -Fq 'KEY_NSPIRE_A' Projects/EndraHome/run016/text_input.c
+          ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run016/platform.c Projects/EndraHome/run016/main.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run016_Previews
+          path: Projects/EndraHome/run016/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native Run016 QWERTY Rename
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run016
+      - name: Verify signed Ndless TNS
+        run: |
+          cd Projects/EndraHome/run016
+          test -s EndraHome_Run016_QwertyRename.tns
+          test -s EndraHome_Apps.cfg.tns
+          sha256sum EndraHome_Run016_QwertyRename.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run016_QwertyRename
+          path: |
+            Projects/EndraHome/run016/EndraHome_Run016_QwertyRename.tns
+            Projects/EndraHome/run016/EndraHome_Apps.cfg.tns
+            Projects/EndraHome/run016/README.md
+            Projects/EndraHome/run016/SHA256SUMS.txt
+          if-no-files-found: error
