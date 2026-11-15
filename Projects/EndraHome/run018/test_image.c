@@ -1,4 +1,3 @@
-/* 4x4 real JPEG fixture generated with Pillow, plus malformed/oversized tests. */
 #include "image_viewer.h"
 #include <assert.h>
 #include <stdio.h>
@@ -6,46 +5,56 @@
 #include <string.h>
 #include <unistd.h>
 #include "font8x8_basic.h"
-#include "stb_image.h"
-static const unsigned char jpeg_data[]="\xff\xd8\xff\xe0\x00\x10\x4a\x46\x49\x46\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00\x43\x00\x0a\x07\x07\x08\x07\x06\x0a\x08\x08\x08\x0b\x0a\x0a\x0b\x0e\x18\x10\x0e\x0d\x0d\x0e\x1d\x15\x16\x11\x18\x23\x1f\x25\x24\x22\x1f\x22\x21\x26\x2b\x37\x2f\x26\x29\x34\x29\x21\x22\x30\x41\x31\x34\x39\x3b\x3e\x3e\x3e\x25\x2e\x44\x49\x43\x3c\x48\x37\x3d\x3e\x3b\xff\xdb\x00\x43\x01\x0a\x0b\x0b\x0e\x0d\x0e\x1c\x10\x10\x1c\x3b\x28\x22\x28\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\x3b\xff\xc0\x00\x11\x08\x00\x04\x00\x04\x03\x01\x22\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\xff\xc4\x00\xb5\x10\x00\x02\x01\x03\x03\x02\x04\x03\x05\x05\x04\x04\x00\x00\x01\x7d\x01\x02\x03\x00\x04\x11\x05\x12\x21\x31\x41\x06\x13\x51\x61\x07\x22\x71\x14\x32\x81\x91\xa1\x08\x23\x42\xb1\xc1\x15\x52\xd1\xf0\x24\x33\x62\x72\x82\x09\x0a\x16\x17\x18\x19\x1a\x25\x26\x27\x28\x29\x2a\x34\x35\x36\x37\x38\x39\x3a\x43\x44\x45\x46\x47\x48\x49\x4a\x53\x54\x55\x56\x57\x58\x59\x5a\x63\x64\x65\x66\x67\x68\x69\x6a\x73\x74\x75\x76\x77\x78\x79\x7a\x83\x84\x85\x86\x87\x88\x89\x8a\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xff\xc4\x00\x1f\x01\x00\x03\x01\x01\x01\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\xff\xc4\x00\xb5\x11\x00\x02\x01\x02\x04\x04\x03\x04\x07\x05\x04\x04\x00\x01\x02\x77\x00\x01\x02\x03\x11\x04\x05\x21\x31\x06\x12\x41\x51\x07\x61\x71\x13\x22\x32\x81\x08\x14\x42\x91\xa1\xb1\xc1\x09\x23\x33\x52\xf0\x15\x62\x72\xd1\x0a\x16\x24\x34\xe1\x25\xf1\x17\x18\x19\x1a\x26\x27\x28\x29\x2a\x35\x36\x37\x38\x39\x3a\x43\x44\x45\x46\x47\x48\x49\x4a\x53\x54\x55\x56\x57\x58\x59\x5a\x63\x64\x65\x66\x67\x68\x69\x6a\x73\x74\x75\x76\x77\x78\x79\x7a\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\x00\x00\x00\x06\x00\xe8\x05\x14\x51\x5f\x5e\x7c\x43\x6d\xbb\xb3\xff\xd9";
+/* Exact real 4x4 baseline grayscale JPEG (342 B); generated with Pillow. */
+static const char jpg_b64[]="/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/wAALCAAEAAQBAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AEZmdy7sWZjkknJJr//Z";
+static int dec(char c){
+ if(c>='A'&&c<='Z')return c-'A';
+ if(c>='a'&&c<='z')return c-'a'+26;
+ if(c>='0'&&c<='9')return c-'0'+52;
+ if(c=='+')return 62;
+ if(c=='/')return 63;
+ return -1;
+}
+static size_t decode(const char *p,unsigned char *out,size_t cap){
+ unsigned data=0,bits=0;size_t n=0;
+ for(;*p&&*p!='=';p++){
+  int b=dec(*p);if(b<0)continue;
+  data=(data<<6)|(unsigned)b;bits+=6;
+  if(bits>=8){
+   bits-=8;
+   if(n>=cap)return 0;
+   out[n++]=(unsigned char)(data>>bits);
+  }
+ }
+ return n;
+}
 int main(void){
- char path[128];
- snprintf(path,sizeof(path),"/tmp/eh18_%ld.jpg.tns",(long)getpid());
+ unsigned char bytes[400];
+ size_t n=decode(jpg_b64,bytes,sizeof(bytes));
+ assert(n==342&&bytes[0]==0xff&&bytes[1]==0xd8);
+ char path[128];snprintf(path,sizeof(path),"/tmp/eh18_%ld.jpg.tns",(long)getpid());
  FILE *f=fopen(path,"wb");assert(f);
- assert(fwrite(jpeg_data,1,sizeof(jpeg_data)-1,f)==sizeof(jpeg_data)-1);
- assert(!fclose(f));
+ assert(fwrite(bytes,1,n,f)==n);assert(!fclose(f));
  assert(eh18_is_image_name(path));
  assert(eh18_is_image_name("landscape.PNG"));
  assert(!eh18_is_image_name("file.pdf"));
- int sw=0,sh=0,sc=0;
- int valid=stbi_info(path,&sw,&sh,&sc);
- fprintf(stderr,"JPEG fixture length=%zu stbi_info=%d dim=%dx%d components=%d reason=%s\\n",
-      sizeof(jpeg_data)-1,valid,sw,sh,sc,stbi_failure_reason()?stbi_failure_reason():"none");
- if(!valid){
-  unsigned char *direct=stbi_load(path,&sw,&sh,&sc,3);
-  fprintf(stderr,"Direct stbi_load=%s reason=%s\\n",
-     direct?"yes":"no",stbi_failure_reason()?stbi_failure_reason():"none");
-  stbi_image_free(direct);
- }
  Eh18Image img;memset(&img,0,sizeof(img));
- if(!eh18_image_open(&img,path))fprintf(stderr,"Decoded JPEG error: %s\n",img.error);
+ if(!eh18_image_open(&img,path))fprintf(stderr,"JPEG loading failure: %s\n",img.error);
  assert(img.pixels);
- assert(img.width==4&&img.height==4&&img.pixels&&img.zoom==100);
+ assert(img.width==4&&img.height==4&&img.zoom==100);
  uint16_t fb[320*240];memset(fb,0,sizeof(fb));
  eh18_image_render(fb,&img);
  int nonzero=0;
  for(int i=0;i<320*240;i++)if(fb[i])nonzero++;
  assert(nonzero>500);
- int z=img.zoom;
- assert(eh18_image_zoom(&img,1)&&img.zoom>z);
+ int old=img.zoom;
+ assert(eh18_image_zoom(&img,1)&&img.zoom>old);
  assert(eh18_image_key(&img,EH_KEY_ENTER)&&img.zoom==img.fit_zoom);
  eh18_image_close(&img);assert(!img.pixels);
  assert(remove(path)==0);
- f=fopen(path,"wb");assert(f);
- assert(fputs("BAD JPEG DATA",f)>=0);assert(!fclose(f));
+ f=fopen(path,"wb");assert(f);assert(fputs("BAD JPEG DATA",f)>=0);assert(!fclose(f));
  assert(!eh18_image_open(&img,path)&&img.error[0]);
- eh18_image_close(&img);
- assert(remove(path)==0);
- puts("Run018 real JPEG decode, RGB565 render, zoom, fit, and invalid input passed");
+ eh18_image_close(&img);assert(remove(path)==0);
+ puts("Run018 real baseline JPEG, RGB565 render, zoom, fit, invalid data PASSED");
  return 0;
 }
