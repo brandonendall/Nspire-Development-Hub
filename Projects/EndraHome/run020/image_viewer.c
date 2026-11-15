@@ -62,10 +62,10 @@ static void fail(Eh18Image *v,const char *message){
 }
 static int fitted(const Eh18Image *v){
  int a=(32000+v->width-1)/v->width,b=(24000+v->height-1)/v->height;
- /* Cover the complete LCD, crop overflow; arrows can pan immediately. */
- int z=a>b?a:b;
+ /* Preserve the full photo and its aspect ratio; zoom enables panning. */
+ int z=a<b?a:b;
  if(z<10)z=10;
- if(z>400)z=400;
+ if(z>100)z=100;
  return z;
 }
 static void clamp_pan(Eh18Image *v){
