@@ -26,9 +26,21 @@ This file is for Hydra and any AI collaborator inspecting this repository.
 - **Permanent config rule (supersedes earlier versioned-file request):** Starting **Run010**, every new EndraHome build must load and package **`EndraHome_Apps.cfg.tns`** without any build number. Run007–009 remain historical and still read their older filenames. The user can manually copy an older configured file **once** to the permanent filename, then reuse it across future builds; never silently migrate, overwrite or delete their files. Both actual loader and Help UI must show the same filename. CI should test it.
 - **Run010 current experiment:** Removes redundant `refresh_osscr()` calls from a **locally copied** platform shutdown and the launcher return, while preserving all LCD/timer restoration. This may address user's report that EndraHome takes **~10 seconds to close**. It is **not tested on the calculator**; test immediate Esc-only return first, stop on any frozen or stale display. Run010 also adds a local `render.h` to fix the stale Apps007 Help label that appeared on a Run009 photograph.
 
+## Repository-wide physical-hardware preservation policy (owner directive, 2026-11-15)
+
+**Applies to EndraDiagnostics, EndraHome, EndraGBA, EndraLink, EndraZip, and every new Endra project.** The user's TI-Nspire CX II CAS is difficult to replace. Treat the USB connector, calculator health, battery, filesystem and Ndless installation as scarce resources. Minimize physical replugging and never use the calculator for avoidable smoke tests.
+
+1. **Bundle several cohesive, low-risk improvements per device build.** Prefer multiple pages or features that share the same already-proven platform. The old guideline "only one feature group per diagnostic build" is superseded by this instruction. Still isolate potentially hazardous hardware operations behind explicit manual opt-in and keep the previous working binary untouched.
+2. **Maximize off-device verification:** compile genuine `.tns` artifacts, run host unit tests, static checks, inspect symbols and compare against proven code, then package a one-session acceptance checklist before asking for real hardware tests.
+3. **Minimize USB cycles:** transfer once per integrated batch, avoid unnecessary unplug/replug requests and separate upload experiments, and group all files needed for the next hardware session in the same downloadable package when practical.
+4. **Fail closed** when firmware signatures, layouts, battery values or RAM APIs are unverified. Never invent data. Do not probe unknown OS/physical memory, change hooks/clock/power settings, overwrite system files, or run stress loops merely to fill out a dashboard.
+5. **Preserve tested baselines:** maintain prior run-numbered `.tns` binaries, rollback instructions and code branches; never overwrite the only known-working app.
+6. **Respect clear evidence:** CI success is not physical compatibility. Record user-confirmed positive and negative results separately. Prior EndraDiagnostics Run001 hard-froze; Run008 was fast-exit validated; Run009 CPU/MMU pages photographed; Run010 removed auto-exit with CI success but no physical confirmation as of this policy.
+7. Every new calculator-facing build should state **(a)** batched feature set, **(b)** what was verified offline, **(c)** remaining physical risk, and **(d)** a concise one-connection test plan.
+
 ## Engineering guardrails
 1. Preserve the working UltraGBA Run007 source, ROM-local saves, GBZ paging, RTC handling and existing user data paths. `EndraGBA` is a future rename, not license to replace the baseline.
-2. Preserve Run003 display/input code for comparison; only add one new variable/feature group per diagnostic build.
+2. Preserve Run003 display/input code for comparison; bundle multiple compatible, offline-tested features per device build under the owner hardware-preservation policy above.
 3. Do not alter `ndless.cfg.tns`, hooks, ROM associations, system/root files or CPU settings automatically.
 4. Do not claim anything is device-tested without a specific real-device user result, and include negative results prominently.
 5. Keep new EndraHome source changes on a feature branch and present a draft PR. Do not silently merge to `main`.
