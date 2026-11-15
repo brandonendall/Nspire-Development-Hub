@@ -51,6 +51,8 @@ static uint32_t original_timer_load,original_timer_clock,original_timer_ctrl;
 static int timer_ok;
 static uint32_t fallback_ticks;
 static uint32_t key_curr[4],key_rising[4];
+static int touch_dx,touch_dy,touch_contact;
+static int last_touch_x,last_touch_y,last_contact;
 static EhKey held_direction;
 static uint32_t repeat_at;
 
@@ -172,6 +174,16 @@ static void poll_keys(void){
   uint32_t arrows=0;
   memset(&tp,0,sizeof(tp));
   touchpad_scan(&tp);
+  touch_contact=!!tp.contact;
+  touch_dx=touch_dy=0;
+  if(touch_contact&&last_contact){
+    int dx=(int)tp.x-last_touch_x,dy=(int)tp.y-last_touch_y;
+    /* Ignore discontinuities and suppress jitter. */
+    if(dx>-50&&dx<50&&dy>-50&&dy<50){
+      touch_dx=dx;touch_dy=dy;
+    }
+  }
+  last_touch_x=tp.x;last_touch_y=tp.y;last_contact=touch_contact;
   switch((tpad_arrow_t)tp.arrow){
     case TPAD_ARROW_UP:arrows=0x00010000u;break;
     case TPAD_ARROW_UPRIGHT:arrows=0x00050000u;break;
@@ -226,4 +238,11 @@ void eh_platform_sleep(void){
   /* Bounded pause, unlike unbounded wait-no-key-pressed loops. */
   msleep(15);
   if(!timer_ok)fallback_ticks+=TICKS*15/1000;
+}
+
+int eh_platform_touch_pan(int *dx,int *dy){
+ if(!dx||!dy)return 0;
+ *dx=touch_dx;*dy=touch_dy;
+ touch_dx=touch_dy=0;
+ return touch_contact;
 }
