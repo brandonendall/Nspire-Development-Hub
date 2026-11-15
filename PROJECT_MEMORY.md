@@ -26,3 +26,6 @@ Projects/EndraGBA, Projects/UltraGBA, Projects/UltraZip, Projects/UltimateComman
 
 ## Current next action
 Retrieve EndraHome Run018 ImageViewer artifact and transfer .tns to calculator for physical testing. If binary artifact download cannot be accessed through tools, direct user to GitHub Actions artifact without inventing a sandbox file. After Run018 device test, continue Run019 file management improvements.
+
+## Run019 update — 2026-11-15
+User confirmed Run018 oversized JPEG error ESC returns safely. Run019 source Projects/EndraHome/run019/; commit e8c252d8b1fc7654223712e4e43ba164daa76785; Actions run 43753801159 PASSED host and native; artifact EndraHome_Run019_LargeImages id 14176934540. Run019 supports JPEG/PNG up to 2MP decoded (2048 max dimension), downsamples retained pixels to <=1MP. This is NOT true streaming or scaled JPEG decode; larger files >2MP still rejected and memory peak includes full 2MP RGB. Physical test pending; keep Run018 fallback. Next: test user me.jpg.tns and verify ESC, no freeze.
