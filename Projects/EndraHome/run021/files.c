@@ -95,14 +95,22 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
    const char *part=current+strlen(root);while(*part=='/')part++;
    while(*part){char name[EH13_NAME_MAX];size_t len=0;while(part[len]&&part[len]!='/')len++;if(!len||len>=sizeof(name))break;memcpy(name,part,len);name[len]=0;
     int found=-1;for(int i=0;i<v->nav.count;i++)if(v->nav.items[i].directory&&!strcmp(v->nav.items[i].name,name)){found=i;break;}
-    if(found<0)break;v->nav.selected=found;char ignored[EH7_PATH_CAP];eh13_picker_handle(&v->nav,EH_KEY_ENTER,ignored,sizeof(ignored));part+=len;while(*part=='/')part++;
+    if(found<0)break;
+    v->nav.selected=found;
+    char ignored[EH7_PATH_CAP];
+    eh13_picker_handle(&v->nav,EH_KEY_ENTER,ignored,sizeof(ignored));
+    part+=len;
+    while(*part=='/')part++;
    }
    return 1;
   }
   return 0;
  }
  if(v->screen==0&&key==EH_KEY_MENU){v->edit_folder=1;v->edit_name[0]=0;v->edit_error=0;v->screen=4;return 1;}
- if(v->screen==1&&key==EH_KEY_MENU){v->edit_folder=0;v->edit_error=0;const char *name=strrchr(v->path,'/');snprintf(v->edit_name,sizeof(v->edit_name),"%s",name?name+1:v->path);v->screen=4;return 1;}
+ if(v->screen==1&&key==EH_KEY_MENU){v->edit_folder=0;v->edit_error=0;const char *name=strrchr(v->path,'/');const char *base=name?name+1:v->path;
+  size_t length=strlen(base);
+  if(length>=sizeof(v->edit_name))return 1;
+  memcpy(v->edit_name,base,length+1);v->screen=4;return 1;}
  if(v->screen==3){ /* image: Esc goes straight back to our Files list */
   if(key==EH_KEY_ESC||key==EH_KEY_MENU){
    eh18_image_close(&v->image);v->screen=0;return 1;
