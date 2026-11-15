@@ -185,3 +185,11 @@ void eh18_image_render(uint16_t *f,const Eh18Image *v){
   for(int x=0;x<320;x++)if(src_x[x]>=0)dst[x]=source[src_x[x]];
  }
 }
+
+int eh18_image_pan(Eh18Image *v,int dx,int dy){
+ if(!v||!v->pixels)return 0;
+ int oldx=v->pan_x,oldy=v->pan_y;
+ v->pan_x+=dx;v->pan_y+=dy;
+ clamp_pan(v);
+ return v->pan_x!=oldx||v->pan_y!=oldy;
+}
