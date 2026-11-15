@@ -148,10 +148,10 @@ int eh18_image_zoom(Eh18Image *v,int direction){
 int eh18_image_key(Eh18Image *v,EhKey key){
  if(!v||!v->pixels)return 0;
  int oldx=v->pan_x,oldy=v->pan_y;
- if(key==EH_KEY_LEFT)v->pan_x+=20;
- else if(key==EH_KEY_RIGHT)v->pan_x-=20;
- else if(key==EH_KEY_UP)v->pan_y+=20;
- else if(key==EH_KEY_DOWN)v->pan_y-=20;
+ if(key==EH_KEY_LEFT)v->pan_x-=20;
+ else if(key==EH_KEY_RIGHT)v->pan_x+=20;
+ else if(key==EH_KEY_UP)v->pan_y-=20;
+ else if(key==EH_KEY_DOWN)v->pan_y+=20;
  else if(key==EH_KEY_ENTER){
   v->zoom=v->fit_zoom;
   v->pan_x=v->pan_y=0;
