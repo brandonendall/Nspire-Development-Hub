@@ -1,0 +1,44 @@
+name: EndraDiagnostics Run018 - Single Screen Tachometer HUD
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run018/**'
+      - '.github/workflows/endradiagnostics-run018.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check EXACT single-page and proven fast-exit invariants
+        run: |
+          set -euo pipefail
+          cmp Projects/EndraDiagnostics/run017/platform.c Projects/EndraDiagnostics/run018/platform.c
+          grep -F 'single-screen' Projects/EndraDiagnostics/run018/README.md
+          grep -F 'tab=(tab+1u)%TAB_COUNT' Projects/EndraDiagnostics/run018/main.c
+          grep -F 'eh_platform_stop_mode(0)' Projects/EndraDiagnostics/run018/main.c
+          grep -F 'const size_t n=4096u;' Projects/EndraDiagnostics/run018/main.c
+          grep -F 'DOC_MAX_ENTRIES 384u' Projects/EndraDiagnostics/run018/main.c
+          ! grep -E 'page[=+]|MAX_STEPS|auto_exit|refresh_osscr\(' Projects/EndraDiagnostics/run018/main.c
+      - name: Build real native Ndless TNS
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run018 clean all'
+      - name: Verify executable
+        run: |
+          test -s Projects/EndraDiagnostics/run018/EndraDiagnostics_Run018.tns
+          sha256sum Projects/EndraDiagnostics/run018/EndraDiagnostics_Run018.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run018_tns
+          path: Projects/EndraDiagnostics/run018/EndraDiagnostics_Run018.tns
+          if-no-files-found: error
