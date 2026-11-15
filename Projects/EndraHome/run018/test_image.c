@@ -17,7 +17,8 @@ int main(void){
  assert(eh18_is_image_name("landscape.PNG"));
  assert(!eh18_is_image_name("file.pdf"));
  Eh18Image img;memset(&img,0,sizeof(img));
- assert(eh18_image_open(&img,path));
+ if(!eh18_image_open(&img,path))fprintf(stderr,"Decoded JPEG error: %s\n",img.error);
+ assert(img.pixels);
  assert(img.width==4&&img.height==4&&img.pixels&&img.zoom==100);
  uint16_t fb[320*240];memset(fb,0,sizeof(fb));
  eh18_image_render(fb,&img);
