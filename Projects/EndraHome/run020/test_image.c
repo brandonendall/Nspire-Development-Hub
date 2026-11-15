@@ -41,7 +41,7 @@ int main(void){
  Eh18Image img;memset(&img,0,sizeof(img));
  if(!eh18_image_open(&img,path))fprintf(stderr,"JPEG loading failure: %s\n",img.error);
  assert(img.pixels);
- assert(img.width==4&&img.height==4&&img.zoom==100);
+ assert(img.width==4&&img.height==4&&img.zoom==img.fit_zoom);
  uint16_t fb[320*240];memset(fb,0,sizeof(fb));
  eh18_image_render(fb,&img);
  int nonzero=0;
