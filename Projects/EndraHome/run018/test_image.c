@@ -52,9 +52,24 @@ int main(void){
  assert(eh18_image_key(&img,EH_KEY_ENTER)&&img.zoom==img.fit_zoom);
  eh18_image_close(&img);assert(!img.pixels);
  assert(remove(path)==0);
+
+ /* Verify full-color PNG decoding and RGB565 conversion in the same run. */
+ static const char png_b64[]="iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAIUlEQVR4nGP8qWMvVTaHgYGBgYGBUXjRbQYYYGJAAigcALa5BCc6eQsfAAAAAElFTkSuQmCC";
+ n=decode(png_b64,bytes,sizeof(bytes));
+ assert(n==90);
+ snprintf(path,sizeof(path),"/tmp/eh18_%ld.png.tns",(long)getpid());
+ f=fopen(path,"wb");assert(f);
+ assert(fwrite(bytes,1,n,f)==n);assert(!fclose(f));
+ assert(eh18_image_open(&img,path));
+ assert(img.width==4&&img.height==4&&img.pixels);
+ uint16_t col=img.pixels[1];
+ assert(col!=0);
+ eh18_image_close(&img);assert(remove(path)==0);
+
+ snprintf(path,sizeof(path),"/tmp/eh18_%ld.jpg.tns",(long)getpid());
  f=fopen(path,"wb");assert(f);assert(fputs("BAD JPEG DATA",f)>=0);assert(!fclose(f));
  assert(!eh18_image_open(&img,path)&&img.error[0]);
  eh18_image_close(&img);assert(remove(path)==0);
- puts("Run018 real baseline JPEG, RGB565 render, zoom, fit, invalid data PASSED");
+ puts("Run018 real JPEG + PNG decode, RGB565 render, zoom, fit, invalid data PASSED");
  return 0;
 }
