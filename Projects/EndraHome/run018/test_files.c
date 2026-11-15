@@ -1,4 +1,5 @@
 #include "files.h"
+#include "font8x8_basic.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
