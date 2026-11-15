@@ -1,0 +1,43 @@
+name: EndraDiagnostics Run015 - Practical System Monitor
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraDiagnostics/run015/**'
+      - '.github/workflows/endradiagnostics-run015.yml'
+permissions:
+  contents: read
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check platform provenance and hardware protections
+        run: |
+          set -euo pipefail
+          cmp Projects/EndraDiagnostics/run014/platform.c Projects/EndraDiagnostics/run015/platform.c
+          grep -F '#define PAGE_COUNT 6u' Projects/EndraDiagnostics/run015/main.c
+          grep -F 'for(uint32_t t=0;;t++)' Projects/EndraDiagnostics/run015/main.c
+          grep -F 'eh_platform_stop_mode(0)' Projects/EndraDiagnostics/run015/main.c
+          grep -F 'const size_t n=4096u;' Projects/EndraDiagnostics/run015/main.c
+          ! grep -E 'MAX_STEPS|auto_exit|refresh_osscr\(' Projects/EndraDiagnostics/run015/main.c
+      - name: Native Ndless executable
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work" \
+            --workdir /work "$NSPIRE_BUILD_IMAGE" \
+            -c 'set -eu; make -C Projects/EndraDiagnostics/run015 clean all'
+      - name: Verify output
+        run: |
+          test -s Projects/EndraDiagnostics/run015/EndraDiagnostics_Run015.tns
+          sha256sum Projects/EndraDiagnostics/run015/EndraDiagnostics_Run015.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraDiagnostics_Run015_tns
+          path: Projects/EndraDiagnostics/run015/EndraDiagnostics_Run015.tns
+          if-no-files-found: error
