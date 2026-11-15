@@ -1,0 +1,3 @@
+# EndraDiagnostics Run021 — safe live CPU identity telemetry
+
+Run020 physical user test: rapid startup and GUI confirmed; RAM 4 KiB heap check passed; 149 files/42 directories; CPU and system RAM utilization not exposed. Run021 adds a periodic read-only CPU ID stability poll, a real cumulative poll count on CPU tab, and a mismatch status on CPU details. It also explicitly labels the 4 KiB heap test as **app-owned** memory, not system-wide RAM availability. CPU load, MHz, system RAM free/used and dial percentages stay N/A; neither CPU identity polls nor loop counts are CPU load. No unbounded allocations, no memory-map probes, no filesystem writes. Scan remains synchronous. Run020 preserved as tested baseline. Native CI and physical testing must be reported separately.
