@@ -28,8 +28,8 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  uint16_t bg=RGB(11,17,31),light=RGB(241,249,255),dim=RGB(155,181,204),cyan=RGB(53,205,250),highlight=RGB(28,87,125);
  box(f,0,0,320,240,bg);
  box(f,0,0,320,28,RGB(31,45,65));
- label(f,12,10,"ASSIGN APP",light,13);
- label(f,118,10,apps->slots[p->slot].label,cyan,16);
+ label(f,12,10,p->show_all?"ENDRA FILES":"ASSIGN APP",light,13);
+ if(!p->show_all)label(f,118,10,apps->slots[p->slot].label,cyan,16);
  box(f,8,35,304,29,RGB(25,37,55));
  label(f,12,42,"FOLDER:",cyan,8);
  /* Show path tail if very long; keeps last directory names visible. */
@@ -42,13 +42,14 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
   int y=70+(i-p->scroll)*17;
   if(i==p->selected)box(f,10,y-2,300,16,highlight);
   const Eh13PickEntry *e=p->items+i;
-  label(f,17,y,e->directory?"DIR":"TNS",e->directory?cyan:dim,4);
+  const char *tag=e->directory?"DIR":p->show_all?"FILE":"TNS";
+  label(f,17,y,tag,e->directory?cyan:dim,4);
   label(f,62,y,e->name,light,30);
  }
- if(!p->count)label(f,19,93,"NO APPS IN THIS FOLDER",dim,30);
+ if(!p->count)label(f,19,93,p->show_all?"EMPTY FOLDER":"NO APPS IN THIS FOLDER",dim,30);
  char status[64];
  snprintf(status,sizeof(status),"%d FILES/FOLDERS%s",p->count,p->overflow?" (LIMIT)":"");
  label(f,12,209,status,p->overflow?RGB(255,157,98):dim,35);
  box(f,0,223,320,17,RGB(24,39,58));
- label(f,7,227,"ENTER OPEN/ASSIGN ESC BACK",cyan,29);
+ label(f,7,227,p->show_all?"ENTER OPEN/INFO ESC BACK":"ENTER OPEN/ASSIGN ESC BACK",cyan,32);
 }

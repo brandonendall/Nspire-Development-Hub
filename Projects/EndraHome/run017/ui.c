@@ -4,7 +4,7 @@
 void eh7_ui_init(EhUniversalUI *s,const EhRegistry *apps){
  if(!s)return;
  eh7_init(&s->page);s->apps=apps;
- s->missing=s->request=s->assign_slot=s->edit_action=0;
+ s->missing=s->request=s->assign_slot=s->edit_action=s->open_files=0;
  s->manager_item=s->subview=s->renaming=s->confirm_remove=0;
  s->rename_input[0]=s->notice[0]=0;
 }
@@ -39,7 +39,7 @@ int eh16_ui_type(EhUniversalUI *s,int c){
 }
 int eh7_ui_handle(EhUniversalUI *s,EhKey k){
  if(!s||k==EH_KEY_NONE||s->page.should_exit||
-    s->request||s->assign_slot||s->edit_action)return 0;
+    s->request||s->assign_slot||s->edit_action||s->open_files)return 0;
  /* Keep errors visible while renaming; don't clear them on unrelated keys. */
  if(!s->renaming)s->notice[0]=0;
  if(s->renaming){
@@ -63,6 +63,7 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
   if(k==EH_KEY_ENTER){
    int i=s->page.selected;
    if(s->apps&&s->apps->slots[i].path[0])s->request=i+1;
+   else if(i==3)s->open_files=1;
    else s->assign_slot=i+1;
    return 1;
   }

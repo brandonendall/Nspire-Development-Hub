@@ -48,7 +48,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   return;
  }
  if(s->confirm_remove){
-  txt(f,23,68,"REMOVE SHORTCUT?",cyan,25);
+  txt(f,23,68,s->page.selected==3?"USE BUILT-IN FILES?":"REMOVE SHORTCUT?",cyan,25);
   txt(f,23,96,app->label,white,15);
   txt(f,23,123,"ONLY THE LINK WILL BE REMOVED",muted,35);
   txt(f,23,146,"THE APPLICATION FILE IS SAFE",muted,34);
@@ -63,7 +63,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
    int y=68+i*27;
    if(s->manager_item==i)box(f,15,y-4,287,24,RGB(31,99,139));
    txt(f,21,y,s->manager_item==i?">":" ",cyan,1);
-   txt(f,37,y,items[i],white,30);
+   txt(f,37,y,(i==2&&s->page.selected==3)?"USE BUILT-IN FILES":items[i],white,30);
   }
   txt(f,10,226,"UP/DOWN ENTER SELECT ESC BACK",cyan,38);
  }else if(s->page.page==EH_PAGE_HELP&&!s->subview){

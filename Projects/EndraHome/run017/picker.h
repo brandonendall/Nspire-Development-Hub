@@ -15,10 +15,11 @@ typedef struct {
  char dir[EH7_PATH_CAP];
  char root[EH7_PATH_CAP];
  Eh13PickEntry *items;
- int count,selected,scroll,slot,active,overflow;
+ int count,selected,scroll,slot,active,overflow,show_all;
 } Eh13Picker;
 /* root is /documents on hardware; injectable tmp path for host tests. */
 int eh13_picker_open(Eh13Picker *p,int slot,const char *root);
+int eh17_picker_open(Eh13Picker *p,int slot,const char *root,int show_all);
 void eh13_picker_close(Eh13Picker *p);
 /* -1 cancel, 0 no input, 1 redraw, 2 selected file (not yet saved). */
 int eh13_picker_handle(Eh13Picker *p,EhKey key,char *chosen,size_t cap);

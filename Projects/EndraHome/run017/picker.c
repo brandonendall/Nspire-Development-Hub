@@ -42,8 +42,9 @@ static int scan(Eh13Picker *p){
   if(!join(full,sizeof(full),p->dir,de->d_name))continue;
   if(stat(full,&st)!=0)continue;
   int directory=S_ISDIR(st.st_mode);
-  if(!directory&&(!S_ISREG(st.st_mode)||!is_tns(de->d_name)||
-        !strcmp(de->d_name,EH7_CONFIG_FILE)))continue;
+  if(!directory&&(!S_ISREG(st.st_mode)||
+        (!p->show_all&&(!is_tns(de->d_name)||
+        !strcmp(de->d_name,EH7_CONFIG_FILE)))))continue;
   if(n==EH13_PICKER_MAX){overflow=1;continue;}
   strcpy(list[n].name,de->d_name);
   list[n].directory=(unsigned char)directory;
@@ -55,12 +56,12 @@ static int scan(Eh13Picker *p){
  p->items=list;p->count=n;p->selected=0;p->scroll=0;p->overflow=overflow;
  return 1;
 }
-int eh13_picker_open(Eh13Picker *p,int slot,const char *root){
+int eh17_picker_open(Eh13Picker *p,int slot,const char *root,int show_all){
  if(!p||!root||slot<0||slot>=EH7_SLOT_COUNT)return 0;
  size_t len=strlen(root);
  if(!len||root[0]!='/'||len>=EH7_PATH_CAP||root[len-1]=='/')return 0;
  memset(p,0,sizeof(*p));
- strcpy(p->dir,root);strcpy(p->root,root);p->slot=slot;
+ strcpy(p->dir,root);strcpy(p->root,root);p->slot=slot;p->show_all=!!show_all;
  if(!scan(p)){eh13_picker_close(p);return 0;}
  p->active=1;return 1;
 }
@@ -110,4 +111,8 @@ int eh13_picker_handle(Eh13Picker *p,EhKey key,char *chosen,size_t cap){
   return 2;
  }
  return 0;
+}
+
+int eh13_picker_open(Eh13Picker *p,int slot,const char *root){
+ return eh17_picker_open(p,slot,root,0);
 }
