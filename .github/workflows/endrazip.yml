@@ -1,4 +1,4 @@
-name: EndraZIP 006 - recursive folder ZIP
+name: EndraZIP 007 - recursive folder ZIP
 
 on:
   workflow_dispatch:
@@ -31,16 +31,16 @@ jobs:
           bash toolchain/build.sh Projects/EndraZIP
       - name: Verify and package calculator binary
         run: |
-          test -s Projects/EndraZIP/EndraZIP_006.tns
+          test -s Projects/EndraZIP/EndraZIP_007.tns
           mkdir -p dist
-          cp Projects/EndraZIP/EndraZIP_006.tns dist/
+          cp Projects/EndraZIP/EndraZIP_007.tns dist/
           cp Projects/EndraZIP/README.md dist/
           cd dist
-          sha256sum EndraZIP_006.tns > SHA256SUMS.txt
+          sha256sum EndraZIP_007.tns > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraZIP_006
+          name: EndraZIP_007
           path: dist/
           if-no-files-found: error
 
