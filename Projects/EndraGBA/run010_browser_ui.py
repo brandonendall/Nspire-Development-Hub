@@ -23,9 +23,9 @@ def one(old: str, new: str, what: str) -> None:
     # sections. Match the exact code on each line, ignoring leading whitespace
     # only; reject unknown/doubled layouts rather than applying a blind patch.
     original_lines = old.splitlines(keepends=True)
-    pat = "".join(r"(?m)^[ \\t]*" + re.escape(line.lstrip(" \\t"))
+    pat = "".join(r"^[ \\t]*" + re.escape(line.lstrip(" \\t"))
                   for line in original_lines)
-    found = list(re.finditer(pat, source))
+    found = list(re.finditer(pat, source, re.MULTILINE))
     assert len(found) == 1, f"{what}: expected one exact code block, got {len(found)}"
     match = found[0]
     source = source[:match.start()] + new + source[match.end():]
