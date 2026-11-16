@@ -199,14 +199,17 @@ static void updir(void){
 }
 static void paint(void){
  box(0,0,W,H,BG);box(0,0,W,31,BAR);box(0,29,W,2,CYAN);
- label(11,7,"ENDRAZIP 006",TEXT,2,18);
+ label(11,7,"ENDRAZIP 007",TEXT,2,18);
  label(214,12,"ZIP MANAGER",CYAN,1,17);
  box(0,31,W,25,PANEL);label(8,40,cwd,MUTED,1,51);
  box(0,57,W,18,0x2126);
  label(8,63,"NAME",TEXT,1,24);label(273,63,"SIZE",TEXT,1,8);
- int visible=9;if(selected<view)view=selected;if(selected>=view+visible)view=selected-visible+1;
+ /* Keep the last file row entirely above the footer. */
+ const int row_top=78,row_height=15,footer_top=216;
+ int visible=(footer_top-row_top)/row_height;
+ if(selected<view)view=selected;if(selected>=view+visible)view=selected-visible+1;
  for(int n=0;n<visible;n++){
-  int i=view+n,y=78+n*15;if(i>=count)break;
+  int i=view+n,y=row_top+n*row_height;if(i>=count)break;
   if(i==selected)box(4,y-2,312,15,CYAN);
   unsigned short color=(i==selected)?DARK:TEXT;
   box(9,y+1,10,10,entries[i].directory?GOLD:(zipname(entries[i].name)?GREEN:0x8410));
@@ -220,7 +223,6 @@ static void paint(void){
  }
  if(!count)label(18,100,"NO FILES IN THIS FOLDER",TEXT,1,45);
  box(0,216,W,24,BAR);label(5,221,"ENTER OPEN  MENU ACTIONS  ESC EXIT",TEXT,1,51);
- box(0,204,W,12,PANEL);label(5,206,feedback,CYAN,1,51);
  if(menu){
   box(52,58,216,133,0x0000);box(55,61,210,127,PANEL);
   label(67,69,"FILE ACTIONS",CYAN,2,17);
