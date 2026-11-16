@@ -71,3 +71,7 @@ SHA-256 checksum when compilation and host tests succeed.
 The working Run005 implementation and earlier versions are preserved in Git
 history. Do not delete your known-working `EndraZIP_005.tns` until Run006
 has been checked on the calculator.
+
+
+### Run007 build trigger
+Run007 removes the duplicate footer and keeps the final file row fully visible.
