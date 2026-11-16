@@ -77,12 +77,17 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   txt(f,19,181,"UNASSIGN NEVER DELETES FILES",muted,35);
   txt(f,14,226,"ESC BACK TO MANAGER",cyan,30);
  }else{
-  txt(f,19,51,"ENDRAHOME SETTINGS",cyan,26);
-  txt(f,19,80,"7 configurable shortcuts",white,31);
-  txt(f,19,105,"Fast exit: ON",white,27);
-  txt(f,19,128,"Return to Home: ON",white,27);
-  txt(f,19,157,"Clock HUD: future feature",cyan,33);
-  txt(f,19,177,"No nClock hooks used yet",muted,33);
+  static const char *themes[7]={"ORIGINAL","BLUE","BLACK","GRAY","RED","GREEN","PURPLE"};
+  int theme=s->apps->theme;
+  if(theme<0||theme>6)theme=0;
+  txt(f,19,51,"THEMES & APPEARANCE",cyan,26);
+  txt(f,19,84,"ICON COLOR THEME:",white,30);
+  box(f,18,110,284,35,RGB(12,30,48));
+  txt(f,28,122,"<",cyan,1);
+  txt(f,61,122,themes[theme],white,15);
+  txt(f,280,122,">",cyan,1);
+  txt(f,19,165,"LEFT / RIGHT CHANGE COLOR",muted,34);
+  txt(f,19,187,"CHANGES SAVE AUTOMATICALLY",cyan,34);
   txt(f,14,226,"ESC BACK TO MANAGER",cyan,30);
  }
 }
