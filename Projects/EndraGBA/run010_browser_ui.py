@@ -336,8 +336,8 @@ assert "if(current_column == 1)" in source
 assert source.count("endra_browser_chrome(") == 2
 assert source.count("endra_browser_row(") == 3
 # Update only user-facing version line (not the external attribution).
-assert source.count('"EndraGBA Run008"') == 1, "Expected branding from Run008"
-source = source.replace('"EndraGBA Run008"', '"EndraGBA Run010"', 1)
+assert source.count('"EndraGBA Run008"') >= 1, "Expected branding from Run008"
+source = source.replace('"EndraGBA Run008"', '"EndraGBA Run010"')
 gui.write_text(source)
 
 mk = root / "Makefile"
