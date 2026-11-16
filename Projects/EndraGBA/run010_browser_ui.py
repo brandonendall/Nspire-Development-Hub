@@ -6,6 +6,7 @@ hotkey or Ndless association code is changed. Native browser only; preserve
 unrelated backends' original screen rendering and key behavior.
 """
 from pathlib import Path
+import re
 import runpy
 
 runpy.run_path(str(Path(__file__).with_name("run009_fast_exit.py").resolve()))
@@ -15,8 +16,19 @@ source = gui.read_text()
 
 def one(old: str, new: str, what: str) -> None:
     global source
-    assert source.count(old) == 1, f"{what}: expected exactly once, got {source.count(old)}"
-    source = source.replace(old, new, 1)
+    if source.count(old) == 1:
+        source = source.replace(old, new, 1)
+        return
+    # Historical gpSP has inconsistent one-space indentation across GUI
+    # sections. Match the exact code on each line, ignoring leading whitespace
+    # only; reject unknown/doubled layouts rather than applying a blind patch.
+    original_lines = old.splitlines(keepends=True)
+    pat = "".join(r"(?m)^[ \\t]*" + re.escape(line.lstrip(" \\t"))
+                  for line in original_lines)
+    found = list(re.finditer(pat, source))
+    assert len(found) == 1, f"{what}: expected one exact code block, got {len(found)}"
+    match = found[0]
+    source = source[:match.start()] + new + source[match.end():]
 
 one(
     "#define COLOR_MOVING        color16(31, 50, 4)\n",
