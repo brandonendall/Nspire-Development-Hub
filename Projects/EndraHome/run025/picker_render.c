@@ -44,9 +44,16 @@ static void file_icon(uint16_t *f,int x,int y,const char *name,int dir,uint16_t 
  }else if(len>0){box(f,x+5,y+8,6,2,accent);}
 }
 static void size_label(char *out,size_t cap,unsigned long long n){
- if(n<1024)snprintf(out,cap,"%llu B",n);
- else if(n<1048576)snprintf(out,cap,"%llu KB",(n+1023)/1024);
- else snprintf(out,cap,"%llu MB",(n+524287)/1048576);
+ const char *units[]={"B","KB","MB","GB","TB"};
+ unsigned unit=0;unsigned long long whole=n,rem=0;
+ while(whole>=1024&&unit<4){rem=whole%1024;whole/=1024;unit++;}
+ if(unit==0)snprintf(out,cap,"%llu B",whole);
+ else{
+  unsigned tenth=(unsigned)((rem*10+512)/1024);
+  if(tenth==10){whole++;tenth=0;}
+  if(tenth)snprintf(out,cap,"%llu.%u %s",whole,tenth,units[unit]);
+  else snprintf(out,cap,"%llu %s",whole,units[unit]);
+ }
 }
 void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!f||!p||!p->active||!apps)return;

@@ -2,7 +2,9 @@
  * 8 KiB stream buffer, depth and item limits, safe partial-copy cleanup.
  * Never follows directory symlinks. No recursive operations outside caller's root.
  */
+#define _POSIX_C_SOURCE 200809L
 #include "file_ops.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
