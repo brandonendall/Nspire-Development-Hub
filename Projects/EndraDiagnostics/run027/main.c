@@ -295,67 +295,52 @@ static void battery_icon(int x,int y,int pct){
  }
 }
 /* Run027: rebuilt cockpit geometry, large instruments and status rail. */
+/* One fixed dashboard. No pages, tabs, or navigation rail. */
 static void draw(void){
- const uint16_t white=RGB(234,247,255),cyan=RGB(42,218,248);
- const uint16_t green=RGB(66,238,155),dim=RGB(131,171,189);
- char s[52];fb=eh_framebuffer();
- ege_gradient(0,0,320,240,RGB(7,26,45),RGB(1,7,16));
- ege_gradient(0,0,320,27,RGB(19,63,91),RGB(5,23,41));
- fill(0,26,320,2,cyan);
- text8(8,8,"ENDRA",5,white);
- text8(58,8,"DIAGNOSTICS",11,cyan);
- text8(276,8,"027",3,green);
- ege_gradient(7,34,150,113,RGB(16,50,73),RGB(3,15,30));
- ege_gradient(163,34,150,113,RGB(16,50,73),RGB(3,15,30));
- ege_bevel(7,34,150,113);ege_bevel(163,34,150,113);
- center_text(82,39,"CPU SPEED",9,cyan);
- center_text(238,39,"MEMORY TEST",11,cyan);
- tach(82,93,43,(int)cpu_test_pct);
- tach(238,93,43,(int)ram_test_pct);
- fill(51,121,62,18,RGB(2,11,22));
- fill(207,121,62,18,RGB(2,11,22));
- border(51,121,62,18,RGB(26,116,149));
- border(207,121,62,18,RGB(26,116,149));
- snprintf(s,sizeof(s),"%u/100",cpu_test_pct);
- center_text(82,126,s,7,white);
- snprintf(s,sizeof(s),"%u/100",ram_test_pct);
- center_text(238,126,s,7,white);
- ege_gradient(7,152,306,40,RGB(13,41,62),RGB(4,17,31));
- ege_bevel(7,152,306,40);
- const char *labels[6]={"SYSTEM STATUS","CPU BENCHMARK","MEMORY INTEGRITY","DOCUMENT SCAN","BATTERY STATUS","DEVICE INFO"};
- text8(14,156,labels[tab],18,cyan);
- if(tab==0u){
-  snprintf(s,sizeof(s),"ARM926 REV:%u CACHE:%s",(unsigned)(cpu_id&15u),(control&(1u<<12))?"ON":"OFF");
- }else if(tab==1u){
-  snprintf(s,sizeof(s),"SCORE:%u TICKS:%lu LOAD:N/A",cpu_test_pct,(unsigned long)benchmark_ticks);
- }else if(tab==2u){
-  snprintf(s,sizeof(s),"4K:%s 8K:%s USED:N/A",heap_result==1?"PASS":"WAIT",heap_probe_8k==1?"PASS":"WAIT");
- }else if(tab==3u){
-  snprintf(s,sizeof(s),"FILES:%u DIRS:%u %s",doc_files,doc_dirs,doc_state==1?"DONE":doc_state==2?"PART":"WAIT");
- }else if(tab==4u){
-  if(level_known())snprintf(s,sizeof(s),"BATTERY:%lu%% SAMPLES:%u",(unsigned long)snap.percent,hn);
-  else snprintf(s,sizeof(s),"BATTERY:N/A SAMPLES:%u",hn);
- }else{
-  snprintf(s,sizeof(s),"CPU ID:%08lX ERR:%02lX",(unsigned long)cpu_id,(unsigned long)(snap.errors&255u));
- }
- text8(14,172,s,35,white);
- const char *tabs[6]={"HOME","CPU","RAM","DOCS","BATT","INFO"};
- for(unsigned i=0;i<6u;i++){
-  int x=(int)i*53;
-  if(tab==i){
-   ege_gradient(x,199,52,24,RGB(18,113,144),RGB(6,48,77));
-   fill(x,199,52,3,green);
-  }else ege_gradient(x,199,52,24,RGB(11,36,57),RGB(3,16,30));
-  fill(x+51,203,1,15,RGB(20,73,94));
-  center_text(x+26,208,tabs[i],6,tab==i?white:dim);
- }
- fill(0,227,320,13,RGB(2,12,24));
- fill(0,226,320,1,RGB(20,112,147));
- if(level_known())snprintf(s,sizeof(s),"BAT:%lu%%",(unsigned long)snap.percent);
- else strcpy(s,"BAT:N/A");
- text8(5,230,s,11,green);
- text8(93,230,"CPU:BENCH RAM:TEST",18,dim);
- text8(285,230,"ESC",3,white);
+ const uint16_t white=RGB(232,246,255),cyan=RGB(36,213,246);
+ const uint16_t green=RGB(68,235,147),dim=RGB(145,179,195);
+ char v[64];fb=eh_framebuffer();
+ ege_gradient(0,0,320,240,RGB(9,29,49),RGB(2,8,18));
+ ege_gradient(0,0,320,26,RGB(17,61,88),RGB(5,24,42));
+ text8(8,8,"ENDRA DIAGNOSTICS",18,white);
+ text8(278,8,"027",3,green);fill(0,25,320,2,cyan);
+ /* Large gauges are performance and memory integrity TESTS, not usage. */
+ ege_gradient(6,32,151,112,RGB(15,49,70),RGB(3,15,28));
+ ege_gradient(163,32,151,112,RGB(15,49,70),RGB(3,15,28));
+ ege_bevel(6,32,151,112);ege_bevel(163,32,151,112);
+ center_text(81,37,"CPU BENCHMARK",13,cyan);
+ center_text(239,37,"HEAP INTEGRITY",14,cyan);
+ tach(81,91,42,(int)cpu_test_pct);
+ tach(239,91,42,(int)ram_test_pct);
+ fill(45,119,72,18,RGB(2,12,24));
+ fill(203,119,72,18,RGB(2,12,24));
+ border(45,119,72,18,RGB(28,121,149));
+ border(203,119,72,18,RGB(28,121,149));
+ snprintf(v,sizeof(v),"%u/100",cpu_test_pct);center_text(81,124,v,8,white);
+ snprintf(v,sizeof(v),"%u/100",ram_test_pct);center_text(239,124,v,8,white);
+ /* Four information cards are ALWAYS visible. */
+ ege_gradient(6,149,151,34,RGB(14,45,66),RGB(5,18,32));
+ ege_gradient(163,149,151,34,RGB(14,45,66),RGB(5,18,32));
+ ege_gradient(6,188,151,34,RGB(14,45,66),RGB(5,18,32));
+ ege_gradient(163,188,151,34,RGB(14,45,66),RGB(5,18,32));
+ ege_bevel(6,149,151,34);ege_bevel(163,149,151,34);
+ ege_bevel(6,188,151,34);ege_bevel(163,188,151,34);
+ text8(12,153,"BATTERY",7,cyan);
+ if(level_known())snprintf(v,sizeof(v),"%lu%% %s",(unsigned long)snap.percent,charge_mode());
+ else strcpy(v,"N/A");
+ text8(12,167,v,17,white);
+ text8(169,153,"DOCUMENTS",9,cyan);
+ snprintf(v,sizeof(v),"F:%u D:%u %s",doc_files,doc_dirs,doc_state==1?"OK":doc_state==2?"PART":"WAIT");
+ text8(169,167,v,17,white);
+ text8(12,192,"PROCESSOR",9,cyan);
+ snprintf(v,sizeof(v),"ARM926 REV:%u",(unsigned)(cpu_id&15u));
+ text8(12,206,v,17,white);
+ text8(169,192,"MEMORY CHECK",12,cyan);
+ snprintf(v,sizeof(v),"4K:%s 8K:%s",heap_result==1?"OK":"N/A",heap_probe_8k==1?"OK":"N/A");
+ text8(169,206,v,17,white);
+ fill(0,226,320,14,RGB(3,17,30));fill(0,225,320,1,cyan);
+ text8(6,230,"CPU:RELATIVE RAM:TEST",21,dim);
+ text8(262,230,"ESC EXIT",8,green);
  eh_platform_flip();
 }
 
@@ -380,7 +365,7 @@ int main(void){
  draw();
  last_benchmark_tick=eh_platform_ticks();last_heap_tick=last_benchmark_tick;
  cpu_benchmark();draw();
- /* One dashboard, SIX interactive views of the SAME screen. */
+ /* One fixed dashboard, continuously refreshed. */
  for(uint32_t t=0;;t++){
   /* Live read-only CPU identity consistency check, not a load metric. */
   if(t%67u==0u){
@@ -405,12 +390,7 @@ int main(void){
   }
   EhKey key=eh_platform_readkey();
   if(key==EH_KEY_ESC||key==EH_KEY_ENTER)break;
-  if(key==EH_KEY_RIGHT||key==EH_KEY_MENU){
-   tab=(tab+1u)%TAB_COUNT;changed=1;
-  }
-  if(key==EH_KEY_LEFT){
-   tab=(tab+TAB_COUNT-1u)%TAB_COUNT;changed=1;
-  }
+
   if((!batt.complete && t%5u==0u)||(batt.complete && t%67u==0u)){
    batt_valid=battery_native_default(&batt,&snap,batt.complete?0u:16384u);
    if(batt.complete){updates++;remember_battery();}
