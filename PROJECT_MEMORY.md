@@ -1,4 +1,7 @@
 # PROJECT_MEMORY.md — Nspire Development Hub
+
+> **Endra-wide memory hub (2026-11-17):** Start with [Endra-Memory/MASTER_MEMORY.md](Endra-Memory/MASTER_MEMORY.md) for the complete cross-repository knowledge base (Nspire + Android + Termux + Casio), plus repository inventory, active branches, build history, devices, command preferences, known bugs, development rules and backlog. This existing PROJECT_MEMORY.md remains the historic EndraHome-specific snapshot; check live PRs/Actions for updates.
+
 Updated: 2026-11-15
 
 ## READ THIS FIRST IN EVERY NEW CHAT
