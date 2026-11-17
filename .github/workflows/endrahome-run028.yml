@@ -45,14 +45,14 @@ jobs:
       - name: Verify output and checksum
         run: |
           cd Projects/EndraHome/run028
-          test -s EndraHome_Run028_FileManager.tns
+          test -s EndraHome_Run028_DynamicLauncher.tns
           test -s EndraHome_Apps.cfg.tns
-          sha256sum EndraHome_Run028_FileManager.tns > SHA256SUMS.txt
+          sha256sum EndraHome_Run028_DynamicLauncher.tns > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraHome_Run028_FileManager
+          name: EndraHome_Run028_DynamicLauncher
           path: |
-            Projects/EndraHome/run028/EndraHome_Run028_FileManager.tns
+            Projects/EndraHome/run028/EndraHome_Run028_DynamicLauncher.tns
             Projects/EndraHome/run028/EndraHome_Apps.cfg.tns
             Projects/EndraHome/run028/README.md
             Projects/EndraHome/run028/SHA256SUMS.txt
