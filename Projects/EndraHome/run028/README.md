@@ -1,0 +1,3 @@
+# EndraHome Run028 — Dynamic folder launcher
+
+Only assigned app shortcuts appear on the home screen. One to four apps are centered in a single row; five to seven form two balanced rows. Every shortcut uses the same gold folder glyph and a label, rather than a hardcoded app-type icon. Home arrows move only between assigned shortcuts. MENU opens the management screen; LEFT/RIGHT there selects any of seven slots (including empty ones) so apps can be added or removed. The manager includes OPEN ENDRA FILES for access to the built-in file browser even with no app shortcuts assigned. Existing configuration file format, native image viewer, and file operations are preserved. Host/native build and hardware tests required.
