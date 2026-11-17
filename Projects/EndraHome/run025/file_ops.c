@@ -1,6 +1,6 @@
 /* EndraHome Run025: bounded, no-overwrite filesystem operations.
  * 8 KiB stream buffer, depth and item limits, safe partial-copy cleanup.
- * Never follows directory symlinks. No recursive operations outside caller's root.
+ * Ndless uses stat; symlinks must be excluded by filesystem policy. No recursive operations outside caller's root.
  */
 #define _POSIX_C_SOURCE 200809L
 #include "file_ops.h"
@@ -26,10 +26,10 @@ static int join(char *out,const char *dir,const char *name){
  int n=snprintf(out,PATHMAX,"%s/%s",dir,name);
  return n>0&&n<PATHMAX;
 }
-static int exists(const char *p){struct stat s;return lstat(p,&s)==0;}
+static int exists(const char *p){struct stat s;return stat(p,&s)==0;}
 static int remove_rec(const char *path,int depth){
  if(depth>EH25_MAX_DEPTH||++quota>EH25_MAX_ITEMS)return -1;
- struct stat st;if(lstat(path,&st))return -1;
+ struct stat st;if(stat(path,&st))return -1;
  if(!S_ISDIR(st.st_mode))return unlink(path);
  DIR *d=opendir(path);if(!d)return -1;
  struct dirent *e;int rc=0;
@@ -44,7 +44,7 @@ static int remove_rec(const char *path,int depth){
 int eh25_remove(const char *path){quota=0;return path&&path[0]=='/'&&strcmp(path,"/")?remove_rec(path,0):-1;}
 static int copy_rec(const char *src,const char *dst,int depth){
  if(depth>EH25_MAX_DEPTH||++quota>EH25_MAX_ITEMS||exists(dst))return -1;
- struct stat st;if(lstat(src,&st))return -1;
+ struct stat st;if(stat(src,&st))return -1;
  if(S_ISLNK(st.st_mode)||(!S_ISDIR(st.st_mode)&&!S_ISREG(st.st_mode)))return -1;
  if(S_ISDIR(st.st_mode)){
   if(mkdir(dst,0755))return -1;
