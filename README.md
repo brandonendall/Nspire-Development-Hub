@@ -1,5 +1,8 @@
 # Nspire Development Hub
 
+> **Cross-repository Endra Memory Hub:** [Endra-Memory/MASTER_MEMORY.md](Endra-Memory/MASTER_MEMORY.md) indexes all current Endra GitHub repos, current work branches, calculator and Android projects, Termux `push` instructions, build history, safety rules and future goals. The hub is a dated documentation snapshot: read live feature PRs and Actions before coding.
+
+
 Private, multi-project development workspace for TI-Nspire CX II CAS applications using Ndless.
 
 ## Active development — EndraHome (updated 2026-11-14)
