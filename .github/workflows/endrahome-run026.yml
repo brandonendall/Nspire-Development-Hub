@@ -1,0 +1,61 @@
+name: EndraHome Run026 - Adaptive Launcher and File Manager
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run025/**'
+      - '.github/workflows/endrahome-run026.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run025/**'
+      - '.github/workflows/endrahome-run026.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host tests — real JPEG decode, zoom/pan, safe Files and quick launch
+        run: |
+          make -C Projects/EndraHome/run025 test
+          make -C Projects/EndraHome/run025 preview
+          for p in home manager rename settings picker files; do test -s "Projects/EndraHome/run025/build/$p.ppm"; done
+          grep -Fq 'EndraHome_Apps.cfg.tns' Projects/EndraHome/run025/registry.h
+          grep -Fq 'eh18_zoomkey()' Projects/EndraHome/run025/main.c
+          grep -Fq 'eh11_resume_home(&ui)' Projects/EndraHome/run025/main.c
+          ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run025/platform.c Projects/EndraHome/run025/main.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run026_Previews
+          path: Projects/EndraHome/run025/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Run026 output name
+        run: sed -i 's/^APP=.*/APP=EndraHome_Run026/' Projects/EndraHome/run025/Makefile
+      - name: Native CX II CAS Ndless JPEG/PNG build
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run025
+      - name: Verify output and checksum
+        run: |
+          cd Projects/EndraHome/run025
+          test -s EndraHome_Run026.tns
+          test -s EndraHome_Apps.cfg.tns
+          sha256sum EndraHome_Run026.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run026
+          path: |
+            Projects/EndraHome/run025/EndraHome_Run026.tns
+            Projects/EndraHome/run025/EndraHome_Apps.cfg.tns
+            Projects/EndraHome/run025/README.md
+            Projects/EndraHome/run025/SHA256SUMS.txt
+          if-no-files-found: error
