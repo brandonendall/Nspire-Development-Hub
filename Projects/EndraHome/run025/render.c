@@ -247,19 +247,13 @@ static void home(const EhUI7 *s){
        P(255,164,111),1,24);
  int slots[7],count=0;
  for(int i=0;i<7;i++)if(visible_slot(i,s))slots[count++]=i;
- /* 4 per row at most; center each row independently within 320 pixels.
-  * This avoids overlap and leaves space for the fixed bottom action bar. */
- int rows=(count+3)/4;
- int first_y=rows==1?118:101;
- for(int row=0;row<rows;row++){
-  int begin=row*4, n=count-begin;
-  if(n>4)n=4;
-  int step=72;
-  int left=(W-(n-1)*step-36)/2;
-  int y=first_y+row*64;
-  for(int col=0;col<n;col++)
-   item(slots[begin+col],slots[begin+col]==s->selected,left+col*step,y);
- }
+ /* Keep a single centered row: up to seven icons fit on the 320px LCD.
+  * Avoid a second row that would overlap the fixed bottom action bar. */
+ int step=count>1?(W-44)/(count-1):0;
+ if(step>72)step=72;
+ int left=(W-36-(count-1)*step)/2;
+ for(int col=0;col<count;col++)
+  item(slots[col],slots[col]==s->selected,left+col*step,105);
  foot(0);
 }
 static void subpage(const EhUI7 *s){
