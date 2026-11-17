@@ -204,8 +204,7 @@ static void icon(int index,int x,int y){
  if(index==5)tool(x,y);
  if(index==6)star(x,y);
 }
-static void item(int index,int chosen){
- int x=8+index*44, y=105;
+static void item(int index,int chosen,int x,int y){
  if(chosen){
   border(x-3,y-4,42,47,10,P(16,63,81),P(12,32,49));
   border(x-2,y-3,40,45,9,themed(active_apps?active_apps->theme:0,100),P(13,33,52));
@@ -216,13 +215,13 @@ static void item(int index,int chosen){
  char first[7],second[7];
  eh8_caption(name_of(index),first,second);
  int n=(int)strlen(first);
- small(x+18-n*5/2,152,first,white,n);
+ small(x+18-n*5/2,y+47,first,white,n);
  if(second[0]){
   int m=(int)strlen(second);
-  small(x+18-m*5/2,161,second,white,m);
+  small(x+18-m*5/2,y+56,second,white,m);
  }
  /* Quiet cyan dot: shortcut is configured; gray dot: not configured. */
- rect(x+16,171,4,2,ready(index)?P(80,234,202):P(81,94,109));
+ rect(x+16,y+66,4,2,ready(index)?P(80,234,202):P(81,94,109));
 }
 static void foot(int mode){
  rr(11,213,298,22,9,P(34,41,59));
@@ -235,23 +234,32 @@ static void foot(int mode){
  small(191,222,"Menu",P(111,221,248),4);
  text(226,221,mode==1?"Help":"Info",white,1,4);
 }
+/* Run026: responsive, centered icon grid. Built-in Files and Images remain
+ * visible without a configured shortcut; other slots are shown when assigned.
+ * Always include the currently selected slot so it remains navigable. */
+static int visible_slot(int i,const EhUI7 *s){
+ return ready(i)||i==3||i==4||i==s->selected;
+}
 static void home(const EhUI7 *s){
  bg();title();
- if(active_apps){
-  if(!active_apps->file_loaded)
-   text(14,91,"CONFIG FILE MISSING",P(255,164,111),1,24);
-  else if(active_apps->errors)
-   text(14,127,"CHECK CONFIG FILE",P(255,164,111),1,24);
-  else {
-   char status[]="0 / 7 READY";
-   int count=active_apps->enabled;
-   if(count<0)count=0;
-   if(count>7)count=7;
-   status[0]=(char)('0'+count);
-   text(14,127,status,P(111,228,208),1,11);
-  }
+ if(active_apps&&(!active_apps->file_loaded||active_apps->errors))
+  text(14,91,active_apps->errors?"CHECK CONFIG FILE":"CONFIG FILE MISSING",
+       P(255,164,111),1,24);
+ int slots[7],count=0;
+ for(int i=0;i<7;i++)if(visible_slot(i,s))slots[count++]=i;
+ /* 4 per row at most; center each row independently within 320 pixels.
+  * This avoids overlap and leaves space for the fixed bottom action bar. */
+ int rows=(count+3)/4;
+ int first_y=rows==1?118:101;
+ for(int row=0;row<rows;row++){
+  int begin=row*4, n=count-begin;
+  if(n>4)n=4;
+  int step=72;
+  int left=(W-(n-1)*step-36)/2;
+  int y=first_y+row*64;
+  for(int col=0;col<n;col++)
+   item(slots[begin+col],slots[begin+col]==s->selected,left+col*step,y);
  }
- for(int i=0;i<7;i++)item(i,i==s->selected);
  foot(0);
 }
 static void subpage(const EhUI7 *s){
