@@ -61,7 +61,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   return;
  }
  if(s->page.page==EH_PAGE_DETAIL){
-  static const char *items[5]={"ASSIGN / CHANGE APP","RENAME SHORTCUT",
+  static const char *items[6]={"ASSIGN / CHANGE APP","RENAME SHORTCUT",
    "REMOVE SHORTCUT","APP INFORMATION","SETTINGS","OPEN ENDRA FILES"};
   txt(f,19,45,"MANAGE APPS: LEFT/RIGHT SLOT",cyan,33);
   for(int i=0;i<6;i++){
