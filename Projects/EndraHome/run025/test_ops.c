@@ -7,7 +7,7 @@
 #include <unistd.h>
 int main(void){
  char base[]="/tmp/eh25XXXXXX";assert(mkdtemp(base));
- char a[512],b[512],c[512],f[512],g[512];
+ char a[512],b[512],c[512],f[1024],g[1024];
  snprintf(a,sizeof(a),"%s/alpha",base);snprintf(b,sizeof(b),"%s/beta",base);
  snprintf(c,sizeof(c),"%s/gamma",base);assert(!mkdir(a,0700));
  snprintf(f,sizeof(f),"%s/large.bin",a);
