@@ -462,6 +462,7 @@ int main(void){
    if(id_now!=cpu_id)cpu_id_mismatches++;
   }
   cpu_heartbeat++;
+  int changed=0;
   uint32_t now=eh_platform_ticks();
   if((uint32_t)(now-last_benchmark_tick)>=32768u){
    last_benchmark_tick=now;
@@ -474,7 +475,6 @@ int main(void){
    ram_test_pct=(heap_result==1?50u:0u)+(heap_result==1&&heap_probe_8k==1?50u:0u);
    changed=1;
   }
-  int changed=0;
   EhKey key=eh_platform_readkey();
   if(key==EH_KEY_ESC||key==EH_KEY_ENTER)break;
   if(key==EH_KEY_RIGHT||key==EH_KEY_MENU){
