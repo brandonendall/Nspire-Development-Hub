@@ -105,3 +105,15 @@ Run010 includes a local renderer header to fix an old-help-filename issue seen i
 ## Run013 — in-app Assign shortcut
 
 User confirmed Run012 one-press launch is fast on hardware. Run013 implements the requested Menu → App Info → **ASSIGN APP** button → browse `/documents` → select a `.tns` file; the shortcut is saved into the same permanent `EndraHome_Apps.cfg.tns` file. Preserves Run012 quick launch and Run011 return-home. **Back up configured file before the first hardware test; physical write persistence not yet confirmed.** Instructions and source: [run013/README.md](run013/README.md). Keep Run012 as fallback.
+
+## Run029 — requested integrated desktop, typography, power, OS launcher (2026-11-18)
+
+**Requested, not yet built or hardware-tested.** Base implementation on Run028 DynamicLauncher, preserving the working Endra Files browser, read-only preview, file operations, fast exit, return-home, dynamic shortcut registry, and the permanent `EndraHome_Apps.cfg.tns`. Preserve Run028 as rollback; do not require calculator connection during development.
+
+1. **Always-visible Files tile:** Home must always display slot 3 as Files. When its assigned external .tns path is blank, Enter opens the built-in Endra Files browser directly; when assigned, Enter launches that file manager. If the external executable is missing or fails to launch, fall back to built-in Files safely. Keep assignment/change capability and never silently erase a configured path.
+2. **Legible icon captions:** Replace Run028 `render.c`'s cropped five-pixel glyph rendering (which truncates columns from the 8x8 bitmap) with full-width glyphs or a properly designed small bitmap font, appropriate spacing, center alignment, and truncation/wrapping bounded to each tile. Apply the same improvement to Files folder names and avoid overlapping UI.
+3. **Ctrl+ON:** Add shortcut detection only after verifying TI-Nspire CX II CAS OS 6.4 / Ndless key mapping and a safe documented standby/power API. Do not directly modify power registers or hook OS power handling without validation. A graceful exit to OS is an acceptable fallback, but must not be misrepresented as powering off.
+4. **TI native Settings menu option 9:** Research whether OS Home -> 5 Settings can safely register an Ndless app shortcut. Do NOT modify firmware, OS menus, `ndless.cfg.tns`, or persistent hooks merely to imitate native integration. If no supported extension point exists, document a reversible quick-launch alternative as a separate opt-in feature.
+5. **Hardware preservation:** compile and host-test all changes in CI first; test a single release on device, with safe Esc-only exit first and no repeated resets. Never overwrite user configuration or previously working TNS files.
+
+**Engineering distinction:** The OS Settings entry is a feasibility investigation, not a guaranteed feature of Run029. No native OS integration is implemented merely by adding a menu item to EndraHome itself.
