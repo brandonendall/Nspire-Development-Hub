@@ -1,19 +1,22 @@
-# EndraHome — PROJECT_MEMORY.md
-Updated: 2026-11-19
-Repository: brandonendall/Nspire-Development-Hub
-Active source branch: feature/endrahome-run001
-Draft PR: #10
-Source: Projects/EndraHome/
-Read alongside root PROJECT_MEMORY.md, AGENTS.md, handoff/HYDRA-START-HERE.md, this project's README, and latest Actions results.
+# EndraHome project memory
 
-## Confirmed baseline
+Updated 2026-11-19. The project lives in `brandonendall/Nspire-Development-Hub`, on branch `feature/endrahome-run001`. [Repository index](../../PROJECT_MEMORY.md) · [Draft PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10).
+
+## Run028 Dynamic Launcher
+
+**Installed baseline.** Brandon identified Run028 as the version installed and photographed on his TI-Nspire CX II CAS. Its desktop shows assigned shortcuts and its manager opens Endra Files. [Run028 source](run028/) · [Preserved executable](builds/EndraHome_Run028_DynamicLauncher.tns).
+
+The implementation began at [`cfafa950`](https://github.com/brandonendall/Nspire-Development-Hub/commit/cfafa950b19608cc2096ff17c92cb758bf3e0682). The host tests and native build passed at [`780a1117`](https://github.com/brandonendall/Nspire-Development-Hub/commit/780a111755f301a853826816c178a60dad7c33c9), Actions run `44164319709`, native artifact `14364108177`. The archived executable is 111,282 bytes. Its SHA-256 matches the checksum packaged by that build, `799d85eb778341ac6caee18dd0fa47489a6da561e3d16c610ee30215373eb857`. [Verified build](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44164319709).
+
+## Earlier builds
 - Run001/002 froze device; NEVER recommend.
 - Run003–006 reported working on physical hardware; Run006 tested limited small-app handoff.
 - Run008 small test app launched; ~10.04 seconds.
 - Run010 established persistent EndraHome_Apps.cfg.tns (NO run number); never overwrite user's configured file.
 - Run017 built-in Files browser, text preview, fast Esc reported working by user.
-- Run018 source in run018/, image viewer built by CI run 43744290186, artifact ID 14173860704, source commit 03288c754cdd3dd9248ae7bb24600263cd56a7a4. Physical image viewer test not yet verified.
+- Run018 source in run018/, image viewer built by CI run 43744290186, artifact ID 14173860704, source commit 03288c754cdd3dd9248ae7bb24600263cd56a7a4. The owner later confirmed that Esc returned safely from the oversized JPEG error.
 - Preserve working Run017 as rollback; no OS hooks, firmware edits, ndless.cfg changes, forced resets or unnecessary hardware stress.
+
 
 ## Requested next major build — pending until compiled and tested
 1. **Always-visible Files desktop tile**: built-in Endra Files default, assign alternate compatible file manager, persistent choice, fallback to built-in if unset/unavailable. The existing Run018 slot 3 (Files) already opens built-in browser if no assigned path, but user wants this explicitly guaranteed on main desktop.
@@ -34,10 +37,4 @@ Read alongside root PROJECT_MEMORY.md, AGENTS.md, handoff/HYDRA-START-HERE.md, t
 - User uses Termux command `push <local-path>` (no destination argument) and prefers `clear` first.
 
 ## Current task
-Begin next EndraHome source/build iteration from run018, prioritizing permanent Files desktop behavior, readable font and customizable text colors; confirm implementation and CI before claiming built. Native OS menu integration and Ctrl+ON require API investigation before inclusion.
-
-## Critical correction from owner (2026-11-19)
-The owner's **currently installed and photographed build is EndraHome Run028 'Dynamic...'** (full suffix not yet confirmed), NOT Run018. Run018 is merely the latest version identified in this branch's older documentation; DO NOT start new work by overwriting/replacing the owner's Run028 or labeling Run019 the next release. Locate Run028's actual source, commit, branch and artifact (possibly another repository/branch), inspect it, and continue with Run029 or the actual next run only after verification. Preserve Run028 as the known user-current baseline; request exact filename/artifact if repo search cannot locate it. The user's photos refer to Run028.
-
-## Uploaded verified binary (2026-11-19)
-Owner supplied `EndraHome_Run028_DynamicLauncher.tns` (109 KiB). Binary strings confirm embedded title `EndraHome Dynamic Launcher 028`. Treat as current installed baseline. A compiled .tns is not the editable source; locate corresponding source before modifying. Never overwrite this binary or downgrade to Run018.
+Build Run029 in `run029/` from the verified Run028 source. Keep the installed baseline, the existing shortcut configuration and the Run028 binary available for comparison.
