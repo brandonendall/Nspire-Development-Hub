@@ -32,7 +32,7 @@ static int read_prefs(const char *path, EhAppearance *out) {
     if(sscanf(data,"v2 %d %d %d",&theme,&folder,&font)!=3 &&
        sscanf(data,"v1 %d %d %d",&theme,&folder,&font)!=3)return 0;
     char canonical[64];
-    snprintf(canonical,sizeof(canonical),"%s %d %d %d\\n",data[1]=='2'?"v2":"v1",theme,folder,font);
+    snprintf(canonical,sizeof(canonical),"%s %d %d %d\n",data[1]=='2'?"v2":"v1",theme,folder,font);
     if(strcmp(data,canonical)!=0 || theme<0 || folder<0 || font<0)return 0;
     EhAppearance a={(unsigned)theme,(unsigned)folder,(unsigned)font};
     if(!valid(a))return 0;
@@ -63,7 +63,7 @@ int eh_prefs_save(const char *cfg, EhAppearance a) {
     } else if (backup && remove(p.backup) != 0) return 0;
     FILE *f = fopen(p.stage, "wb");
     if (!f) return 0;
-    int ok = fprintf(f, "v1 %u %u %u\n", a.theme, a.folder, a.font) == 9;
+    int ok = fprintf(f, "v2 %u %u %u\n", a.theme, a.folder, a.font) > 0;
     if (fclose(f) || !ok || !read_prefs(p.stage, &verified) ||
         verified.theme != a.theme || verified.folder != a.folder || verified.font != a.font) {
         remove(p.stage);
