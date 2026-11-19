@@ -13,9 +13,13 @@ Run002 adds a per-snapshot task ID, task state, priority, stack allocation and m
 
 The November 19 EndraTask/EndraTermux handoff reports that Smart Push Run011 transferred a file with `nlink-v2` to a custom `/upload` destination after one “No such device” failure. Treat that as one successful transfer, with reliability and the cause of the initial failure still unverified. Use normal EndraTermux file retrieval for the Run002 export. Preserve the working transport.
 
-## Termux transfer command
+## Build delivery and Termux transfer
 
-Pass the phone's source file first and the calculator destination second. Use `push <source> /upload` in all EndraTask transfer instructions. The destination is the exact lowercase path `/upload`.
+When Brandon asks for a new EndraTask build and the build is ready:
+
+1. Verify the actual `.tns` matches the requested run. Preserve the exact filename.
+2. Make the actual `.tns` available as a direct download in the same chat reply, using a sandbox link to the file in the workspace. The download should work from the chat without opening the Library, visiting GitHub, or extracting a ZIP.
+3. Include a copy-ready Termux code block immediately below the download. Put `clear` first, then `push` with the phone's source path and the exact lowercase calculator destination `/upload`. Use the actual filename and default to the phone's Download folder unless Brandon specifies a different location.
 
 ```bash
 clear
