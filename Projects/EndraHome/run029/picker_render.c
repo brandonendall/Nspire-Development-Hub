@@ -20,26 +20,48 @@ static int suffix(const char *name,const char *ext){
  }
  return 1;
 }
+static uint16_t mix565(uint16_t a,uint16_t b,unsigned percent){
+ unsigned inv=100-percent;
+ return (uint16_t)(((((a>>11)*inv+(b>>11)*percent)/100)<<11)|
+ (((((a>>5)&63)*inv+((b>>5)&63)*percent)/100)<<5)|
+ (((a&31)*inv+(b&31)*percent)/100));
+}
 static void file_icon(uint16_t *f,int x,int y,const char *name,int dir,const EhPalette *p){
  if(dir){eh_folder_icon(f,x,y,1,p);return;}
  int image=suffix(name,".jpg")||suffix(name,".png")||suffix(name,".jpeg")||
-           suffix(name,".jpg.tns")||suffix(name,".jpeg.tns")||suffix(name,".png.tns");
+   suffix(name,".jpg.tns")||suffix(name,".jpeg.tns")||suffix(name,".png.tns");
+ int archive=suffix(name,".zip")||suffix(name,".zip.tns")||suffix(name,".7z")||suffix(name,".rar");
+ int config=suffix(name,".cfg")||suffix(name,".cfg.tns")||suffix(name,".ini")||suffix(name,".theme");
+ int pdf=suffix(name,".pdf")||suffix(name,".pdf.tns");
+ int app=suffix(name,".tns")&&!image&&!archive&&!config&&!pdf&&!suffix(name,".txt.tns");
  int text=eh17_is_text_name(name);
- int archive=suffix(name,".zip")||suffix(name,".zip.tns");
- if(!image&&!text&&!archive&&!suffix(name,".pdf.tns")&&suffix(name,".tns")){
-  eh_app_icon(f,x,y,1);
-  return;
- }
- box(f,x+2,y+2,12,13,p->raised);
- box(f,x+2,y+2,9,2,p->accent);
- if(image){
-  box(f,x+4,y+6,8,5,p->folder);
-  box(f,x+5,y+9,4,2,p->panel);
- }else if(archive){
-  for(int a=0;a<4;a++)box(f,x+7+(a%2),y+4+a*2,2,2,p->accent);
+ uint16_t tone=archive?mix565(p->folder,EH_RGB(255,145,45),55):
+  image?mix565(p->folder,EH_RGB(60,205,240),55):
+  config?mix565(p->folder,EH_RGB(170,150,230),65):
+  pdf?mix565(p->folder,EH_RGB(245,70,70),65):
+  text?mix565(p->folder,EH_RGB(210,225,245),70):p->accent;
+ if(app){eh_app_icon(f,x,y,1);return;}
+ box(f,x+2,y+1,12,14,tone);
+ box(f,x+4,y+3,8,10,p->panel);
+ if(archive){
+  box(f,x+7,y+3,2,9,tone);
+  for(int a=0;a<4;a++)box(f,x+7+(a&1),y+4+a*2,1,1,p->ink);
+ }else if(image){
+  box(f,x+5,y+5,6,6,tone);
+  box(f,x+9,y+6,2,2,p->ink);
+  box(f,x+6,y+9,4,2,p->ink);
+ }else if(config){
+  box(f,x+5,y+6,6,2,tone);
+  box(f,x+7,y+4,2,6,tone);
+  box(f,x+6,y+10,4,2,p->ink);
+ }else if(pdf){
+  box(f,x+4,y+5,8,2,tone);
+  box(f,x+4,y+8,6,2,tone);
+  box(f,x+4,y+11,8,1,tone);
  }else{
-  box(f,x+4,y+7,8,1,p->ink);
-  box(f,x+4,y+10,6,1,p->ink);
+  box(f,x+4,y+5,8,1,tone);
+  box(f,x+4,y+8,8,1,tone);
+  box(f,x+4,y+11,6,1,tone);
  }
 }
 static void size_label(char *out,size_t cap,unsigned long long n){
