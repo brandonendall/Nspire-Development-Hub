@@ -1,0 +1,57 @@
+name: EndraTask Run003
+on:
+  push:
+    branches: [feature/endratask-run001]
+    paths:
+      - 'Projects/EndraTask/run003/**'
+      - '.github/workflows/endratask-run003.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: Ziyang-Bai/nKits
+          ref: a040928502969b3cab393d890e23c9eaba45a30c
+          path: nkits
+          persist-credentials: false
+      - name: Extract the pinned Ndless SDK
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libboost-program-options1.83.0
+          curl --fail --location --retry 3 -o "$RUNNER_TEMP/ndless.deb" \
+            https://github.com/ndless-nspire/Ndless/releases/download/nightly/ndless-sdk_0.614.40413359722.1_amd64.deb
+          echo "06321aadca645d16e6d99f9c57e13c3f1c4837ce142a922510c46f6ead13da23  $RUNNER_TEMP/ndless.deb" | sha256sum -c -
+          dpkg-deb -x "$RUNNER_TEMP/ndless.deb" "$RUNNER_TEMP/ndless"
+          echo "$RUNNER_TEMP/ndless/usr/bin" >> "$GITHUB_PATH"
+      - name: Test, compile and package
+        run: |
+          set -euo pipefail
+          app=Projects/EndraTask/run003
+          make -C "$app" host-test all
+          readelf -h "$app/build/EndraTask_Run003.elf" | grep 'Machine:.*ARM'
+          source_dir=$(mktemp -d)
+          mkdir -p "$source_dir"/{run003,nkits/common} dist
+          cp "$app/"{Makefile,README.md,main.c,diagnostic.c,diagnostic.h,test_diagnostic.c} "$source_dir/run003/"
+          cp nkits/common/{ui.c,ui.h,draw.c,draw.h} "$source_dir/nkits/common/"
+          cp nkits/{version.h,LICENSE} "$source_dir/nkits/"
+          cp "$app/"{EndraTask_Run003.tns,README.md} nkits/LICENSE dist/
+          tar -czf dist/EndraTask_Run003_Source.tar.gz -C "$source_dir" .
+          make -C "$source_dir/run003" NKITS="$source_dir/nkits" host-test all
+          cmp "$source_dir/run003/EndraTask_Run003.tns" dist/EndraTask_Run003.tns
+          (cd dist && sha256sum EndraTask_Run003.tns EndraTask_Run003_Source.tar.gz > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraTask_Run003
+          path: dist/
+          if-no-files-found: error

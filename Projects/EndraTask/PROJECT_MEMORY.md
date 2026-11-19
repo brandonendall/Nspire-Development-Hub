@@ -1,11 +1,12 @@
 # EndraTask project memory
 
-Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Latest build: **Run002**. Read the build history and device checklist below.
+Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Latest build: **Run003**. Read the build history and device checklist below.
 
 ## Build history
 
 | Build | Source and verification | Download |
 | --- | --- | --- |
+| Run003 | [Read-only path dashboard and device checklist](run003/README.md). Host tests and native ARM build passed off-device with pinned Ndless r2023; a clean build from the packaged source inputs matched the delivered TNS byte for byte. SHA-256 `b8e728cda8eec0d4a8f77d1d468a391799eab8d1f540c7f2804206f143361ff5`. Device test pending. | [Run003 TNS](https://chatgpt.com/library?file_id=libfile_c0431627bb448191a29a993d4008d483&account_id=personal) |
 | Run002 | [Source and device checklist](run002/README.md) at `2f228cd4acdd4c3c5ea18098b3cd4e43da4e8801`. Host tests and the native ARM build passed with the pinned Ndless r2023 SDK. Rebuilding from the packaged source reproduced the delivered TNS byte for byte. [GitHub Actions run 44605910040](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44605910040) passed at `125b53f5967dc0ea15e77c018af2f69d1b2cddcf` and published [artifact 14569718743](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44605910040/artifacts/14569718743). SHA-256 `242d20e1a6e80e10930b06f4afba5edebb0a65423b0bc658da2cddb4bc8d9dd8`. Run002 opened on the calculator, and displayed the Export confirmation after E. The calculator froze after Enter confirmed the save. Task refresh, report creation and retrieval are unverified. | [Run002 TNS](https://chatgpt.com/library?file_id=libfile_bf771b1640a48191917ac62f90966b39&account_id=personal) · [TNS, source and checksums](https://chatgpt.com/library?file_id=libfile_3c54fa22ea6c8191a73b3e6eedea3c3f&account_id=personal) |
 | Run001 | [Source](run001/README.md) at `38eca6486d05c3b2472c5d5e51d1036d0e7eb8ff`. Host tests and native ARM compilation passed off-device. No physical test recorded. | [Run001 TNS](https://chatgpt.com/library?file_id=libfile_77b60499e66081918b39456fd935713e&account_id=personal) |
 
@@ -38,9 +39,9 @@ push /storage/emulated/0/Download/EndraTask_Run002.tns /upload
 
 Build a lightweight task and file-service diagnostics utility for Brandon's TI-Nspire CX II CAS on OS 6.4.0.74. Gather useful evidence about the recurring USB “file system busy” condition without repeatedly transferring builds, stressing the calculator, or modifying its system state. Batch related features into one release and do as much verification as possible off-device.
 
-## Next milestone — diagnose the busy path
+## Run003 diagnostic scope and next steps
 
-Brandon confirmed the Run002 task list largely duplicates nKits Task Manager. EndraTask's primary job is to identify the affected folder or file, the failing operation, and what can safely be canceled. Keep the task snapshot as optional context. Run002's local `opendir("/documents")` checks one directory and does not identify a lock or its owner.
+Run003 makes local path probes the main screen and keeps results in memory. It does not include the nKits task-list backend or the Run002 report write path. Compare the same resolved target with the phone's Build 010 probe separately. Brandon confirmed the Run002 task list largely duplicates nKits Task Manager. EndraTask's primary job is to identify the affected folder or file, the failing operation, and what can safely be canceled. Keep the task snapshot as optional context. Run002's local `opendir("/documents")` checks one directory and does not identify a lock or its owner.
 
 1. Make the probe results the main screen. Compare calculator-local access with EndraTermux's single-path metadata operation for the same resolved target and a known-good control. Start with the folder used for the successful Run012 transfer and the path involved in the failing operation. Verify phone-side and calculator-local path mapping before comparing them.
 2. Record the operation, path, elapsed time and raw result. Distinguish a returned busy error from a missing path, transport error or timeout. Reuse the existing read-only Build 010 direct-path probe for known existing files. A metadata success establishes only that operation; it cannot establish transfer or write availability. Avoid full-tree enumeration and automatic retries.
