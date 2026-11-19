@@ -13,6 +13,10 @@ GitHub Actions passed the host tests and native build at commit `780a111755f301a
 ## EndraHome design intent
 TI-Nspire CX II CAS / Ndless lightweight customizable launcher. Preserve app shortcuts, permanent EndraHome_Apps.cfg.tns (never overwrite user settings), built-in Files browser, text preview, fast return/exit, and safe memory/CPU use. Planned file operations: rename, copy, move, delete; future integrated text editing, JPG/PNG viewing, PDF reading, configurable default apps. Do not modify OS hooks, ndless.cfg, or system files. Avoid device freezes and test changes incrementally.
 
+## EndraTask on TI-Nspire CX II CAS
+
+Run001 starts on [`feature/endratask-run001`](https://github.com/brandonendall/Nspire-Development-Hub/tree/feature/endratask-run001). Read [the EndraTask project memory](Projects/EndraTask/PROJECT_MEMORY.md) for the pinned nKits Task Manager source, EndraTermux Build 010 direct-path probe, Ndless revision check and one-session test plan. Source review and project memory are complete at `4e711778bf87b305a19414e767fbe9efa74f4368`. Native build, CI artifact and physical verification are pending.
+
 ## Other projects
 Projects/EndraGBA, Projects/UltraGBA, Projects/UltraZip, Projects/UltimateCommander exist on main. Preserve existing functioning GBA emulator, ROM-local saves, RTC and GBZ paging. Consult each project's README before modifying it.
 
