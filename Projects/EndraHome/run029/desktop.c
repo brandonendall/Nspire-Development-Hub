@@ -3,11 +3,13 @@
 
 int eh_desktop_layout(const EhRegistry *apps, EhTile tiles[EH7_SLOT_COUNT]) {
     int count = 0;
+    int empty_shown=0;
     for (int slot = 0; slot < EH7_SLOT_COUNT; ++slot) {
         if (slot == EH_FILES_SLOT || (apps && apps->slots[slot].path[0]) ||
-            (apps && !apps->slots[slot].path[0] && slot != EH_FILES_SLOT &&
-             ({ int first_empty=1; for(int j=0;j<slot;j++) if(j!=EH_FILES_SLOT && !apps->slots[j].path[0]) {first_empty=0;break;} first_empty; })))
-            tiles[count++].slot = slot;
+            (apps && !empty_shown && slot != EH_FILES_SLOT && !apps->slots[slot].path[0]))
+        { tiles[count++].slot = slot;
+          if(apps && slot != EH_FILES_SLOT && !apps->slots[slot].path[0]) empty_shown=1;
+        }
     }
     int first = count <= 4 ? count : (count + 1) / 2;
     int spacing = first <= 2 ? 108 : first == 3 ? 94 : 76;
