@@ -3,6 +3,7 @@
 #include "desktop.h"
 #include "display.h"
 #include <string.h>
+static uint16_t tint(uint16_t a,uint16_t b,int k){int v=255-k;return (uint16_t)((((((a>>11)*v+(b>>11)*k)/255)&31)<<11)|((((((a>>5)&63)*v+((b>>5)&63)*k)/255)&63)<<5)|((((a&31)*v+(b&31)*k)/255)&31));}
 static void tile_draw(uint16_t *f,const EhTile *tile,const EhRegistry *apps,const EhPalette *p,int selected){
     int x=tile->center-35,y=tile->top;
     eh_box(f,x,y,70,65,selected?p->accent:p->panel);
@@ -23,7 +24,16 @@ static void tile_draw(uint16_t *f,const EhTile *tile,const EhRegistry *apps,cons
 void eh7_render(uint16_t *f,const EhUI7 *ui,const EhRegistry *apps){
     if(!f||!ui||!apps)return;
     EhPalette p=eh_palette(apps->appearance);
-    eh_box(f,0,0,320,240,p.background);
+    /* Pixel-native 320x240 RGB565 background: static 240 scanline gradient, no animation or image decoding. */
+    for(int y=0;y<240;++y){
+        uint16_t col=tint(p.background,p.raised,y*82/239);
+        eh_box(f,0,y,320,1,col);
+    }
+    /* Subtle horizontal ambient accent, precomputed only when the screen is drawn. */
+    for(int y=53;y<210;++y){
+        int strength=(y-53)*16/157;
+        eh_box(f,0,y,2,tint(p.accent,p.background,180+strength));
+    }
     eh_box(f,0,0,320,51,p.panel);
     eh_box(f,0,49,320,2,p.accent);
     eh_theme_badge(f,12,7,&p);
