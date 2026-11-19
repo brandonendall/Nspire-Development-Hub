@@ -6,7 +6,7 @@
 #define EH_SCREEN_WIDTH 320
 #define EH_SCREEN_HEIGHT 240
 #define EH_GLYPH_WIDTH 8
-#define EH_COLOR_COUNT 7
+#define EH_COLOR_COUNT 10
 #define EH_RGB(r,g,b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 
 typedef struct { unsigned theme, folder, font; } EhAppearance;
@@ -25,5 +25,7 @@ void eh_fit_text(uint16_t *frame, int x, int y, const char *text, uint16_t ink, 
 void eh_folder_icon(uint16_t *frame, int x, int y, int scale, const EhPalette *colors);
 void eh_app_icon(uint16_t *frame, int x, int y, int scale);
 void eh_brand_badge(uint16_t *frame, int x, int y);
+void eh_theme_badge(uint16_t *frame, int x, int y, const EhPalette *p);
+void eh_theme_icon(uint16_t *frame, int x, int y, int kind, const EhPalette *p);
 
 #endif
