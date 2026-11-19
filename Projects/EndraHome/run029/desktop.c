@@ -4,7 +4,9 @@
 int eh_desktop_layout(const EhRegistry *apps, EhTile tiles[EH7_SLOT_COUNT]) {
     int count = 0;
     for (int slot = 0; slot < EH7_SLOT_COUNT; ++slot) {
-        if (slot == EH_FILES_SLOT || (apps && apps->slots[slot].path[0]))
+        if (slot == EH_FILES_SLOT || (apps && apps->slots[slot].path[0]) ||
+            (apps && !apps->slots[slot].path[0] && slot != EH_FILES_SLOT &&
+             ({ int first_empty=1; for(int j=0;j<slot;j++) if(j!=EH_FILES_SLOT && !apps->slots[j].path[0]) {first_empty=0;break;} first_empty; })))
             tiles[count++].slot = slot;
     }
     int first = count <= 4 ? count : (count + 1) / 2;
