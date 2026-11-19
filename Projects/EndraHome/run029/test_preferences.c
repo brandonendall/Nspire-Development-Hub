@@ -24,7 +24,7 @@ int main(void) {
     EhAppearance new={1,2,3},out={0,0,0};
     assert(eh_prefs_save(cfg,new)); assert(eh_prefs_load(cfg,&out));
     assert(out.theme==1 && out.folder==2 && out.font==3);
-    assert(!eh_prefs_save(cfg,(EhAppearance){0,0,7}));
+    assert(!eh_prefs_save(cfg,(EhAppearance){0,0,EH_COLOR_COUNT}));
     write_text(stage,"incomplete"); assert(rename(live,bak)==0);
     assert(eh_prefs_load(cfg,&out) && out.font==3);
     new.font=5; assert(eh_prefs_save(cfg,new));
