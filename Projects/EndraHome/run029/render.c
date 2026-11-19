@@ -9,8 +9,8 @@ static void tile_draw(uint16_t *f,const EhTile *tile,const EhRegistry *apps,cons
     int x=tile->center-35,y=tile->top;
     eh_box(f,x,y,70,65,selected?p->accent:p->panel);
     eh_box(f,x+1,y+1,68,63,selected?p->selected:p->background);
-    eh_theme_icon(f,tile->center-16,y+2,tile->slot,p);
-    const char *label=tile->slot==EH_FILES_SLOT?"Files":apps->slots[tile->slot].label;
+    eh_app_icon(f,tile->center-16,y+2,2);
+    const char *label=tile->slot==EH_FILES_SLOT?"Files":(!apps->slots[tile->slot].path[0]?"Add App":apps->slots[tile->slot].label);
     char first[EH7_LABEL_CAP],second[EH7_LABEL_CAP];
     /* Full nine-character Favorites fits without a dangling final S. */
     int len=(int)strlen(label);
