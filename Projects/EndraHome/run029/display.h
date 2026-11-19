@@ -6,7 +6,7 @@
 #define EH_SCREEN_WIDTH 320
 #define EH_SCREEN_HEIGHT 240
 #define EH_GLYPH_WIDTH 8
-#define EH_COLOR_COUNT 10
+#define EH_COLOR_COUNT 20
 #define EH_RGB(r,g,b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 
 typedef struct { unsigned theme, folder, font; } EhAppearance;
