@@ -13,6 +13,15 @@ Run002 adds a per-snapshot task ID, task state, priority, stack allocation and m
 
 The November 19 EndraTask/EndraTermux handoff reports that Smart Push Run011 transferred a file with `nlink-v2` to a custom `/upload` destination after one “No such device” failure. Treat that as one successful transfer, with reliability and the cause of the initial failure still unverified. Use normal EndraTermux file retrieval for the Run002 export. Preserve the working transport.
 
+## Termux transfer command
+
+Pass the phone's source file first and the calculator destination second. Use `push <source> /upload` in all EndraTask transfer instructions. The destination is the exact lowercase path `/upload`.
+
+```bash
+clear
+push /storage/emulated/0/Download/EndraTask_Run002.tns /upload
+```
+
 ## Goal
 
 Build a lightweight task and file-service diagnostics utility for Brandon's TI-Nspire CX II CAS on OS 6.4.0.74. Gather useful evidence about the recurring USB “file system busy” condition without repeatedly transferring builds, stressing the calculator, or modifying its system state. Batch related features into one release and do as much verification as possible off-device.
