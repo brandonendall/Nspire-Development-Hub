@@ -1,15 +1,14 @@
 # PROJECT_MEMORY.md — Nspire Development Hub
-Updated: 2026-11-15
+Updated 2026-11-19
 
 ## READ THIS FIRST IN EVERY NEW CHAT
 This file is the durable project index. Read this file, then AGENTS.md, handoff/HYDRA-START-HERE.md, and the active project's README and latest GitHub Actions runs. Check ALL branches and open draft PRs: the default branch may NOT contain current work. Treat the repository and its commits as the source of truth, not chat summaries. Do not claim builds are device-tested until user confirms.
 
-## Repository and active development
-Repository: brandonendall/Nspire-Development-Hub
-EndraHome active branch: feature/endrahome-run001
-EndraHome draft PR: #10
-EndraHome source: Projects/EndraHome/run018/ on the feature branch (NOT main).
-Latest known EndraHome CI: GitHub Actions run 43744290186; artifact EndraHome_Run018_ImageViewer, artifact ID 14173860704; source commit 03288c754cdd3dd9248ae7bb24600263cd56a7a4. Run018 image viewer compiled; physical calculator test pending. Run017_BuiltInFiles.tns is user-provided known reference; preserve functionality. Earlier user uploaded Run014_SaveFix.tns and Run015_AppManager.tns.
+## EndraHome on TI-Nspire CX II CAS
+
+Brandon identified **Run028 Dynamic Launcher** as the version installed and photographed on his calculator. The source is in `Projects/EndraHome/run028/` on `feature/endrahome-run001`. The branch name dates from Run001. [Project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md) · [Run028 source at the passing build](https://github.com/brandonendall/Nspire-Development-Hub/tree/780a111755f301a853826816c178a60dad7c33c9/Projects/EndraHome/run028) · [Draft PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10).
+
+GitHub Actions passed the host tests and native build at commit `780a111755f301a853826816c178a60dad7c33c9`. The native artifact ID is `14364108177`. The preserved executable in the project is `Projects/EndraHome/builds/EndraHome_Run028_DynamicLauncher.tns`. [Build record](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44164319709).
 
 ## EndraHome design intent
 TI-Nspire CX II CAS / Ndless lightweight customizable launcher. Preserve app shortcuts, permanent EndraHome_Apps.cfg.tns (never overwrite user settings), built-in Files browser, text preview, fast return/exit, and safe memory/CPU use. Planned file operations: rename, copy, move, delete; future integrated text editing, JPG/PNG viewing, PDF reading, configurable default apps. Do not modify OS hooks, ndless.cfg, or system files. Avoid device freezes and test changes incrementally.
@@ -25,4 +24,4 @@ Projects/EndraGBA, Projects/UltraGBA, Projects/UltraZip, Projects/UltimateComman
 5. Never conflate CI PASS with physical-device PASS. Always provide exact downloadable artifacts or clearly state when connector access cannot download binary artifacts.
 
 ## Current next action
-Retrieve EndraHome Run018 ImageViewer artifact and transfer .tns to calculator for physical testing. If binary artifact download cannot be accessed through tools, direct user to GitHub Actions artifact without inventing a sandbox file. After Run018 device test, continue Run019 file management improvements.
+Use Run028 as the base for Run029. Follow the active branch’s [EndraHome project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md) for build status, verification and physical feedback.
