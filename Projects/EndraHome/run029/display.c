@@ -79,11 +79,33 @@ void eh_folder_icon(uint16_t *f, int x, int y, int s, const EhPalette *p) {
     eh_box(f,x+s,y+7*s,14*s,s,blend(p->folder,0xffff,45));
 }
 
-void eh_app_icon(uint16_t *f, int x, int y, int s, const EhPalette *p) {
-    eh_box(f,x,y+s,16*s,14*s,p->accent);
-    eh_box(f,x+s,y+4*s,14*s,10*s,p->panel);
-    eh_box(f,x+2*s,y+2*s,s,s,p->panel);
-    eh_box(f,x+4*s,y+2*s,s,s,p->panel);
-    for (int col=0; col<4; ++col)
-        eh_box(f,x+(6+col)*s,y+(6+col/2)*s,s,(6-col)*s,p->accent);
+/* Adapted from the EndraHome universal E prototype at 72fca481.
+ * One scalable mark serves desktop shortcuts, executable rows and the header. */
+void eh_app_icon(uint16_t *f, int x, int y, int scale) {
+    const int size = 16 * scale;
+    const int edge = scale;
+    const int stroke = scale + 1;
+    const int inset = size / 4;
+    const int width = size / 2;
+    const uint16_t navy = EH_RGB(8,19,38), shade = EH_RGB(15,39,65);
+    const uint16_t blue = EH_RGB(48,153,215), cyan = EH_RGB(103,222,255);
+    eh_box(f,x,y,size,size,blue);
+    eh_box(f,x+edge,y+edge,size-2*edge,size-2*edge,navy);
+    eh_box(f,x+2*edge,y+2*edge,size-4*edge,size-4*edge,shade);
+    int left = x + inset, top = y + inset;
+    eh_box(f,left,top,stroke,width,cyan);
+    eh_box(f,left,top,width,stroke,cyan);
+    eh_box(f,left,top+(width-stroke)/2,width-stroke,stroke,cyan);
+    eh_box(f,left,top+width-stroke,width,stroke,cyan);
+}
+
+void eh_brand_badge(uint16_t *frame, int x, int y) {
+    const uint16_t top = EH_RGB(100,218,255), right = EH_RGB(27,84,150);
+    for (int i=0; i<32; ++i) {
+        int rise = i * 5 / 31;
+        eh_box(frame,x+i,y+5-rise,1,rise+1,top);
+    }
+    for (int i=0; i<5; ++i)
+        eh_box(frame,x+32+i,y+5-i,1,32,right);
+    eh_app_icon(frame,x,y+6,2);
 }

@@ -25,6 +25,8 @@ int main(void){
  EhRegistry reg;eh7_registry_init(&reg);
  eh7_registry_parse(&reg,"0=EndraGBA|/documents/Apps/test.tns");
  eh7_registry_parse(&reg,"1=EndraZIP|/documents/Apps/Zip.tns");
+ eh7_registry_parse(&reg,"2=EndraCmd|/documents/Apps/Cmd.tns");
+ eh7_registry_parse(&reg,"4=Images|/documents/Apps/Images.tns");
  eh7_registry_parse(&reg,"5=Tools|/documents/Apps/Tools.tns");
  EhUniversalUI s;eh7_ui_init(&s,&reg);
  eh7_render(fb,&s.page,&reg);

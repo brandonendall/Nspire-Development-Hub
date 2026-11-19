@@ -27,7 +27,7 @@ static void file_icon(uint16_t *f,int x,int y,const char *name,int dir,const EhP
  int text=eh17_is_text_name(name);
  int archive=suffix(name,".zip")||suffix(name,".zip.tns");
  if(!image&&!text&&!archive&&!suffix(name,".pdf.tns")&&suffix(name,".tns")){
-  eh_app_icon(f,x,y,1,p);
+  eh_app_icon(f,x,y,1);
   return;
  }
  box(f,x+2,y+2,12,13,p->raised);
