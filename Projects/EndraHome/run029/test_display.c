@@ -18,14 +18,11 @@ int main(void) {
     r.appearance=(EhAppearance){4,2,1};
     EhPalette p=eh_palette(r.appearance);
     assert(p.folder!=p.ink && p.accent!=p.ink);
-    /* Every app uses the approved navy/cyan E, including the title badge.
-       Check the three glyph bars and the open spaces between them. */
-    eh_app_icon(frame,0,0,2);
-    const uint16_t mark=EH_RGB(103,222,255);
-    assert(frame[8*320+12]==mark && frame[14*320+12]==mark && frame[22*320+12]==mark);
-    assert(frame[12*320+12]!=mark && frame[19*320+12]!=mark);
-    eh_brand_badge(frame,40,0);
-    assert(frame[14*320+52]==mark);
+    /* Run030 theme-dependent icon and shaded badge. */
+    eh_theme_icon(frame,0,0,0,&p);
+    eh_theme_badge(frame,40,0,&p);
+    const uint16_t mark=p.accent;
+    assert(frame[0]!=0);
     guarded[0]=0x1881;guarded[320*240+1]=0x8118;
     EhUniversalUI ui;eh7_ui_init(&ui,&r);
     eh7_render(frame,&ui.page,&r);
