@@ -34,3 +34,13 @@ App-supplied PNG icons remain on the roadmap. Keep physical results and regressi
 
 ## Current task
 Record the Run029 CI result and wait for the owner's first physical Run029 check. Keep Run028 as the installed baseline until the owner reports a change.
+
+## Run028 source recovery and Run029 visual refresh — 2026-11-19
+
+**Verified recovery:** The authoritative Run028 editable source is `Projects/EndraHome/run028/` on branch `feature/endrahome-run001`, confirmed by fetching `run028/Makefile` (APP=`EndraHome_Run028_DynamicLauncher`) and `run028/render.c`. Run028 source/build commit `780a111755f301a853826816c178a60dad7c33c9`, Actions run `44164319709`, artifact `14364108177`. Do not mistakenly search only branch `feature/endrahome-run026-adaptive-files`: its root memory is stale and its latest EndraHome sources stop earlier. The user-current device build is Run028; preserve it as rollback and do not substitute Run025.
+
+**Run029 UI approval:** Keep the Run028 working behavior, application labels, shortcuts and 3x2 launcher layout. Replace the six identical yellow folder graphics with **one identical universal dark-navy/cyan E app icon**, using a single reusable lightweight RGB565 drawing routine. Add the matching blue EndraHome E/cube badge to the left of the title. Keep selection highlight. App-specific PNG icons, clock and battery are future roadmap items, not requirements for this visual patch.
+
+**Important branch correction:** An initial stand-alone prototype `Projects/EndraHome/shared/universal_icon.h` was committed at `72fca48170ca909aa14dbf1dbca06526500c560e` on the **older** branch `feature/endrahome-run026-adaptive-files`. It is **not yet integrated** into Run029. Port/adapt the routine to `feature/endrahome-run001` after reviewing its existing `Projects/EndraHome/run029/` source and workflow; avoid replacing newer Run029 features with older code. Existing Run029 host tests were reported passing, but the native Run029 build and device test were pending at last verified memory read. Recheck Actions before claiming success.
+
+**Next actions:** inspect active `run029/render.c` and Makefile, integrate the approved universal icon and header badge while retaining all existing Run029 enhancements, run host/native CI, record commit/artifact/status here and in root memory, and provide a real TNS artifact only after verified build. Never overwrite the user's shortcut configuration or force device resets.
