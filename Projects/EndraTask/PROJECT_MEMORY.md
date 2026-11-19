@@ -1,0 +1,34 @@
+# EndraTask project memory
+
+Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Run001 scope and source review are recorded below. Native artifact, CI run, and calculator results are pending.
+
+## Goal
+
+Build a lightweight task and file-service diagnostics utility for Brandon's TI-Nspire CX II CAS on OS 6.4.0.74. Gather useful evidence about the recurring USB “file system busy” condition without repeatedly transferring builds, stressing the calculator, or modifying its system state. Batch related features into one release and do as much verification as possible off-device.
+
+## Reuse these sources
+
+| Source | How EndraTask should use it |
+| --- | --- |
+| [Uploaded nkits.zip](https://chatgpt.com/library?file_id=libfile_750c69d88e8c8191bd879a538bba4b81&account_id=personal) | Existing calculator builds and UI references. The inspected archive contains `nkits/taskmanager.tns`, `nkits/nusb.tns`, `nkits/nusb-diag.tns`, and usage guides. Build from upstream C source. |
+| [nKits TaskManager at a040928](https://github.com/Ziyang-Bai/nKits/tree/a040928502969b3cab393d890e23c9eaba45a30c/TaskManager) | Reuse task enumeration, object naming and status handling where applicable. Review `src/native.c`, `src/tasks.c`, and the host tests first. Keep the read-only path and preserve firmware validation. nKits is GPLv3. Preserve notices and provide corresponding source if distributing a derived binary. |
+| [nKits nUSB at a040928](https://github.com/Ziyang-Bai/nKits/tree/a040928502969b3cab393d890e23c9eaba45a30c/nUSB) | Supports calculator-hosted USB flash storage. Reuse ideas such as stage reporting and cancellation. Its diagnostics source also contains write tests, so keep it out of the read-only phone-link workflow. |
+| [EndraTermux USB Recovery V2 Build 010](https://github.com/brandonendall/EndraTermux/commit/872d31a39b2200272379190a9c980e1f68d0b176) | Reuse the Android-side link diagnostics and Build 010's direct-path metadata probe, which avoids enumerating the root directory. Keep `push` and the existing NLink install intact. Build 010's device outcome is unconfirmed. |
+| [Shared Ndless tooling](../../toolchain/README.md) | Reuse the hub's native build workflow pattern and pin the toolchain used for CI. The nKits source uses Ndless r2023. |
+
+## Hardware evidence and compatibility
+
+- Earlier Android diagnostics reached the TI-Nspire session and file-service connection, then stalled during directory-list activity. The exact failure point and whether any task owns a lock remain unverified.
+- The rear reset and removal of the empty calculator-side `/documents/USB` directory did not resolve the busy response. Treat that folder and the observed directory entry position as clues only.
+- The pinned Task Manager backend checks for Ndless r2023 or newer and validates firmware signatures. The last reported installed revision is r2022. Verify it before attempting native task inspection. On a mismatch, show “Task inspection unavailable” and keep the ordinary file and UI checks available. Keep the guard intact.
+
+## Run001 acceptance criteria
+
+1. Add a foreground screen with a task snapshot and a separate local Documents accessibility result. Use at most one task snapshot at launch and refresh on an explicit keypress. Inspect bounded data and release buffers between snapshots. Show “Unavailable” when data cannot be read safely.
+2. Display the exact stage reached by the Android-side diagnostic separately from calculator-local file access. An on-device file open only establishes local accessibility. A successful USB session only establishes that the link reached that stage. Use the existing direct-path probe for one known path and keep observed results distinct from inferred causes.
+3. Keep the first release read-only. Avoid resident hooks, repeated idle scans, stress tests, automatic reset/replug loops, task termination, service restarts and system writes. Perform host tests for unsupported firmware, bounded snapshots, and the stage/result display. Verify native compilation and exit behavior before a device session.
+4. Package the checked `.tns` and a short acceptance checklist together. Plan one transfer and one device session once the file service can transfer the build. Leave the previous tools available for rollback.
+
+## Update this file after each meaningful change
+
+Record run number, source path, commit, artifact ID, CI result, physical result, regressions, and the next action. Update the [hub memory index](../../PROJECT_MEMORY.md) so the next session can find the active branch. Follow the [owner's hardware-preservation policy](https://github.com/brandonendall/Nspire-Development-Hub/pull/23) for batched verification.
