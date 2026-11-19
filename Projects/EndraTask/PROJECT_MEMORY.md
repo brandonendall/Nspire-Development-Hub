@@ -38,6 +38,15 @@ push /storage/emulated/0/Download/EndraTask_Run002.tns /upload
 
 Build a lightweight task and file-service diagnostics utility for Brandon's TI-Nspire CX II CAS on OS 6.4.0.74. Gather useful evidence about the recurring USB “file system busy” condition without repeatedly transferring builds, stressing the calculator, or modifying its system state. Batch related features into one release and do as much verification as possible off-device.
 
+## Next milestone — diagnose the busy path
+
+Brandon confirmed the Run002 task list largely duplicates nKits Task Manager. EndraTask's primary job is to identify the affected folder or file, the failing operation, and what can safely be canceled. Keep the task snapshot as optional context. Run002's local `opendir("/documents")` checks one directory and does not identify a lock or its owner.
+
+1. Make the probe results the main screen. Compare calculator-local access with EndraTermux's single-path metadata operation for the same resolved target and a known-good control. Start with the folder used for the successful Run012 transfer and the path involved in the failing operation. Verify phone-side and calculator-local path mapping before comparing them.
+2. Record the operation, path, elapsed time and raw result. Distinguish a returned busy error from a missing path, transport error or timeout. Reuse the existing read-only Build 010 direct-path probe for known existing files. A metadata success establishes only that operation; it cannot establish transfer or write availability. Avoid full-tree enumeration and automatic retries.
+3. Run one check at a time, show the stage before a filesystem call, and keep report writing out of the first diagnostic pass after the Run002 freeze. Use a timeout on the phone-side diagnostic where possible. A timeout leaves calculator-side state unknown and does not prove a request was canceled.
+4. Leave owner attribution unavailable until evidence ties a handle, task or service request to the specific failure. Prefer canceling a verified request through a supported interface. A task name or wait state is insufficient grounds to terminate a task. Keep any future recovery action separate, explicit and confirmed.
+
 ## Reuse these sources
 
 | Source | How EndraTask should use it |
