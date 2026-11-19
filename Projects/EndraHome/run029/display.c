@@ -2,9 +2,9 @@
 #include "font8x8_basic.h"
 #include <string.h>
 
-const char *const eh_theme_names[] = {"Ocean","Blue","Charcoal","Slate","Red","Green","Purple","Yellow","Orange","Gold"};
-const char *const eh_folder_names[] = {"Yellow","Blue","Green","Purple","Red","White","Orange","Black","Cyan","Gold"};
-const char *const eh_font_names[] = {"White","Blue","Green","Yellow","Red","Purple","Orange","Black","Cyan","Gold"};
+const char *const eh_theme_names[] = {"Ocean","Blue","Charcoal","Slate","Red","Green","Purple","Yellow","Orange","Gold","White","Black","Gray","Silver","Dark Red","Lime","Pink","Cyan","Teal","Brown"};
+const char *const eh_folder_names[] = {"Yellow","Blue","Green","Purple","Red","White","Orange","Black","Cyan","Gold","Gray","Silver","Dark Red","Lime","Pink","Teal","Navy","Brown","Lavender","Charcoal"};
+const char *const eh_font_names[] = {"White","Blue","Green","Yellow","Red","Purple","Orange","Black","Cyan","Gold","Gray","Silver","Dark Red","Lime","Pink","Teal","Navy","Brown","Lavender","Charcoal"};
 
 static unsigned checked(unsigned n) { return n < EH_COLOR_COUNT ? n : 0; }
 static uint16_t blend(uint16_t a, uint16_t b, unsigned percent) {
@@ -15,9 +15,9 @@ static uint16_t blend(uint16_t a, uint16_t b, unsigned percent) {
     return (uint16_t)((r << 11) | (g << 5) | blue);
 }
 EhPalette eh_palette(EhAppearance a) {
-    static const uint16_t accents[] = {EH_RGB(61,205,214),EH_RGB(93,165,252),EH_RGB(163,179,189),EH_RGB(163,185,212),EH_RGB(235,72,75),EH_RGB(65,200,115),EH_RGB(182,146,247),EH_RGB(255,216,55),EH_RGB(255,139,56),EH_RGB(231,184,65)};
-    static const uint16_t folders[] = {EH_RGB(245,189,86),EH_RGB(110,196,250),EH_RGB(112,226,174),EH_RGB(200,165,251),EH_RGB(245,100,100),EH_RGB(247,249,252),EH_RGB(255,154,64),EH_RGB(30,35,42),EH_RGB(61,205,214),EH_RGB(231,184,65)};
-    static const uint16_t fonts[] = {EH_RGB(247,249,252),EH_RGB(110,196,250),EH_RGB(112,226,174),EH_RGB(255,236,91),EH_RGB(255,125,130),EH_RGB(200,165,251),EH_RGB(255,174,98),EH_RGB(30,35,42),EH_RGB(103,222,255),EH_RGB(255,215,92)};
+    static const uint16_t accents[] = {EH_RGB(61,205,214),EH_RGB(93,165,252),EH_RGB(163,179,189),EH_RGB(163,185,212),EH_RGB(235,72,75),EH_RGB(65,200,115),EH_RGB(182,146,247),EH_RGB(255,216,55),EH_RGB(255,139,56),EH_RGB(231,184,65),EH_RGB(255,255,255),EH_RGB(0,0,0),EH_RGB(128,128,128),EH_RGB(190,196,203),EH_RGB(145,30,45),EH_RGB(155,240,45),EH_RGB(255,130,180),EH_RGB(50,215,240),EH_RGB(30,140,145),EH_RGB(140,92,55)};
+    static const uint16_t folders[] = {EH_RGB(245,189,86),EH_RGB(110,196,250),EH_RGB(112,226,174),EH_RGB(200,165,251),EH_RGB(245,100,100),EH_RGB(247,249,252),EH_RGB(255,154,64),EH_RGB(30,35,42),EH_RGB(61,205,214),EH_RGB(231,184,65),EH_RGB(125,130,140),EH_RGB(192,197,204),EH_RGB(145,30,45),EH_RGB(155,240,45),EH_RGB(255,130,180),EH_RGB(30,140,145),EH_RGB(20,55,110),EH_RGB(140,92,55),EH_RGB(190,160,240),EH_RGB(50,55,65)};
+    static const uint16_t fonts[] = {EH_RGB(247,249,252),EH_RGB(110,196,250),EH_RGB(112,226,174),EH_RGB(255,236,91),EH_RGB(255,125,130),EH_RGB(200,165,251),EH_RGB(255,174,98),EH_RGB(30,35,42),EH_RGB(103,222,255),EH_RGB(255,215,92),EH_RGB(125,130,140),EH_RGB(192,197,204),EH_RGB(145,30,45),EH_RGB(155,240,45),EH_RGB(255,130,180),EH_RGB(30,140,145),EH_RGB(20,55,110),EH_RGB(140,92,55),EH_RGB(190,160,240),EH_RGB(50,55,65)};
     EhPalette p;
     p.accent = accents[checked(a.theme)];
     p.folder = folders[checked(a.folder)];
