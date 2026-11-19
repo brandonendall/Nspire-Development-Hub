@@ -33,7 +33,7 @@ void eh7_render(uint16_t *f,const EhUI7 *ui,const EhRegistry *apps){
     /* Subtle horizontal ambient accent, precomputed only when the screen is drawn. */
     for(int y=53;y<210;++y){
         int strength=(y-53)*16/157;
-        eh_box(f,0,y,2,tint(p.accent,p.background,180+strength));
+        eh_box(f,0,y,320,2,tint(p.accent,p.background,180+strength));
     }
     eh_box(f,0,0,320,51,p.panel);
     eh_box(f,0,49,320,2,p.accent);
