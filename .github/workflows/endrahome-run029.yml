@@ -11,6 +11,7 @@ on:
       - '.github/workflows/endrahome-run029.yml'
 permissions:
   contents: read
+  issues: write
 jobs:
   host:
     runs-on: ubuntu-latest
@@ -57,3 +58,41 @@ jobs:
             Projects/EndraHome/run029/README.md
             Projects/EndraHome/run029/SHA256SUMS.txt
           if-no-files-found: error
+
+  report:
+    name: Publish searchable build status
+    if: ${{ always() }}
+    needs: [host, native]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Update EndraHome latest-build issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HOST_RESULT: ${{ needs.host.result }}
+          NATIVE_RESULT: ${{ needs.native.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.sha }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          cat > /tmp/endrahome-status.md <<EOF
+          # EndraHome — Latest Build Status
+
+          **Run:** $RUN_URL
+          **Workflow run number:** $RUN_NUMBER
+          **Branch:** $BRANCH
+          **Commit:** $SHA
+          **Host tests:** $HOST_RESULT
+          **Native Ndless build:** $NATIVE_RESULT
+
+          **Artifact if native succeeded:** EndraHome_Run031_Desktop
+          Download it from the run's **Artifacts** section.
+
+          **Troubleshooting:** Open the run link, select the failed job, then inspect its log. The issue is automatically updated after each run, including failures. A green report job alone does not mean the native build passed.
+          EOF
+          gh issue edit 44 --body-file /tmp/endrahome-status.md
