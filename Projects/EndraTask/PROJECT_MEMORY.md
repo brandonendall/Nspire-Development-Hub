@@ -13,6 +13,10 @@ Run002 adds a per-snapshot task ID, task state, priority, stack allocation and m
 
 The November 19 EndraTask/EndraTermux handoff reports that Smart Push Run011 transferred a file with `nlink-v2` to a custom `/upload` destination after one “No such device” failure. Treat that as one successful transfer, with reliability and the cause of the initial failure still unverified. Use normal EndraTermux file retrieval for the Run002 export. Preserve the working transport.
 
+### Run002 transfer via Smart Push Run012
+
+On November 19, 2026, Brandon supplied a Smart Push Run012 log for the 68,348-byte `EndraTask_Run002.tns` upload to `/upload/EndraTask_Run002.tns`. The TI-Nspire session and file service opened, the file data phase returned `ret=0`, and Smart Push reported `Upload command completed`. This confirms a successful transfer at the command level. Calculator-side file visibility, launch, task refresh, report export and retrieval still need confirmation. The transfer alone does not identify the cause of earlier busy errors.
+
 ## Build delivery and Termux transfer
 
 When Brandon asks for a new EndraTask build and the build is ready:
