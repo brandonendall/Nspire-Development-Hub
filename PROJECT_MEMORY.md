@@ -15,7 +15,7 @@ TI-Nspire CX II CAS / Ndless lightweight customizable launcher. Preserve app sho
 
 ## EndraTask on TI-Nspire CX II CAS
 
-Run001 starts on [`feature/endratask-run001`](https://github.com/brandonendall/Nspire-Development-Hub/tree/feature/endratask-run001). Read [the EndraTask project memory](Projects/EndraTask/PROJECT_MEMORY.md) for the pinned nKits Task Manager source, EndraTermux Build 010 direct-path probe, Ndless revision check and one-session test plan. Source review and project memory are complete at `4e711778bf87b305a19414e767fbe9efa74f4368`. Native build, CI artifact and physical verification are pending.
+Run001 starts on [`feature/endratask-run001`](https://github.com/brandonendall/Nspire-Development-Hub/tree/feature/endratask-run001). Read [the EndraTask project memory](Projects/EndraTask/PROJECT_MEMORY.md) for the pinned nKits Task Manager source, EndraTermux Build 010 direct-path probe, Ndless revision check and one-session test plan. Brandon confirmed **Ndless r2023** on OS 6.4.0.74. The Run001 implementation and acceptance steps are in [the Run001 source directory](Projects/EndraTask/run001). Native CI and physical verification are pending.
 
 ## Other projects
 Projects/EndraGBA, Projects/UltraGBA, Projects/UltraZip, Projects/UltimateCommander exist on main. Preserve existing functioning GBA emulator, ROM-local saves, RTC and GBZ paging. Consult each project's README before modifying it.

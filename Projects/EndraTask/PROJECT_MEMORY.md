@@ -1,6 +1,6 @@
 # EndraTask project memory
 
-Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Run001 scope and source review are recorded below. Native artifact, CI run, and calculator results are pending.
+Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Run001 source and device acceptance steps are in [run001](run001/README.md). Native CI and calculator verification are pending.
 
 ## Goal
 
@@ -20,13 +20,13 @@ Build a lightweight task and file-service diagnostics utility for Brandon's TI-N
 
 - Earlier Android diagnostics reached the TI-Nspire session and file-service connection, then stalled during directory-list activity. The exact failure point and whether any task owns a lock remain unverified.
 - The rear reset and removal of the empty calculator-side `/documents/USB` directory did not resolve the busy response. Treat that folder and the observed directory entry position as clues only.
-- The pinned Task Manager backend checks for Ndless r2023 or newer and validates firmware signatures. The last reported installed revision is r2022. Verify it before attempting native task inspection. On a mismatch, show “Task inspection unavailable” and keep the ordinary file and UI checks available. Keep the guard intact.
+- The pinned Task Manager backend checks for Ndless r2023 or newer and validates firmware signatures. Brandon confirmed the installed revision is **Ndless r2023** on November 19, 2026. On a mismatch, show “Task inspection unavailable” and keep the ordinary file and UI checks available. Keep the guard intact.
 
 ## Run001 acceptance criteria
 
 1. Add a foreground screen with a task snapshot and a separate local Documents accessibility result. Use at most one task snapshot at launch and refresh on an explicit keypress. Inspect bounded data and release buffers between snapshots. Show “Unavailable” when data cannot be read safely.
 2. Display the exact stage reached by the Android-side diagnostic separately from calculator-local file access. An on-device file open only establishes local accessibility. A successful USB session only establishes that the link reached that stage. Use the existing direct-path probe for one known path and keep observed results distinct from inferred causes.
-3. Keep the first release read-only. Avoid resident hooks, repeated idle scans, stress tests, automatic reset/replug loops, task termination, service restarts and system writes. Perform host tests for unsupported firmware, bounded snapshots, and the stage/result display. Verify native compilation and exit behavior before a device session.
+3. Keep the first release read-only. Avoid resident hooks, repeated idle scans, stress tests, automatic reset/replug loops, task termination, service restarts and system writes. Host tests exercise the report parser and verify that the upstream backend patch removes non-task discovery and mutation and bounds task snapshots. Native firmware compatibility and the unsupported-firmware screen require device verification. Verify native compilation and exit behavior before a device session.
 4. Package the checked `.tns` and a short acceptance checklist together. Plan one transfer and one device session once the file service can transfer the build. Leave the previous tools available for rollback.
 
 ## Update this file after each meaningful change
