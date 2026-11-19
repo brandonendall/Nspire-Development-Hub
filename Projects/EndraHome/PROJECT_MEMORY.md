@@ -8,6 +8,10 @@ Updated 2026-11-19. The project lives in `brandonendall/Nspire-Development-Hub`,
 
 The implementation began at [`cfafa950`](https://github.com/brandonendall/Nspire-Development-Hub/commit/cfafa950b19608cc2096ff17c92cb758bf3e0682). The host tests and native build passed at [`780a1117`](https://github.com/brandonendall/Nspire-Development-Hub/commit/780a111755f301a853826816c178a60dad7c33c9), Actions run `44164319709`, native artifact `14364108177`. The archived executable is 111,282 bytes. Its SHA-256 matches the checksum packaged by that build, `799d85eb778341ac6caee18dd0fa47489a6da561e3d16c610ee30215373eb857`. [Verified build](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44164319709).
 
+## Run029 Desktop
+
+Run029 is based on the verified Run028 sources. The [new source](run029/) and [Run029 workflow](../../.github/workflows/endrahome-run029.yml) include the persistent Files tile, external-file-manager fallback, four-direction navigation, full bitmap captions, distinctly drawn apps and folders, independent UI/folder/text colors and three-second status messages. Nine local host suites passed. The native build is pending. Physical verification is pending. Ctrl+On exits to TI OS. The [Run029 notes](run029/README.md) document the optional Browse shortcut and native Settings API investigation.
+
 ## Earlier builds
 - Run001/002 froze device; NEVER recommend.
 - Run003–006 reported working on physical hardware; Run006 tested limited small-app handoff.
@@ -18,16 +22,8 @@ The implementation began at [`cfafa950`](https://github.com/brandonendall/Nspire
 - Preserve working Run017 as rollback; no OS hooks, firmware edits, ndless.cfg changes, forced resets or unnecessary hardware stress.
 
 
-## Requested next major build — pending until compiled and tested
-1. **Always-visible Files desktop tile**: built-in Endra Files default, assign alternate compatible file manager, persistent choice, fallback to built-in if unset/unavailable. The existing Run018 slot 3 (Files) already opens built-in browser if no assigned path, but user wants this explicitly guaranteed on main desktop.
-2. **Readable labels**: replace cramped/squished 5x7 rendering with a legible, correctly spaced font. Ensure names fit and no overlap.
-3. **Separate saved preferences**: global UI theme color, folder icon color, and text/font color; selectable presets, high-contrast defaults and restore-default action; do not overwrite app config.
-4. **Correct four-direction navigation**: left/right/up/down in desktop icon grid.
-5. **Toast messages**: expire rather than linger.
-6. **Application icons**: distinguish executables from folders; roadmap for app-provided PNG icons, not yet implemented.
-7. **Ctrl+ON**: normal safe calculator sleep/off behavior only after verifying Ndless input/power APIs. Do not invent undocumented power-register writes.
-8. **Native TI OS Home → 5 Settings → 9 EndraHome**: research feasibility; no firmware patch or hooks without explicit safe plan and user consent. Not implemented.
-9. Preserve image viewing, text preview, built-in Files, shortcut manager, fast exit, persistent config and user data.
+## Future work
+App-supplied PNG icons remain on the roadmap. Keep physical results and regressions with their specific run numbers.
 
 ## Engineering and build procedure
 - Each session: inspect latest branch source, PR, CI and memory. Build a substantial cohesive change while avoiding risky hardware experiments.
@@ -37,4 +33,4 @@ The implementation began at [`cfafa950`](https://github.com/brandonendall/Nspire
 - User uses Termux command `push <local-path>` (no destination argument) and prefers `clear` first.
 
 ## Current task
-Build Run029 in `run029/` from the verified Run028 source. Keep the installed baseline, the existing shortcut configuration and the Run028 binary available for comparison.
+Record the Run029 CI result and wait for the owner's first physical Run029 check. Keep Run028 as the installed baseline until the owner reports a change.

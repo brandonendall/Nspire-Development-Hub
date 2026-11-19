@@ -2,6 +2,10 @@
 
 Repo: `brandonendall/Nspire-Development-Hub`. **Active code branch:** `feature/endrahome-run001`, [draft PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10). The root `main` branch has the [Hydra handoff](../../handoff/HYDRA-START-HERE.md) and [AGENTS.md](../../AGENTS.md). Inspect current branch sources before making claims.
 
+## Current build
+
+Run029 Desktop builds on Run028 Dynamic Launcher, the owner's installed baseline. [Run029 source and controls](run029/) · [Current build and hardware status](PROJECT_MEMORY.md) · [Run028 source](run028/).
+
 ## Hardware test history
 
 | Build | Result | Meaning |
@@ -108,7 +112,7 @@ User confirmed Run012 one-press launch is fast on hardware. Run013 implements th
 
 ## Run029 — requested integrated desktop, typography, power, OS launcher (2026-11-18)
 
-**Requested, not yet built or hardware-tested.** Base implementation on Run028 DynamicLauncher, preserving the working Endra Files browser, read-only preview, file operations, fast exit, return-home, dynamic shortcut registry, and the permanent `EndraHome_Apps.cfg.tns`. Preserve Run028 as rollback; do not require calculator connection during development.
+**Original Run029 requirements.** The current implementation and verification are in [the Run029 notes](run029/) and [project memory](PROJECT_MEMORY.md). Base implementation on Run028 DynamicLauncher, preserving the working Endra Files browser, read-only preview, file operations, fast exit, return-home, dynamic shortcut registry, and the permanent `EndraHome_Apps.cfg.tns`. Preserve Run028 as rollback; do not require calculator connection during development.
 
 1. **Always-visible Files tile:** Home must always display slot 3 as Files. When its assigned external .tns path is blank, Enter opens the built-in Endra Files browser directly; when assigned, Enter launches that file manager. If the external executable is missing or fails to launch, fall back to built-in Files safely. Keep assignment/change capability and never silently erase a configured path.
 2. **Legible icon captions:** Replace Run028 `render.c`'s cropped five-pixel glyph rendering (which truncates columns from the 8x8 bitmap) with full-width glyphs or a properly designed small bitmap font, appropriate spacing, center alignment, and truncation/wrapping bounded to each tile. Apply the same improvement to Files folder names and avoid overlapping UI.

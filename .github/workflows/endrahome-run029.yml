@@ -1,0 +1,59 @@
+name: EndraHome Run029 - Desktop
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Projects/EndraHome/run029/**'
+      - '.github/workflows/endrahome-run029.yml'
+  pull_request:
+    paths:
+      - 'Projects/EndraHome/run029/**'
+      - '.github/workflows/endrahome-run029.yml'
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host tests and launcher previews
+        run: |
+          make -C Projects/EndraHome/run029 test
+          make -C Projects/EndraHome/run029 preview
+          for p in home manager rename settings picker files; do test -s "Projects/EndraHome/run029/build/$p.ppm"; done
+          grep -Fq 'EndraHome_Apps.cfg.tns' Projects/EndraHome/run029/registry.h
+          grep -Fq 'eh18_zoomkey()' Projects/EndraHome/run029/main.c
+          grep -Fq 'eh_return_from_launch(&ui,result)' Projects/EndraHome/run029/main.c
+          ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run029/platform.c Projects/EndraHome/run029/main.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run029_Previews
+          path: Projects/EndraHome/run029/build/*.ppm
+  native:
+    needs: host
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native CX II CAS Ndless JPEG/PNG build
+        run: |
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh Projects/EndraHome/run029
+      - name: Verify output and checksum
+        run: |
+          cd Projects/EndraHome/run029
+          test -s EndraHome_Run029_Desktop.tns
+          test -s EndraHome_Apps.cfg.tns
+          test "$(head -c 4 EndraHome_Run029_Desktop.tns)" = Zehn
+          sha256sum EndraHome_Run029_Desktop.tns > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run029_Desktop
+          path: |
+            Projects/EndraHome/run029/EndraHome_Run029_Desktop.tns
+            Projects/EndraHome/run029/README.md
+            Projects/EndraHome/run029/SHA256SUMS.txt
+          if-no-files-found: error
