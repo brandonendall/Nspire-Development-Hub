@@ -35,3 +35,6 @@ Read alongside root PROJECT_MEMORY.md, AGENTS.md, handoff/HYDRA-START-HERE.md, t
 
 ## Current task
 Begin next EndraHome source/build iteration from run018, prioritizing permanent Files desktop behavior, readable font and customizable text colors; confirm implementation and CI before claiming built. Native OS menu integration and Ctrl+ON require API investigation before inclusion.
+
+## Critical correction from owner (2026-11-19)
+The owner's **currently installed and photographed build is EndraHome Run028 'Dynamic...'** (full suffix not yet confirmed), NOT Run018. Run018 is merely the latest version identified in this branch's older documentation; DO NOT start new work by overwriting/replacing the owner's Run028 or labeling Run019 the next release. Locate Run028's actual source, commit, branch and artifact (possibly another repository/branch), inspect it, and continue with Run029 or the actual next run only after verification. Preserve Run028 as the known user-current baseline; request exact filename/artifact if repo search cannot locate it. The user's photos refer to Run028.
