@@ -23,14 +23,20 @@ static int valid(EhAppearance a) {
 static int read_prefs(const char *path, EhAppearance *out) {
     FILE *f = fopen(path, "rb");
     if (!f) return 0;
-    char data[16];
-    size_t n = fread(data, 1, sizeof(data), f);
-    int ok = !ferror(f) && n == 9 && !memcmp(data, "v1 ", 3) &&
-             data[4] == ' ' && data[6] == ' ' && data[8] == '\n';
-    if (fclose(f) != 0 || !ok) return 0;
-    EhAppearance a = {(unsigned)(data[3]-'0'), (unsigned)(data[5]-'0'), (unsigned)(data[7]-'0')};
-    if (!valid(a)) return 0;
-    *out = a;
+    char data[64]={0}, extra=0;
+    int theme=-1,folder=-1,font=-1;
+    int ok=fgets(data,sizeof(data),f)!=NULL &&
+           fscanf(f,"%c",&extra)!=1 && !ferror(f);
+    if(fclose(f)!=0 || !ok)return 0;
+    /* Legacy v1 single-digit settings and v2 multi-digit settings. */
+    if(sscanf(data,"v2 %d %d %d",&theme,&folder,&font)!=3 &&
+       sscanf(data,"v1 %d %d %d",&theme,&folder,&font)!=3)return 0;
+    char canonical[64];
+    snprintf(canonical,sizeof(canonical),"%s %d %d %d\\n",data[1]=='2'?"v2":"v1",theme,folder,font);
+    if(strcmp(data,canonical)!=0 || theme<0 || folder<0 || font<0)return 0;
+    EhAppearance a={(unsigned)theme,(unsigned)folder,(unsigned)font};
+    if(!valid(a))return 0;
+    *out=a;
     return 1;
 }
 int eh_prefs_load(const char *cfg, EhAppearance *out) {
