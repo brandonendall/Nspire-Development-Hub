@@ -2,6 +2,7 @@
 #include "caption.h"
 #include "desktop.h"
 #include "display.h"
+#include "asset031.h"
 #include <string.h>
 static uint16_t tint(uint16_t a,uint16_t b,int k){int v=255-k;return (uint16_t)((((((a>>11)*v+(b>>11)*k)/255)&31)<<11)|((((((a>>5)&63)*v+((b>>5)&63)*k)/255)&63)<<5)|((((a&31)*v+(b&31)*k)/255)&31));}
 static void tile_draw(uint16_t *f,const EhTile *tile,const EhRegistry *apps,const EhPalette *p,int selected){
@@ -36,10 +37,10 @@ void eh7_render(uint16_t *f,const EhUI7 *ui,const EhRegistry *apps){
     }
     eh_box(f,0,0,320,51,p.panel);
     eh_box(f,0,49,320,2,p.accent);
-    eh_theme_badge(f,12,7,&p);
+    eh031_cube(f,10,5);
     eh_text(f,57,10,"EndraHome",p.ink,9,1);
     eh_text(f,57,26,"Launcher",p.ink,8,1);
-    eh_text(f,258,17,"R030",p.accent,4,1);
+    eh_text(f,258,17,"R031",p.accent,4,1);
     EhTile tiles[EH7_SLOT_COUNT];
     int count=eh_desktop_layout(apps,tiles);
     for(int i=0;i<count;++i)tile_draw(f,&tiles[i],apps,&p,tiles[i].slot==ui->selected);
