@@ -67,7 +67,7 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
    int i=s->page.selected;
    if(s->apps&&s->apps->slots[i].path[0])s->request=i+1;
    else if(i==EH_FILES_SLOT)s->open_files=1;
-   else s->page.page=EH_PAGE_DETAIL;
+   else { s->assign_slot=i+1; }
    return 1;
   }
   if(k==EH_KEY_LEFT||k==EH_KEY_UP||k==EH_KEY_RIGHT||k==EH_KEY_DOWN){
