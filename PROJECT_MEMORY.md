@@ -6,6 +6,8 @@ This file is the durable project index. Read this file, then AGENTS.md, handoff/
 
 ## EndraHome on TI-Nspire CX II CAS
 
+**Latest compiled version.** Run029 Desktop passed the host tests and native Ndless build. The source at this build is `feadc9783474de408ebb18c3b3419b1772d2983e`, the GitHub Actions run is `44597518309`, and the native artifact ID is `14566606768`. The first physical Run029 check is pending. Brandon identified Run028 Dynamic Launcher as the build installed on his calculator. [Run029 source](https://github.com/brandonendall/Nspire-Development-Hub/tree/feadc9783474de408ebb18c3b3419b1772d2983e/Projects/EndraHome/run029) · [Build record](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44597518309) · [Project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md).
+
 Brandon identified **Run028 Dynamic Launcher** as the version installed and photographed on his calculator. The source is in `Projects/EndraHome/run028/` on `feature/endrahome-run001`. The branch name dates from Run001. [Project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md) · [Run028 source at the passing build](https://github.com/brandonendall/Nspire-Development-Hub/tree/780a111755f301a853826816c178a60dad7c33c9/Projects/EndraHome/run028) · [Draft PR #10](https://github.com/brandonendall/Nspire-Development-Hub/pull/10).
 
 GitHub Actions passed the host tests and native build at commit `780a111755f301a853826816c178a60dad7c33c9`. The native artifact ID is `14364108177`. The preserved executable in the project is `Projects/EndraHome/builds/EndraHome_Run028_DynamicLauncher.tns`. [Build record](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44164319709).
@@ -24,4 +26,4 @@ Projects/EndraGBA, Projects/UltraGBA, Projects/UltraZip, Projects/UltimateComman
 5. Never conflate CI PASS with physical-device PASS. Always provide exact downloadable artifacts or clearly state when connector access cannot download binary artifacts.
 
 ## Current next action
-Use Run028 as the base for Run029. Follow the active branch’s [EndraHome project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md) for build status, verification and physical feedback.
+Record the owner’s first physical Run029 result in the [EndraHome project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md). Keep the latest compiled build and the owner’s installed version as separate entries.
