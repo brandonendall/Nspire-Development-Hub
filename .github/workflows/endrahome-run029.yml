@@ -1,14 +1,10 @@
 name: EndraHome Run031 - Desktop
+# Manual-only release build: source commits do not launch overlapping CI runs.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'Projects/EndraHome/run029/**'
-      - '.github/workflows/endrahome-run029.yml'
-  pull_request:
-    paths:
-      - 'Projects/EndraHome/run029/**'
-      - '.github/workflows/endrahome-run029.yml'
+concurrency:
+  group: endrahome-run031-single-build
+  cancel-in-progress: true
 permissions:
   contents: read
   issues: write
