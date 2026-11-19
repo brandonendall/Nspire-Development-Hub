@@ -29,3 +29,6 @@ Retrieve EndraHome Run018 ImageViewer artifact and transfer .tns to calculator f
 
 ## Run019 update — 2026-11-15
 User confirmed Run018 oversized JPEG error ESC returns safely. Run019 source Projects/EndraHome/run019/; commit e8c252d8b1fc7654223712e4e43ba164daa76785; Actions run 43753801159 PASSED host and native; artifact EndraHome_Run019_LargeImages id 14176934540. Run019 supports JPEG/PNG up to 2MP decoded (2048 max dimension), downsamples retained pixels to <=1MP. This is NOT true streaming or scaled JPEG decode; larger files >2MP still rejected and memory peak includes full 2MP RGB. Physical test pending; keep Run018 fallback. Next: test user me.jpg.tns and verify ESC, no freeze.
+
+## EndraHome project memory (2026-11-19)
+Project-local memory: Projects/EndraHome/PROJECT_MEMORY.md. Keep it updated with each meaningful build, CI status and physical test. Requested features: persistent desktop Files tile, readable font, selectable font/UI/folder colors, 4-way navigation, toast expiration, app icons, Ctrl+ON power feasibility, native OS Settings option 9 feasibility. Run018 remains latest documented CI baseline.
