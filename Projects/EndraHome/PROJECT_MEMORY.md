@@ -48,3 +48,6 @@ App-supplied PNG icons remain on the roadmap. Keep physical results and regressi
 ## Current task
 
 Record the first physical Run029 result when the owner reports it. For a new build, use the verified Run029 source, retain numbered builds in this project, and update the build record and installed-device result independently.
+
+### Backlog: visible text-edit cursor in rename/name dialog (user photo, 2026-11-19)
+On the calculator's EndraHome Files rename/name screen, e.g. NAME: `USBTEST`, there is **no visible caret/insertion marker**. The user cannot see where the next typed character will appear and must infer the position by deleting characters. Add a high-contrast blinking or solid vertical caret at the insertion point (including after the last character), respecting actual edit position and scrolling/long names; ensure the marker remains visible on the 320x240 screen and is not confused with the text. Verify keyboard left/right, backspace/delete, inserting mid-name, empty name, and cancel/save. Preserve existing edit functionality. User said this can be addressed eventually; do not assert fixed or tested. Screenshot provided in conversation.
