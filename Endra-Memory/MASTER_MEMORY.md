@@ -18,6 +18,10 @@ _Last curated: 2026-11-17. Owner: brandonendall. This is a public-source, non-se
 - Preserve confirmed working builds as rollback; avoid losing features between runs; honor UI appearance/screenshots and user feedback.
 - Goal: modular tools that eventually work together, with strong functionality, speed, stability, low memory/CPU use, documented reproducible builds, and community distribution when ready.
 
+## EndraHome build location
+
+The [EndraHome project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md) tracks the latest compiled build and the owner’s installed version. On 2026-11-19 these were Run029 Desktop and Run028 Dynamic Launcher, respectively. Both numbered code directories are on `feature/endrahome-run001`. [Archived builds](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/builds).
+
 ## Memory modules
 - [REPOSITORY_INVENTORY.md](REPOSITORY_INVENTORY.md): verified owner repos, platform, current source-of-truth caveats.
 - [NSPIRE_PROJECTS.md](NSPIRE_PROJECTS.md): EndraZIP, EndraHome, EndraGBA, EndraCommander, Endra SDL, EndraDiagnostics.
