@@ -47,6 +47,7 @@ jobs:
           cp "$app/"{Makefile,README.md,main.c,probe.c,probe.h,test_probe.c,native-readonly.patch} dist/source/endratask/
           cp nkits/TaskManager/src/{native.c,tasks.c,tasks.h} dist/source/nkits/TaskManager/src/
           cp nkits/common/{ui.c,ui.h,draw.c,draw.h} dist/source/nkits/common/
+          cp nkits/version.h dist/source/nkits/
           cp nkits/LICENSE dist/source/
           tar -czf dist/EndraTask_Run001_Source.tar.gz -C dist/source .
           rm -r dist/source

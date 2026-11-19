@@ -43,7 +43,13 @@ jobs:
           readelf -h Projects/EndraTask/run002/build/EndraTask_Run002.elf | grep 'Machine:.*ARM'
       - name: Package executable and corresponding source
         shell: bash
-        run: bash Projects/EndraTask/run002/package.sh
+        run: |
+          set -euo pipefail
+          bash Projects/EndraTask/run002/package.sh
+          source_test=$(mktemp -d)
+          tar -xzf dist/EndraTask_Run002/EndraTask_Run002_Source.tar.gz -C "$source_test"
+          make -C "$source_test/endratask/run002" NKITS="$source_test/nkits" host-test all
+          cmp "$source_test/endratask/run002/EndraTask_Run002.tns" dist/EndraTask_Run002/EndraTask_Run002.tns
       - uses: actions/upload-artifact@v4
         with:
           name: EndraTask_Run002

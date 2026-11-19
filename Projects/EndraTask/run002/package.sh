@@ -12,6 +12,7 @@ cp "$project/run001/"{Makefile,README.md,probe.c,probe.h,test_probe.c,native-rea
 cp "$project/run002/"{Makefile,README.md,main.c} "$assembly/endratask/run002/"
 cp nkits/TaskManager/src/{native.c,tasks.c,tasks.h} "$assembly/nkits/TaskManager/src/"
 cp nkits/common/{ui.c,ui.h,draw.c,draw.h} "$assembly/nkits/common/"
+cp nkits/version.h "$assembly/nkits/"
 cp nkits/LICENSE "$assembly/"
 tar -czf "$out/EndraTask_Run002_Source.tar.gz" -C "$assembly" .
 (cd "$out" && sha256sum EndraTask_Run002.tns EndraTask_Run002_Source.tar.gz > SHA256SUMS && sha256sum -c SHA256SUMS)
