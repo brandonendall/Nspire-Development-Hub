@@ -1,0 +1,57 @@
+name: EndraTask Run002
+on:
+  push:
+    branches: [feature/endratask-run001]
+    paths:
+      - 'Projects/EndraTask/run002/**'
+      - '.github/workflows/endratask-run002.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: Ziyang-Bai/nKits
+          ref: a040928502969b3cab393d890e23c9eaba45a30c
+          path: nkits
+          persist-credentials: false
+      - name: Verify and extract the pinned Ndless SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libboost-program-options1.83.0
+          curl --fail --location --retry 3 -o "$RUNNER_TEMP/ndless.deb" \
+            https://github.com/ndless-nspire/Ndless/releases/download/nightly/ndless-sdk_0.614.40413359722.1_amd64.deb
+          echo "06321aadca645d16e6d99f9c57e13c3f1c4837ce142a922510c46f6ead13da23  $RUNNER_TEMP/ndless.deb" | sha256sum -c -
+          dpkg-deb -x "$RUNNER_TEMP/ndless.deb" "$RUNNER_TEMP/ndless"
+          echo "$RUNNER_TEMP/ndless/usr/bin" >> "$GITHUB_PATH"
+      - name: Run host tests and native build
+        run: |
+          set -euo pipefail
+          make -C nkits/TaskManager host-test
+          make -C Projects/EndraTask/run002 host-test all
+          readelf -h Projects/EndraTask/run002/build/EndraTask_Run002.elf | grep 'Machine:.*ARM'
+      - name: Package executable and corresponding source
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash Projects/EndraTask/run002/package.sh
+          source_test=$(mktemp -d)
+          tar -xzf dist/EndraTask_Run002/EndraTask_Run002_Source.tar.gz -C "$source_test"
+          make -C "$source_test/endratask/run002" NKITS="$source_test/nkits" host-test all
+          cmp "$source_test/endratask/run002/EndraTask_Run002.tns" dist/EndraTask_Run002/EndraTask_Run002.tns
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraTask_Run002
+          path: dist/EndraTask_Run002/
+          if-no-files-found: error

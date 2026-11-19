@@ -1,0 +1,59 @@
+name: EndraTask Run001
+on:
+  push:
+    branches: [feature/endratask-run001]
+    paths:
+      - 'Projects/EndraTask/run001/**'
+      - '.github/workflows/endratask-run001.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: Ziyang-Bai/nKits
+          ref: a040928502969b3cab393d890e23c9eaba45a30c
+          path: nkits
+          persist-credentials: false
+      - name: Check the report parser and read-only backend
+        run: |
+          make -C nkits/TaskManager host-test
+          make -C Projects/EndraTask/run001 NKITS="$GITHUB_WORKSPACE/nkits" host-test
+      - name: Set up Ndless r2023 SDK
+        uses: Ziyang-Bai/setup-ndless@d671b6d640f6fb92d694d6a0549a43754c42a5e7
+        with:
+          ndless-ref: e52415fb568e92cd36ed049067b3e9c2727b84af
+      - name: Build native executable and package source
+        run: |
+          set -euo pipefail
+          app=Projects/EndraTask/run001
+          make -C "$app" NKITS="$GITHUB_WORKSPACE/nkits" all
+          readelf -h "$app/build/EndraTask_Run001.elf" | grep 'Machine:.*ARM'
+          test -s "$app/EndraTask_Run001.tns"
+          mkdir -p dist/source/{endratask,nkits/TaskManager/src,nkits/common}
+          cp "$app/EndraTask_Run001.tns" "$app/README.md" nkits/LICENSE dist/
+          cp "$app/"{Makefile,README.md,main.c,probe.c,probe.h,test_probe.c,native-readonly.patch} dist/source/endratask/
+          cp nkits/TaskManager/src/{native.c,tasks.c,tasks.h} dist/source/nkits/TaskManager/src/
+          cp nkits/common/{ui.c,ui.h,draw.c,draw.h} dist/source/nkits/common/
+          cp nkits/version.h dist/source/nkits/
+          cp nkits/LICENSE dist/source/
+          tar -czf dist/EndraTask_Run001_Source.tar.gz -C dist/source .
+          rm -r dist/source
+          (cd dist && sha256sum EndraTask_Run001.tns EndraTask_Run001_Source.tar.gz > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraTask_Run001
+          path: dist/
+          if-no-files-found: error

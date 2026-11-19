@@ -1,0 +1,147 @@
+diff --git a/source/nlink-termux/libnspire-sys-debug/libnspire/src/cx2.cpp b/source/nlink-termux/libnspire-sys-debug/libnspire/src/cx2.cpp
+index ed40b88..e339b38 100644
+--- a/source/nlink-termux/libnspire-sys-debug/libnspire/src/cx2.cpp
++++ b/source/nlink-termux/libnspire-sys-debug/libnspire/src/cx2.cpp
+@@ -164,15 +164,20 @@ static bool readPacket(libusb_device_handle *handle, NNSEMessage *message, int m
+ 	memset(message, 0, sizeof(NNSEMessage));
+ 	int r = libusb_bulk_transfer(handle, 0x81, reinterpret_cast<unsigned char*>(message), maxlen, &transferred, 60000);
+ 
+-	if(r < 0
+-		|| transferred < sizeof(NNSEMessage))
++	if(r < 0 || transferred < sizeof(NNSEMessage))
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=read_header usb_rc=%d bytes=%d\n", r, transferred);
+ 		return false;
++	}
+ 
+ 	const auto completeLength = ntohs(message->length);
+ 
+-	if(completeLength < sizeof(NNSEMessage)
+-		|| completeLength > maxlen)
++	if(completeLength < sizeof(NNSEMessage) || completeLength > maxlen)
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=invalid_length bytes=%d reported=%u max=%d\n",
++			transferred, (unsigned)completeLength, maxlen);
+ 		return false;
++	}
+ 
+ 	uint8_t *data = reinterpret_cast<uint8_t*>(message) + transferred;
+ 	auto remainingLength = completeLength - transferred;
+@@ -180,7 +185,11 @@ static bool readPacket(libusb_device_handle *handle, NNSEMessage *message, int m
+ 	{
+ 		r = libusb_bulk_transfer(handle, 0x81, data, remainingLength, &transferred, 1000);
+ 		if(r < 0)
++		{
++			fprintf(stderr, "[ENDRATASK USB] stage=read_body usb_rc=%d remaining=%d\n",
++				r, remainingLength);
+ 			return false;
++		}
+ 
+ 		data += transferred;
+ 		remainingLength -= transferred;
+@@ -192,7 +201,11 @@ static bool readPacket(libusb_device_handle *handle, NNSEMessage *message, int m
+ #endif
+ 
+ 	if(compute_checksum(reinterpret_cast<uint8_t*>(message), transferred) != 0xFFFF)
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=checksum bytes=%d reported=%u\n",
++			transferred, (unsigned)completeLength);
+ 		return false;
++	}
+ 
+ 	return true;
+ }
+@@ -214,9 +227,12 @@ static bool writePacket(libusb_device_handle *handle, NNSEMessage *message)
+ 
+ 	int transferred = 0;
+ 	int r = libusb_bulk_transfer(handle, 0x01, reinterpret_cast<unsigned char*>(message), length, &transferred, 1000);
+-	if(r < 0
+-		|| length != transferred)
++	if(r < 0 || length != transferred)
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=write usb_rc=%d bytes=%d expected=%u\n",
++			r, transferred, (unsigned)length);
+ 		return false;
++	}
+ 
+ 	return true;
+ }
+@@ -403,7 +419,10 @@ static bool assureReady(struct nspire_handle *nsp_handle)
+ int packet_send_cx2(struct nspire_handle *nsp_handle, char *data, int size)
+ {
+ 	if(!assureReady(nsp_handle))
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=handshake_incomplete\n");
+ 		return -NSPIRE_ERR_BUSY;
++	}
+ 
+ 	auto *handle = nsp_handle->device.dev;
+ 
+@@ -421,7 +440,11 @@ int packet_send_cx2(struct nspire_handle *nsp_handle, char *data, int size)
+ 
+ 	int ret = -NSPIRE_ERR_SUCCESS;
+ 	if(!writePacket(handle, msg))
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=stream_write_failed seq=%u\n",
++			(unsigned)ntohs(msg->seqno));
+ 		ret = -NSPIRE_ERR_BUSY;
++	}
+ 	else
+ 	{
+ 		const int maxlen = sizeof(NNSEMessage) + 1472;
+@@ -442,7 +465,11 @@ int packet_send_cx2(struct nspire_handle *nsp_handle, char *data, int size)
+ 		}
+ 
+ 		if(!acked)
++		{
++			fprintf(stderr, "[ENDRATASK USB] stage=ack_missing seq=%u\n",
++				(unsigned)ntohs(msg->seqno));
+ 			ret = -NSPIRE_ERR_BUSY;
++		}
+ 
+ 		free(message);
+ 	}
+@@ -455,7 +482,10 @@ int packet_send_cx2(struct nspire_handle *nsp_handle, char *data, int size)
+ int packet_recv_cx2(struct nspire_handle *nsp_handle, char *data, int size)
+ {
+ 	if(!assureReady(nsp_handle))
++	{
++		fprintf(stderr, "[ENDRATASK USB] stage=handshake_incomplete\n");
+ 		return -NSPIRE_ERR_BUSY;
++	}
+ 
+ 	auto *handle = nsp_handle->device.dev;
+ 
+diff --git a/source/nlink-termux/libnspire-sys-debug/libnspire/src/service.c b/source/nlink-termux/libnspire-sys-debug/libnspire/src/service.c
+index 0c0d30e..d617fa9 100644
+--- a/source/nlink-termux/libnspire-sys-debug/libnspire/src/service.c
++++ b/source/nlink-termux/libnspire-sys-debug/libnspire/src/service.c
+@@ -15,13 +15,18 @@
+     along with libnspire.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
++#include <stdio.h>
++
+ #include "error.h"
+ #include "data.h"
+ #include "packet.h"
+ 
+ int service_connect(nspire_handle_t *handle, uint16_t sid) {
+-	if (handle->connected)
++	if (handle->connected) {
++		fprintf(stderr, "[ENDRATASK USB] stage=handle_already_connected active=0x%04x requested=0x%04x\n",
++			(unsigned)handle->device_sid, (unsigned)sid);
+ 		return -NSPIRE_ERR_BUSY;
++	}
+ 
+ 	handle->connected = 1;
+ 	handle->device_sid = sid;
+@@ -45,6 +50,8 @@ int service_disconnect(nspire_handle_t *handle) {
+ 
+ 	p = packet_new(handle);
+ 	if ( (ret = data_write_special(handle, &data, 2, mod_src)) ) {
++		fprintf(stderr, "[ENDRATASK USB] stage=disconnect_failed rc=%d service=0x%04x\n",
++			ret, (unsigned)handle->device_sid);
+ 		return ret;
+ 	}
+ 
