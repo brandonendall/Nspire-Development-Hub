@@ -112,7 +112,7 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_DOWN);eh7_ui_handle(&info,EH_KEY_RIGHT);
  assert(info.preview.folder==1 && info.preview.theme==0 && info.preview.font==0);
  eh7_ui_handle(&info,EH_KEY_DOWN);eh7_ui_handle(&info,EH_KEY_LEFT);
- assert(info.preview.font==6 && !r.appearance.font);
+ assert(info.preview.font==EH_COLOR_COUNT-1 && !r.appearance.font);
  eh7_ui_handle(&info,EH_KEY_ESC);assert(!info.preview.font && !info.preview.folder);
  eh7_ui_handle(&info,EH_KEY_ENTER);eh7_ui_handle(&info,EH_KEY_RIGHT);
  eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH15_THEME && !r.appearance.theme);
