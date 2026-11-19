@@ -1,6 +1,17 @@
 # EndraTask project memory
 
-Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Run001 source and device acceptance steps are in [run001](run001/README.md). Native CI and calculator verification are pending.
+Updated November 19, 2026. Start here when resuming EndraTask in the Nspire Development Hub. Active branch `feature/endratask-run001`. Latest build: **Run002**. Read the build history and device checklist below.
+
+## Build history
+
+| Build | Source and verification | Download |
+| --- | --- | --- |
+| Run002 | [Source and device checklist](run002/README.md). Off-device host tests and native ARM compilation passed with the pinned Ndless r2023 SDK. Calculator launch, task refresh, export and retrieval are pending. | [Run002 TNS](https://chatgpt.com/library?file_id=libfile_bf771b1640a48191917ac62f90966b39&account_id=personal) · [TNS, source and checksums](https://chatgpt.com/library?file_id=libfile_3c54fa22ea6c8191a73b3e6eedea3c3f&account_id=personal) |
+| Run001 | [Source](run001/README.md) at `38eca6486d05c3b2472c5d5e51d1036d0e7eb8ff`. Host tests and native ARM compilation passed off-device. No physical test recorded. | [Run001 TNS](https://chatgpt.com/library?file_id=libfile_77b60499e66081918b39456fd935713e&account_id=personal) |
+
+Run002 adds a per-snapshot task ID, task state, priority, stack allocation and manual report export to `/documents/EndraTask_Run002_Report.txt.tns`. The task ID is a transient Nucleus object address. CPU utilization, total task memory, open handles and lock-owner attribution are unavailable. Local and remote termination remain proposals. Preserve the Run001 binary as a read-only baseline.
+
+The November 19 EndraTask/EndraTermux handoff reports that Smart Push Run011 transferred a file with `nlink-v2` to a custom `/upload` destination after one “No such device” failure. Treat that as one successful transfer, with reliability and the cause of the initial failure still unverified. Use normal EndraTermux file retrieval for the Run002 export. Preserve the working transport.
 
 ## Goal
 
