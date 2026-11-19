@@ -1,3 +1,4 @@
+# Dedicated Run030 release build; isolated from Run031 source changes.
 name: EndraHome Run030 - Desktop
 on:
   workflow_dispatch:
