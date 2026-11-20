@@ -79,7 +79,7 @@ static void size_label(char *out,size_t cap,unsigned long long n){
 void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!f||!p||!p->active||!apps)return;
  EhPalette colors=eh_palette(apps->appearance);
- uint16_t bg=EH_RGB(6,16,29),light=EH_RGB(241,251,255),dim=EH_RGB(149,182,201),cyan=EH_RGB(52,217,251),highlight=EH_RGB(10,47,72);
+ uint16_t bg=EH_RGB(6,16,29),light=colors.ink,dim=colors.ink,cyan=EH_RGB(52,217,251),highlight=EH_RGB(10,47,72);
  box(f,0,0,320,240,bg);
  box(f,0,0,320,29,EH_RGB(8,27,46));box(f,0,28,320,2,cyan);
  label(f,12,10,p->show_all?"ENDRA FILES":"ASSIGN APP",light,13);
