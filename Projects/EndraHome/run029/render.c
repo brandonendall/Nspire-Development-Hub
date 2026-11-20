@@ -74,11 +74,12 @@ void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
  EhPalette p=eh_palette(r->appearance);
  if(!decode34(f))eh_box(f,0,0,320,240,DEEP);
  /* Slim wordmark replaces the oversize E cube + second title row. */
- glass34(f,0,0,320,43,DEEP,94);
+ /* Opaque chrome hides the image's baked-in former logo and 96% battery. */
+ eh_box(f,0,0,320,43,DEEP);
  eh_box(f,0,41,320,1,SKY);
  eh_box(f,0,42,320,1,EH_RGB(23,96,154));
- eh_small_text(f,12,10,"ENDRAHOME",INK,2,9);
- eh_small_text(f,13,29,"EXPLORE  ORGANIZE  ACHIEVE",EH_RGB(121,199,242),1,30);
+ eh_small_text(f,12,14,"ENDRAHOME",INK,2,9);
+ /* The full-color artwork already carries the Explore / Organize motto. */
  eh_small_text(f,216,10,"TI-NSPIRE",EH_RGB(142,214,250),1,10);
  eh_small_text(f,267,26,"RUN 034",SKY,1,7);
  EhTile tiles[EH7_SLOT_COUNT];
@@ -87,7 +88,7 @@ void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
   * overlay covering the centerpiece. */
  if(count==1)glass34(f,117,94,86,84,DEEP,22);
  for(int i=0;i<count;i++)draw_tile34(f,&tiles[i],r,&p,tiles[i].slot==s->selected);
- glass34(f,0,217,320,23,DEEP,96);
+ eh_box(f,0,217,320,23,DEEP);
  eh_box(f,0,217,320,1,SKY);
  eh_small_text(f,10,227,"ESC  BACK   ENTER  OPEN   MENU  MANAGE",INK,1,48);
 }
