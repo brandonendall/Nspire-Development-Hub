@@ -79,23 +79,23 @@ static void size_label(char *out,size_t cap,unsigned long long n){
 void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!f||!p||!p->active||!apps)return;
  EhPalette colors=eh_palette(apps->appearance);
- uint16_t bg=colors.background,light=colors.ink,dim=colors.ink,cyan=colors.ink,highlight=colors.selected;
+ uint16_t bg=colors.background,light=colors.ink,dim=colors.ink,cyan=colors.accent,highlight=colors.selected;
  box(f,0,0,320,240,bg);
- box(f,0,0,320,28,colors.raised);
+ box(f,0,0,320,29,colors.raised);box(f,0,28,320,2,colors.accent);
  label(f,12,10,p->show_all?"ENDRA FILES":"ASSIGN APP",light,13);
  if(!p->show_all)label(f,118,10,apps->slots[p->slot].label,cyan,16);
- box(f,8,35,304,29,colors.panel);
+ box(f,7,34,306,29,colors.accent);box(f,8,35,304,27,colors.panel);
  label(f,12,42,"PATH:",cyan,8);
  /* Show path tail if very long; keeps last directory names visible. */
  const char *s=p->dir;size_t len=strlen(s);
  if(len>30)s+=len-30;
  label(f,61,42,s,light,31);
- if(p->show_all){label(f,39,65,"NAME",cyan,6);label(f,272,65,"SIZE",cyan,5);}
+ if(p->show_all){box(f,0,64,320,15,colors.raised);label(f,39,67,"NAME",cyan,6);label(f,272,67,"SIZE",cyan,5);}
  int bottom=p->scroll+EH13_VIEW_ROWS;
  if(bottom>p->count)bottom=p->count;
  for(int i=p->scroll;i<bottom;i++){
   int y=81+(i-p->scroll)*15;
-  if(i==p->selected)box(f,10,y-2,300,15,highlight);
+  if(i==p->selected){box(f,7,y-3,306,17,colors.accent);box(f,9,y-2,302,15,highlight);}else if((i-p->scroll)&1)box(f,9,y-2,302,15,colors.panel);
   const Eh13PickEntry *e=p->items+i;
   file_icon(f,17,y-3,e->name,e->directory,&colors);
   /* 23 glyphs for names; size column starts at x=255. */
@@ -113,7 +113,7 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!p->count)label(f,19,93,p->show_all?"EMPTY FOLDER":"NO APPS IN THIS FOLDER",dim,30);
  char status[64];
  snprintf(status,sizeof(status),"%d FILES/FOLDERS%s",p->count,p->overflow?" (LIMIT)":"");
- label(f,12,209,status,dim,35);
- box(f,0,223,320,17,colors.raised);
+ /* File count intentionally omitted: reserve the status strip for actual actions. */
+ box(f,0,221,320,19,colors.raised);box(f,0,220,320,1,colors.accent);
  label(f,7,227,p->show_all?"ENTER OPEN/INFO ESC BACK":"ENTER OPEN/ASSIGN ESC BACK",cyan,32);
 }
