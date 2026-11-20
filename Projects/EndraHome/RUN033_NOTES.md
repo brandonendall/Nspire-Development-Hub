@@ -1,0 +1,17 @@
+# EndraHome Run033 — actual hardware feedback and requirements
+Updated 2026-11-20. Repository: brandonendall/Nspire-Development-Hub. Active branch feature/endrahome-run001, source Projects/EndraHome/run029/, separate Run028/Run032 rollback builds.
+
+## Run032 real calculator evidence
+User transferred and launched EndraHome_Run032_Desktop.tns successfully using the **two-argument** command `clear` then `push /storage/emulated/0/Download/EndraHome_Run032_Desktop.tns /upload`. The user's three photographs show: (1) built-in Files browsing /documents with folders and file sizes, (2) eight-action popup (Open, Copy, Cut, Paste, Rename, Delete, New Folder, Properties), (3) configured shortcuts GBA, ZIP, CXplorer, Files, Text visible on home screen. Visible configured shortcuts are expected; empty/Add App placeholders must remain hidden. User judges Run032's large selected tile background, uneven colored cards, and overall styling unacceptable even though some browser/menu elements improved. No evidence that every file operation was executed or physically verified. Preserve working functionality and do not infer file transfers have fixed other USB busy errors.
+
+## Run033 target — substantial graphics change
+Use verified full-color 320x240 RGB565 artwork from Run031 as **actual interactive launcher** background, not just a static demo. Do not display artwork's baked battery percent as live data; cover/redraw static fake values. Stable dark cards irrespective of selection; highlight only thin neon cyan border/left rail, readable white text, gold folder/green archive icons, more refined file-browser and action-menu chrome, full 320x240 usability. Preserve real configs, Menu management, Files-only default, actual file operations, and return/exit logic; test host preview and actual calculator after CI, no repeated risky cycles.
+
+## Critical control bug — NOT RESOLVED
+User states physical **Ctrl+Home** (Home/On key, TI OS equivalent Ctrl+On) MUST power off/suspend calculator exactly like native TI Documents. Existing code `run029/main.c` intercepts `eh_platform_exit_chord()` and only exits EndraHome. User explicitly rejects that behavior. Esc should exit app. Never claim native standby works unless demonstrated on CX II CAS OS 6.4.0.74. Research verified OS standby API/handoff and restore LCD/timer before invoking; don't fake power-off by blanking LCD, changing hardware power registers, resetting, or leaving hooks.
+
+## Native Settings menu requirement — NOT RESOLVED
+User wants EndraHome to appear as item **9** after physical Home > 5 (Settings), like nKits/theme editor, not only inside EndraHome's own Menu. Current standalone binary does not and cannot simply register an item via ordinary file installation. `tornadus/nTheme` publicly demonstrates native Settings entry on OS 6.4.0.74 via OS-specific hooking; feasibility in principle does NOT prove safe to port. Research how its RAM hook works, current occupied slots and collision with existing theme editor. Do not patch firmware, alter OS or ndless startup, or add a resident hook without separate opt-in, read-only checks, emulator validation, rollback, and explicit user approval. Implement all core EndraHome graphics/functionality independently first.
+
+## State definitions
+Run031 artwork: hardware screen PASS. Run032 launcher/Files/menu DISPLAY + transfer PASS with visual deficiencies; file mutations/power/native OS menu NOT demonstrated. Run033 planned source upgrade, not yet CI or hardware passed. Keep working Run028 and Run032 binaries intact.
