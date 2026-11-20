@@ -82,8 +82,8 @@ int main(void){
  for(int i=0;i<5;i++)eh7_ui_handle(&fm,EH_KEY_DOWN);
  eh7_ui_handle(&fm,EH_KEY_ENTER);assert(fm.open_files && !fm.request);
  EhRegistry bare;eh7_registry_init(&bare);EhUniversalUI only;eh7_ui_init(&only,&bare);
- assert(only.page.selected==0);
- eh7_ui_handle(&only,EH_KEY_ENTER);assert(only.assign_slot==1 && !only.request);
+ assert(only.page.selected==EH_FILES_SLOT);
+ eh7_ui_handle(&only,EH_KEY_ENTER);assert(only.open_files && !only.assign_slot && !only.request);
  /* Every possible subset of shortcuts. Render and input use identical geometry. */
  for(unsigned mask=0;mask<128;mask++){
   EhRegistry grid;eh7_registry_init(&grid);
@@ -106,7 +106,7 @@ int main(void){
    }
   }
   assert(files==1);
-  if(mask!=127)assert(count>=2);
+  assert(count>=1);
  }
  /* Live preview stays separate from saved appearance until a successful save. */
  eh7_ui_handle(&info,EH_KEY_DOWN);eh7_ui_handle(&info,EH_KEY_RIGHT);
