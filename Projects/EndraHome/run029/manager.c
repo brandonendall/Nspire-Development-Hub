@@ -1,89 +1,110 @@
-/* Run016 dark manager with native QWERTY text-entry field. */
+/* EndraHome Run034: cohesive slim native UI for app manager, dialogs and
+ * appearance settings. Input and persistent settings are unchanged. */
 #include "manager.h"
-#include <stdint.h>
-#include <string.h>
 #include "display.h"
+#include <string.h>
 #define box eh_box
-static void txt(uint16_t *f,int x,int y,const char *s,uint16_t ink,int n){
- eh_text(f,x,y,s,ink,n,1);
+#define SKY EH_RGB(55,219,252)
+#define INK EH_RGB(238,249,255)
+#define MUTED EH_RGB(157,196,225)
+#define DEEP EH_RGB(5,16,31)
+#define PANEL EH_RGB(8,25,44)
+#define ROW EH_RGB(14,52,78)
+static void txt(uint16_t *f,int x,int y,const char *s,uint16_t c,int cap){
+ eh_text(f,x,y,s,c,cap,1);
 }
-static void tail(uint16_t *f,int x,int y,const char *s,uint16_t c,int n){
- int len=(int)strlen(s);if(len>n)s+=len-n;
- txt(f,x,y,s,c,n);
+static const char *rightpart(const char *s,int cap){
+ size_t n=strlen(s);
+ return n>(size_t)cap?s+n-cap:s;
+}
+static void head34(uint16_t *f,const char *right){
+ box(f,0,0,320,240,DEEP);
+ box(f,0,0,320,42,EH_RGB(9,28,48));
+ box(f,0,40,320,2,SKY);
+ eh_small_text(f,12,10,"ENDRAHOME",INK,2,9);
+ eh_small_text(f,13,30,"TI-NSPIRE EDITION",MUTED,1,18);
+ if(right)eh_small_text(f,207,21,right,SKY,1,18);
+ box(f,8,48,304,163,EH_RGB(28,76,105));
+ box(f,9,49,302,161,PANEL);
+ box(f,0,218,320,22,EH_RGB(9,28,48));
+ box(f,0,217,320,1,SKY);
+}
+static void title34(uint16_t *f,const char *s){
+ eh_small_text(f,18,56,s,SKY,2,23);
+}
+static void row34(uint16_t *f,int y,int selected){
+ if(!selected)return;
+ box(f,16,y-4,288,20,ROW);
+ box(f,16,y-4,3,20,SKY);
+ box(f,19,y-4,285,1,EH_RGB(20,100,143));
 }
 void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
  if(!f||!s||!s->apps)return;
  const EhAppSlot *app=&s->apps->slots[s->page.selected];
- int settings = s->page.page==EH_PAGE_HELP && s->subview==1;
+ int settings=s->page.page==EH_PAGE_HELP&&s->subview==1;
  EhPalette p=eh_palette(settings?s->preview:s->apps->appearance);
- uint16_t white=p.ink,muted=p.ink,cyan=p.ink;
- box(f,0,0,320,240,p.background);
- box(f,0,0,320,33,p.raised);box(f,0,31,320,2,p.accent);
- txt(f,12,11,"ENDRAHOME",p.ink,10);
- tail(f,144,11,app->label,p.ink,19);
- box(f,11,41,298,169,p.panel);
+ uint16_t custom=p.ink;
+ head34(f,settings?"SETTINGS":rightpart(app->label,17));
  if(s->renaming){
-  txt(f,19,50,"RENAME WITH QWERTY",cyan,24);
-  txt(f,19,78,"CURRENT NAME:",muted,23);
-  txt(f,19,95,app->label,white,15);
-  box(f,16,119,288,35,p.background);
-  box(f,16,119,288,2,p.accent);
-  txt(f,22,131,s->rename_input[0]?s->rename_input:"TYPE NEW NAME...",s->rename_input[0]?white:muted,17);
-  int len=(int)strlen(s->rename_input);
-  if(len<15)box(f,22+len*8,143,7,2,cyan);
-  txt(f,19,174,"USE YOUR PHYSICAL KEYBOARD",muted,33);
-  txt(f,19,191,"MAXIMUM 15 CHARACTERS",muted,30);
-  txt(f,9,225,"ENTER SAVE DEL DELETE ESC CANCEL",cyan,37);
+  title34(f,"RENAME SHORTCUT");
+  txt(f,20,86,"CURRENT NAME:",MUTED,20);
+  txt(f,144,86,rightpart(app->label,17),custom,17);
+  box(f,18,116,284,36,DEEP);
+  box(f,18,116,284,2,SKY);
+  txt(f,24,130,s->rename_input[0]?s->rename_input:"TYPE A NAME",s->rename_input[0]?custom:MUTED,17);
+  int n=(int)strlen(s->rename_input);
+  if(n<16)box(f,24+n*8,140,2,12,SKY);
+  eh_small_text(f,20,176,"USE THE PHYSICAL KEYBOARD",MUTED,1,40);
+  eh_small_text(f,20,192,"15 CHARACTERS MAXIMUM",MUTED,1,40);
+  eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",INK,1,48);
   return;
  }
  if(s->confirm_remove){
-  txt(f,23,68,s->page.selected==3?"USE BUILT-IN FILES?":"REMOVE SHORTCUT?",cyan,25);
-  txt(f,23,96,app->label,white,15);
-  txt(f,23,123,"ONLY THE LINK WILL BE REMOVED",muted,35);
-  txt(f,23,146,"THE APPLICATION FILE IS SAFE",muted,34);
-  txt(f,12,226,"ENTER REMOVE   ESC CANCEL",cyan,35);
+  title34(f,s->page.selected==3?"USE BUILT-IN FILES?":"REMOVE SHORTCUT?");
+  txt(f,20,105,rightpart(app->label,30),custom,30);
+  eh_small_text(f,20,143,"THIS DOES NOT DELETE FILES",MUTED,1,46);
+  eh_small_text(f,20,165,"ONLY THE SHORTCUT CHANGES",MUTED,1,46);
+  eh_small_text(f,15,225,"ENTER CONFIRM      ESC CANCEL",INK,1,48);
   return;
  }
  if(s->page.page==EH_PAGE_DETAIL){
-  static const char *items[6]={"ASSIGN / CHANGE APP","RENAME SHORTCUT",
-   "REMOVE SHORTCUT","APP INFORMATION","SETTINGS","OPEN ENDRA FILES"};
-  txt(f,19,45,"MANAGE APPS: LEFT/RIGHT SLOT",cyan,33);
+  static const char *items[]={"ASSIGN / CHANGE APP","RENAME SHORTCUT",
+    "REMOVE SHORTCUT","APP INFORMATION","APPEARANCE","OPEN ENDRA FILES"};
+  title34(f,"MANAGE APPLICATIONS");
   for(int i=0;i<6;i++){
-   int y=63+i*23;
-   if(s->manager_item==i)box(f,15,y-3,287,21,p.selected);
-   txt(f,21,y,s->manager_item==i?">":" ",cyan,1);
-   txt(f,37,y,(i==2&&s->page.selected==3)?"USE BUILT-IN FILES":items[i],white,30);
+   int y=83+i*20;
+   row34(f,y,s->manager_item==i);
+   txt(f,25,y,(i==2&&s->page.selected==3)?"USE BUILT-IN FILES":items[i],custom,34);
   }
-  txt(f,10,226,"UP/DOWN ENTER SELECT ESC BACK",cyan,38);
+  eh_small_text(f,15,225,"ARROWS SELECT   ENTER OPEN   ESC BACK",INK,1,48);
  }else if(s->page.page==EH_PAGE_HELP&&!s->subview){
-  txt(f,19,51,"APPLICATION INFORMATION",cyan,28);
-  txt(f,19,79,"SHORTCUT:",muted,14);txt(f,116,79,app->label,white,15);
-  txt(f,19,105,app->path[0]?"LINKED FILE:":"NOT CONFIGURED",cyan,22);
+  title34(f,"APPLICATION INFO");
+  txt(f,20,85,"SHORTCUT:",MUTED,16);
+  txt(f,108,85,rightpart(app->label,22),custom,22);
+  txt(f,20,113,app->path[0]?"LINKED FILE:":"NOT CONFIGURED",SKY,23);
   if(app->path[0]){
-   txt(f,19,127,app->path,white,35);
-   if(strlen(app->path)>35)txt(f,19,148,app->path+35,muted,35);
+   txt(f,20,132,app->path,custom,34);
+   if(strlen(app->path)>34)txt(f,20,149,app->path+34,MUTED,34);
   }
-  txt(f,19,181,"UNASSIGN NEVER DELETES FILES",muted,35);
-  txt(f,14,226,"ESC BACK TO MANAGER",cyan,30);
+  eh_small_text(f,19,189,"REMOVING LINK DOES NOT DELETE APP",MUTED,1,48);
+  eh_small_text(f,15,225,"ESC BACK TO APP MANAGER",INK,1,48);
  }else{
-  static const char *const rows[]={"Interface","Folders","Text","Restore defaults"};
+  static const char *const choices[]={"Interface","Folders","Text","Restore defaults"};
   const char *values[]={eh_theme_names[s->preview.theme],eh_folder_names[s->preview.folder],
-                        eh_font_names[s->preview.font],""};
-  uint16_t chips[]={p.accent,p.folder,p.ink,p.panel};
-  txt(f,19,50,"APPEARANCE",p.ink,10);
-  for(int i=0;i<4;++i){
-   int y=73+i*27;
-   if(i==s->setting_row){
-    box(f,15,y-5,287,22,p.selected);
-    box(f,15,y-5,3,22,p.accent);
-   }
-   txt(f,26,y,rows[i],p.ink,18);
+    eh_font_names[s->preview.font],""};
+  const uint16_t chips[]={p.accent,p.folder,p.ink,p.panel};
+  title34(f,"APPEARANCE");
+  for(int i=0;i<4;i++){
+   int y=88+i*24;
+   row34(f,y,s->setting_row==i);
+   txt(f,26,y,choices[i],custom,18);
    if(i<3){
-    box(f,166,y-1,12,10,chips[i]);
-    txt(f,187,y,values[i],p.ink,11);
+    box(f,166,y-1,13,13,SKY);
+    box(f,168,y+1,9,9,chips[i]);
+    txt(f,186,y,values[i],custom,14);
    }
   }
-  txt(f,19,188,"Left/Right  Preview",p.ink,25);
-  txt(f,13,225,"Enter  Save       Esc  Cancel",p.ink,35);
+  eh_small_text(f,21,194,"LEFT / RIGHT  PREVIEW COLOR",MUTED,1,46);
+  eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",INK,1,48);
  }
 }

@@ -79,39 +79,48 @@ static void size_label(char *out,size_t cap,unsigned long long n){
 void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!f||!p||!p->active||!apps)return;
  EhPalette colors=eh_palette(apps->appearance);
- uint16_t bg=EH_RGB(6,16,29),light=colors.ink,dim=colors.ink,cyan=EH_RGB(52,217,251),highlight=EH_RGB(10,47,72);
+ const uint16_t bg=EH_RGB(5,16,30),cyan=EH_RGB(52,218,251);
+ const uint16_t white=colors.ink,dim=colors.ink;
+ const uint16_t panel=EH_RGB(9,28,46),selected=EH_RGB(11,48,72);
  box(f,0,0,320,240,bg);
- box(f,0,0,320,29,EH_RGB(8,27,46));box(f,0,28,320,2,cyan);
- label(f,12,10,p->show_all?"ENDRA FILES":"ASSIGN APP",light,13);
- if(!p->show_all)label(f,118,10,apps->slots[p->slot].label,cyan,16);
- box(f,7,34,306,29,cyan);box(f,8,35,304,27,EH_RGB(8,26,43));
- label(f,12,42,"PATH:",cyan,8);
- /* Show path tail if very long; keeps last directory names visible. */
- const char *s=p->dir;size_t len=strlen(s);
+ box(f,0,0,320,36,panel);
+ box(f,0,34,320,2,cyan);
+ eh_small_text(f,12,10,p->show_all?"ENDRA FILES":"ASSIGN APP",EH_RGB(240,251,255),2,12);
+ eh_small_text(f,237,24,p->show_all?"FILE BROWSER":"APP PICKER",cyan,1,14);
+ box(f,7,40,306,28,cyan);
+ box(f,8,41,304,26,EH_RGB(7,24,40));
+ eh_small_text(f,13,51,"PATH",cyan,1,5);
+ const char *s=p->dir;
+ size_t len=strlen(s);
  if(len>30)s+=len-30;
- label(f,61,42,s,light,31);
- if(p->show_all){box(f,0,64,320,15,EH_RGB(11,34,54));label(f,39,67,"NAME",cyan,6);label(f,272,67,"SIZE",cyan,5);}
+ label(f,62,49,s,white,30);
+ box(f,0,72,320,16,EH_RGB(13,37,55));
+ eh_small_text(f,39,77,"NAME",EH_RGB(139,213,247),1,5);
+ if(p->show_all)eh_small_text(f,272,77,"SIZE",EH_RGB(139,213,247),1,5);
  int bottom=p->scroll+EH13_VIEW_ROWS;
  if(bottom>p->count)bottom=p->count;
  for(int i=p->scroll;i<bottom;i++){
-  int y=81+(i-p->scroll)*15;
-  if(i==p->selected){box(f,7,y-3,306,17,cyan);box(f,9,y-2,302,15,highlight);box(f,9,y-2,3,15,EH_RGB(122,248,255));}else box(f,9,y+12,302,1,EH_RGB(18,42,61));
+  int y=96+(i-p->scroll)*15;
+  if(i==p->selected){
+   box(f,7,y-3,306,16,cyan);
+   box(f,9,y-2,302,14,selected);
+   box(f,9,y-2,3,14,EH_RGB(151,248,255));
+  }else{
+   box(f,10,y+11,300,1,EH_RGB(17,42,60));
+  }
   const Eh13PickEntry *e=p->items+i;
   file_icon(f,17,y-3,e->name,e->directory,&colors);
-  /* 23 glyphs for names; size column starts at x=255. */
-  /* Never paint filenames into the right-aligned SIZE column. */
-  int maxname=p->show_all?23:32;
-  eh_fit_text(f,39,y,e->name,light,maxname);
+  eh_fit_text(f,39,y,e->name,white,p->show_all?23:32);
   if(p->show_all){
    char sz[24];
    if(e->directory)snprintf(sz,sizeof(sz),"--");
    else size_label(sz,sizeof(sz),e->bytes);
-   int chars=(int)strlen(sz);
-   label(f,312-chars*8,y,sz,i==p->selected?light:dim,chars);
+   int n=(int)strlen(sz);
+   label(f,312-n*8,y,sz,i==p->selected?white:dim,n);
   }
  }
- if(!p->count)label(f,19,93,p->show_all?"EMPTY FOLDER":"NO APPS IN THIS FOLDER",dim,30);
- /* No redundant count strip. Keep this area for file-operation status. */
- box(f,0,221,320,19,EH_RGB(8,27,46));box(f,0,220,320,1,cyan);
- label(f,7,227,p->show_all?"ENTER OPEN/INFO ESC BACK":"ENTER OPEN/ASSIGN ESC BACK",cyan,32);
+ if(!p->count)label(f,19,109,p->show_all?"EMPTY FOLDER":"NO APPS IN THIS FOLDER",dim,30);
+ box(f,0,218,320,22,panel);
+ box(f,0,217,320,1,cyan);
+ eh_small_text(f,10,226,p->show_all?"ENTER  OPEN / INFO      ESC  BACK":"ENTER  SELECT APP      ESC  BACK",EH_RGB(238,249,255),1,49);
 }

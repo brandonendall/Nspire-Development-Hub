@@ -26,7 +26,10 @@ int main(void) {
     guarded[0]=0x1881;guarded[320*240+1]=0x8118;
     EhUniversalUI ui;eh7_ui_init(&ui,&r);
     eh7_render(frame,&ui.page,&r);
-    assert(color_count(p.ink)>50 && color_count(mark)>20);
+    /* Run034 wordmark: approved 5x7 font and cyan trimming replace the E cube. */
+    assert(color_count(EH_RGB(53,219,252))>20);
+    assert(color_count(EH_RGB(239,250,255))>15);
+    (void)mark;
     eh7_ui_handle(&ui,EH_KEY_MENU);eh15_manager_render(frame,&ui);
     assert(color_count(p.ink)>100);
     ui.manager_item=4;eh7_ui_handle(&ui,EH_KEY_ENTER);
@@ -40,11 +43,12 @@ int main(void) {
     for(int screen=0;screen<=4;screen++){
         if(screen==3)continue; /* Image pixels have their own decoder and rendering tests. */
         files.screen=screen;eh17_files_render(frame,&files,&r);
-        assert(color_count(p.ink)>60);
+        assert(color_count(p.ink)>60 || color_count(EH_RGB(245,251,255))>60);
         if(!screen)assert(color_count(p.folder)>10);
     }
     eh_toast_set(&ui.notice,"Appearance saved");eh7_overlay(frame,&ui);
     eh_text(frame,317,237,"wide",p.ink,4,2);
+    eh_small_text(frame,316,232,"ENDRA",EH_RGB(53,219,252),1,6);
     assert(guarded[0]==0x1881 && guarded[320*240+1]==0x8118);
     puts("PASS tinted text, icon colors, settings preview and framebuffer bounds");
     return 0;

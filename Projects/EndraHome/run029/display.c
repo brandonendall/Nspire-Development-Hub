@@ -140,3 +140,49 @@ void eh_theme_icon(uint16_t *f,int x,int y,int kind,const EhPalette *p) {
         eh_box(f,x+11,y+18,10,4,p->accent);break;
     }
 }
+
+/* 5x7 native pixel font adapted from EndraZIP's compact on-screen glyphs.
+ * All text is rasterized to the caller's 320x240 frame, never to the LCD
+ * directly. This provides a lighter header than the chunky 8x8 type. */
+typedef struct { char ch; uint8_t bits[7]; } EhMiniGlyph;
+static const EhMiniGlyph mini34[]={
+ {'A',{14,17,17,31,17,17,17}}, {'B',{30,17,17,30,17,17,30}},
+ {'C',{14,17,16,16,16,17,14}}, {'D',{30,17,17,17,17,17,30}},
+ {'E',{31,16,16,30,16,16,31}}, {'F',{31,16,16,30,16,16,16}},
+ {'G',{15,16,16,23,17,17,15}}, {'H',{17,17,17,31,17,17,17}},
+ {'I',{31,4,4,4,4,4,31}}, {'J',{1,1,1,1,17,17,14}},
+ {'K',{17,18,20,24,20,18,17}}, {'L',{16,16,16,16,16,16,31}},
+ {'M',{17,27,21,21,17,17,17}}, {'N',{17,25,21,19,17,17,17}},
+ {'O',{14,17,17,17,17,17,14}}, {'P',{30,17,17,30,16,16,16}},
+ {'Q',{14,17,17,17,21,18,13}}, {'R',{30,17,17,30,20,18,17}},
+ {'S',{15,16,16,14,1,1,30}}, {'T',{31,4,4,4,4,4,4}},
+ {'U',{17,17,17,17,17,17,14}}, {'V',{17,17,17,17,17,10,4}},
+ {'W',{17,17,17,21,21,21,10}}, {'X',{17,17,10,4,10,17,17}},
+ {'Y',{17,17,10,4,4,4,4}}, {'Z',{31,1,2,4,8,16,31}},
+ {'0',{14,17,19,21,25,17,14}}, {'1',{4,12,4,4,4,4,14}},
+ {'2',{14,17,1,2,4,8,31}}, {'3',{30,1,1,14,1,1,30}},
+ {'4',{2,6,10,18,31,2,2}}, {'5',{31,16,30,1,1,17,14}},
+ {'6',{14,16,16,30,17,17,14}}, {'7',{31,1,2,4,8,8,8}},
+ {'8',{14,17,17,14,17,17,14}}, {'9',{14,17,17,15,1,1,14}},
+ {'.',{0,0,0,0,0,12,12}}, {'-',{0,0,0,31,0,0,0}},
+ {'_',{0,0,0,0,0,0,31}}, {'/',{1,1,2,4,8,16,16}},
+ {':',{0,12,12,0,12,12,0}}, {'>',{16,8,4,2,4,8,16}},
+ {'<',{1,2,4,8,4,2,1}}, {'+',{0,4,4,31,4,4,0}},
+ {' ',{0,0,0,0,0,0,0}}, {'?',{14,17,1,2,4,0,4}},
+ {'&',{12,18,20,8,21,18,13}}, {'=',{0,31,0,31,0,0,0}},
+};
+void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
+ if(!f||!s||scale<1||scale>3||max_chars<1)return;
+ for(int i=0;i<max_chars&&s[i];i++){
+  unsigned char ch=(unsigned char)s[i];
+  if(ch>='a'&&ch<='z')ch=(unsigned char)(ch-'a'+'A');
+  const uint8_t *rows=NULL;
+  for(size_t g=0;g<sizeof(mini34)/sizeof(mini34[0]);g++)
+   if(mini34[g].ch==(char)ch){rows=mini34[g].bits;break;}
+  if(!rows)rows=mini34[sizeof(mini34)/sizeof(mini34[0])-4].bits;
+  for(int row=0;row<7;row++)
+   for(int col=0;col<5;col++)
+    if(rows[row]&(16u>>col))
+     eh_box(f,x+(i*6+col)*scale,y+row*scale,scale,scale,color);
+ }
+}
