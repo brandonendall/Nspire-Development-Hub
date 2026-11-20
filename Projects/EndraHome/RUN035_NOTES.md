@@ -1,3 +1,5 @@
+> **CURRENT ENDRAHOME BUILD — Run035 VERIFIED (2026-11-20):** Active branch `feature/endrahome-run001`, actual source `Projects/EndraHome/run029/`; source/test correction commit `caa6230055693829061aa3488974403c95deecf2`. **GitHub Actions Run035 workflow #43 ID 44835908930:** host **PASS**, native Ndless **PASS**, report **PASS**. Downloaded artifact `EndraHome_Run035_Desktop` ID **14676869580**, verified actual `EndraHome_Run035_Desktop.tns`: **205,862 bytes**, initial **Zehn**, SHA-256 **049de8fa1ecfcbe1b5495a15d3ab5feb3471f6860d79291ea44961649f1808e9**, matching packaged SHA256SUMS.txt. Preview artifact **14678820938**, nine real 320×240 host PPM screenshots inspected: original Run031 branded electric-blue **E cube and EndraHome/TI-Nspire header restored without a new top bar**; no bottom instructions bar; old fake `Run031 96%` text scrubbed; baked bottom controls replaced by decorative darkened reflection within the existing framebuffer. Desktop card arrangement unchanged, Files-only if unassigned, E icon consistent. **Run035 physical device test PENDING**. **Run034 physical UI display CONFIRMED** from user's four photos (desktop grid, manager, Appearance, Files menu) but file mutations, native OS standby and Home > 5 > 9 not verified. No LCD init, input handling, config, filesystem, firmware, power register or Ndless hook changes. Preserve Run034 as rollback. Working transfer: `clear` then `push /storage/emulated/0/Download/EndraHome_Run035_Desktop.tns /upload`; `/upload` required. Details in `Projects/EndraHome/RUN035_NOTES.md`. This is the most recent state; earlier "latest Run034" and historical one-argument push notes are superseded.
+
 # EndraHome Run035 — native wallpaper desktop, no drawn header or footer (2026-11-20)
 
 ## Hardware feedback and baseline
@@ -24,4 +26,4 @@ push /storage/emulated/0/Download/EndraHome_Run035_Desktop.tns /upload
 Trailing `/upload` REQUIRED; USB bus node not hardcoded.
 
 ## Status at code commit
-Run035 source edits planned, not yet CI passed, artifact verified or hardware tested. Update after CI.
+Run035 source, CI, artifact and preview verification completed as described at the top of this file; physical calculator test is pending.
