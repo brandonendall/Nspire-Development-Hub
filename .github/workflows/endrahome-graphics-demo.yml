@@ -1,0 +1,37 @@
+name: EndraHome Run031 Graphics Demo
+on:
+  push:
+    branches: [feature/endrahome-run001]
+    paths:
+      - 'Projects/EndraHome/run029/graphics_demo_main.c'
+      - 'Projects/EndraHome/run029/Makefile.demo'
+      - '.github/workflows/endrahome-graphics-demo.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build standalone Ndless graphics demo
+        run: |
+          docker run --rm --entrypoint /bin/sh \
+            --mount "type=bind,source=$PWD,target=/work" \
+            --workdir /work/Projects/EndraHome/run029 \
+            bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093 \
+            -c 'set -eu; make -f Makefile.demo'
+      - name: Verify Zehn output
+        run: |
+          cd Projects/EndraHome/run029
+          test -s EndraHome_Run031_GraphicsDemo.tns
+          test "$(head -c 4 EndraHome_Run031_GraphicsDemo.tns)" = Zehn
+          sha256sum EndraHome_Run031_GraphicsDemo.tns > GraphicsDemo_SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraHome_Run031_GraphicsDemo
+          path: |
+            Projects/EndraHome/run029/EndraHome_Run031_GraphicsDemo.tns
+            Projects/EndraHome/run029/GraphicsDemo_SHA256SUMS.txt
+          if-no-files-found: error
