@@ -10,7 +10,7 @@ static void tile_draw(uint16_t *f,const EhTile *tile,const EhRegistry *apps,cons
     eh_box(f,x,y,70,65,selected?p->accent:p->panel);
     eh_box(f,x+1,y+1,68,63,selected?p->selected:p->background);
     eh_app_icon(f,tile->center-16,y+2,2);
-    const char *label=tile->slot==EH_FILES_SLOT?"Files":(!apps->slots[tile->slot].path[0]?"Add App":apps->slots[tile->slot].label);
+    const char *label=tile->slot==EH_FILES_SLOT?"Files":apps->slots[tile->slot].label;
     char first[EH7_LABEL_CAP],second[EH7_LABEL_CAP];
     /* Full nine-character Favorites fits without a dangling final S. */
     int len=(int)strlen(label);
@@ -39,13 +39,13 @@ void eh7_render(uint16_t *f,const EhUI7 *ui,const EhRegistry *apps){
     eh_box(f,0,49,320,2,p.accent);
     eh031_cube(f,10,5);
     eh_text(f,57,10,"EndraHome",p.ink,9,1);
-    eh_text(f,57,26,"Launcher",p.ink,8,1);
-    eh_text(f,258,17,"R031",p.accent,4,1);
+    eh_text(f,57,26,"Explore  Organize  Achieve",p.ink,8,1);
+    eh_text(f,258,17,"R032",p.accent,4,1);
     EhTile tiles[EH7_SLOT_COUNT];
     int count=eh_desktop_layout(apps,tiles);
     for(int i=0;i<count;++i)tile_draw(f,&tiles[i],apps,&p,tiles[i].slot==ui->selected);
     eh_box(f,0,215,320,25,p.panel);
     eh_box(f,0,215,320,1,p.accent);
     eh_text(f,14,224,"Enter: Open",p.ink,11,1);
-    eh_text(f,192,224,"Menu: Apps",p.ink,10,1);
+    eh_text(f,192,224,"Menu: Manage",p.ink,12,1);
 }
