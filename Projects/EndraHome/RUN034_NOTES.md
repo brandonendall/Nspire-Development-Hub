@@ -1,3 +1,5 @@
+> **RUN034 VERIFICATION (2026-11-20)** — Final source code commit `59aa828edd6ae5072966505b43904327d2f5d150`; GitHub Actions **44834149082** Run034 #41: host ✅, native ✅, report ✅. Native downloadable artifact `EndraHome_Run034_Desktop` ID **14676528067**, executable **EndraHome_Run034_Desktop.tns**, 205,897 bytes, `Zehn`, SHA256 **b8f3c549530f8ea092b9ea0fa5708855e39269e82bee88adce66a30e3ec9c910** (artifact checksum independently confirmed). Preview artifact **14676314916**: nine real 320×240 host-rendered images visually inspected, including Files-only, multi-app desktop, Settings, Files and popup. **NOT PHYSICALLY TESTED** until user reports device result. Host previews and CI are not a device pass; existing source uses platform and file logic unchanged. User's **Run033** real-device photos confirm UI screens, not every write operation. Latest code removes header E badge and Files corner folder, with compact wordmark and cohesive panels; preserves hardware, config and older rollback. Ctrl+Home OS standby and OS Settings Home>5>9 remain unimplemented and unsafe to attempt without review.
+
 # EndraHome Run034 — visual coherence and hardware-safe UI cleanup
 Updated: 2026-11-20
 
@@ -18,4 +20,4 @@ User's TI-Nspire CX II CAS photographs physically demonstrate Run033 working eno
 The owner's intended **Ctrl+Home / Ctrl+On** behavior is calculator normal standby/power off, NOT exit EndraHome. Main.c currently calls `ui.page.should_exit`; Esc is safe application exit. **TI Home > 5 > 9** should show EndraHome alongside nKits/theme-editor native Settings, not merely an in-app settings panel. Both require OS 6.4.0.74-specific investigation before safe opt-in implementation. Never install startup hooks, alter Ndless settings, power registers, or firmware, or claim either behavior fixed just because the visual build passes.
 
 ## Status
-Planned source change; CI and physical test pending until separately recorded. Use `clear` and `push /storage/emulated/0/Download/<actual Run034 filename>.tns /upload` with required trailing `/upload`.
+Run034 source and CI completed as documented above; physical calculator test still pending. Use `clear` and `push /storage/emulated/0/Download/<actual Run034 filename>.tns /upload` with required trailing `/upload`.
