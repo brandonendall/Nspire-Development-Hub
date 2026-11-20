@@ -24,3 +24,11 @@ EndraHome Run031 Graphics Demo, GitHub Actions run #3, run ID 44804296431, artif
 ## Repository / workflow
 Repository brandonendall/Nspire-Development-Hub; current feature branch feature/endrahome-run001. Graphics demo source Projects/EndraHome/run029; workflow .github/workflows/endrahome-graphics-demo.yml.
 Keep a dated, explicit distinction between planned, source committed, CI passed, downloaded/verified, and hardware tested. Never claim a background build is underway without triggering/checking it.
+
+## Run032 big-jump requirements — confirmed 2026-11-20
+- User explicitly rejects visible **Add App** tile/button on desktop. Remove it entirely. **Files is the only permanently visible default tile** when no user applications have been configured; no other placeholders, empty slots, or setup tiles.
+- When the user assigns applications through the Menu/Settings flow, show only the actual assigned app icons plus Files. Preserve ability to add/change/remove apps in a menu, not on the home screen. Do not conflate hiding Add App with deleting app assignment functionality.
+- Consolidate this desktop change with EndraZIP-inspired polished Files browser and extended pop-up menu into **one substantial Run032 build**, rather than multiple minor hardware-test builds.
+- Preserve existing config compatibility and fallback to built-in Files; keep tested launch/exit/OS display restoration and hardware safety. No automatic resets, filesystem writes, or destructive operations; writes only after explicit user action and confirmation where needed.
+- Check actual EndraZIP renderer code before claiming parity; maintain true 320x240 layout, responsive controls, and memory-aware assets. Host tests and CI first, one deliberate calculator test after verified artifact.
+- The previous note about a default 1–7 tile arrangement is superseded for **unassigned slots**: never show an Add App or blank tile. Files-only when none assigned.
