@@ -11,9 +11,7 @@ int main(void) {
     eh7_registry_parse(&apps,"3=Files|/documents/FileManager.tns");
     EhUniversalUI s;
     eh7_ui_init(&s,&apps);
-    /* First empty slot is now the discoverable Add App tile. */
-    assert(s.page.selected==0);
-    eh7_ui_handle(&s,EH_KEY_RIGHT);
+    /* Unconfigured shortcuts are hidden; Files is the first desktop tile. */
     assert(s.page.selected==EH_FILES_SLOT);
     const int errors[] = {-1, 0xDEAD, 0xBEEF};
     for (unsigned i=0; i<sizeof(errors)/sizeof(errors[0]); ++i) {
