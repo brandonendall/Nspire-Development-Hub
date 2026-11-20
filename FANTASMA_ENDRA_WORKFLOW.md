@@ -1,3 +1,5 @@
+> **RUN033 BUILD VERIFIED — 2026-11-20**: Integrated RGB565 artwork and interactive launcher from source on `feature/endrahome-run001`. Final code fix commit `1df586e5e1238fff76962811cede61f9367125fa`. GitHub Actions run **44831808215**: host SUCCESS, native SUCCESS, report SUCCESS. Native artifact **EndraHome_Run033_Desktop**, ID **14677860274**; verified `EndraHome_Run033_Desktop.tns`, **205,407 bytes**, Zehn header, SHA-256 **04f211576b523e0f9b4e3a909e5428343df2e7dec9017f9196a96ae6451eae63** (matches SHA256SUMS.txt). Preview artifact ID **14677210930**: nine 320×240 host-rendered screenshots including Files-only desktop, configured-app grid and Files action menu were visually inspected in chat. **Device testing Run033 PENDING**. Run032 photos document working launch/Files/menu but severe cosmetic issues. Separate unresolved **Ctrl+Home native power-off** and **Home > 5 > 9 native Settings entry** must not be claimed fixed; preserving hardware means no unverified power register writes or OS hooking.
+
 # FANTASMA — ENDRA ECOSYSTEM WORKFLOW & MEMORY CONTRACT
 Updated: 2026-11-20
 
