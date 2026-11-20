@@ -1,3 +1,5 @@
+> **Cross-repository operating instructions (updated 2026-11-20):** Read [FANTASMA_ENDRA_WORKFLOW.md](FANTASMA_ENDRA_WORKFLOW.md) for Endra ecosystem scope, verified `/upload` Termux command, GitHub Actions/artifact retrieval, device safety, and project-specific continuity. This file supersedes older conflicting push syntax summaries; inspect active branch/source and user-confirmed tests before work.
+
 # PROJECT_MEMORY.md — Nspire Development Hub
 Updated 2026-11-19
 
