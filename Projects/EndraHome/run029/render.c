@@ -36,7 +36,8 @@ static int decode33(uint16_t *f) {
 }
 static void glass33(uint16_t *f,int x,int y,int w,int h,uint16_t color,unsigned opacity) {
  if(x<0){w+=x;x=0;}if(y<0){h+=y;y=0;}
- if(x+w>320)w=320-x;if(y+h>240)h=240-y;
+ if(x+w>320)w=320-x;
+ if(y+h>240)h=240-y;
  if(w<=0||h<=0)return;
  for(int row=y;row<y+h;row++)
   for(int col=x;col<x+w;col++){
