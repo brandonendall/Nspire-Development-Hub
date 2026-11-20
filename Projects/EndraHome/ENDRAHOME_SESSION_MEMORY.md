@@ -32,3 +32,9 @@ Keep a dated, explicit distinction between planned, source committed, CI passed,
 - Preserve existing config compatibility and fallback to built-in Files; keep tested launch/exit/OS display restoration and hardware safety. No automatic resets, filesystem writes, or destructive operations; writes only after explicit user action and confirmation where needed.
 - Check actual EndraZIP renderer code before claiming parity; maintain true 320x240 layout, responsive controls, and memory-aware assets. Host tests and CI first, one deliberate calculator test after verified artifact.
 - The previous note about a default 1–7 tile arrangement is superseded for **unassigned slots**: never show an Add App or blank tile. Files-only when none assigned.
+
+## Run032 implementation checkpoint (2026-11-20)
+- Source updated in existing run029 code directory (not a separate new run032 directory): desktop.c already filtered unassigned slots; test.c corrected to require Files-only empty desktop; render.c removes fallback Add App label, labels R032; picker_render.c adds cyan frame/selection and removes redundant count strip; files_render.c refines cyan pop-up border.
+- Makefile now targets EndraHome_Run032_Desktop.tns; workflow .github/workflows/endrahome-run029.yml renamed Run032, configured branch push trigger on source changes, runs host suites and native Ndless compilation and uploads Run032 artifact.
+- This is a first integrated source pass, **not yet confirmed CI pass or hardware tested**. Check CI run and tests; fix any failures before distribution. Do not claim the concept-art background is fully integrated: Run031 GraphicsDemo proved artwork but current launcher uses native dynamic gradient. More visual polish is required to match concept.
+- GitHub Actions latest-build issue #44 may lag; inspect it for new run status before using it as evidence.
