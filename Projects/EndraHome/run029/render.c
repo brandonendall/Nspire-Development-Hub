@@ -47,6 +47,31 @@ static void glass34(uint16_t *f,int x,int y,int w,int h,uint16_t tone,unsigned o
    f[pos]=mix34(f[pos],tone,opacity);
   }
 }
+/* Run035: preserve the user-approved ORIGINAL illustrated header, including
+ * its cube logo and "EndraHome / TI-Nspire Edition" lettering. Do not paint a
+ * new header on top. Mask only the artwork's old fixed Run031/96% indicator:
+ * reuse neutral background pixels to avoid representing a fake live battery.
+ * The original wallpaper also embeds a bottom key legend. Replace only that
+ * baked-in strip with a dim reflection of the 183..203 artwork, not a UI bar.
+ * Input bindings and native display handling are completely unchanged. */
+static void restore_wallpaper35(uint16_t *f) {
+ for(int y=8;y<=26;y++) {
+  uint16_t neutral=f[(size_t)y*320+211];
+  for(int x=226;x<=317;x++) {
+   unsigned strength=x<234?(unsigned)(x-226)*100u/8u:100u;
+   size_t pos=(size_t)y*320+x;
+   f[pos]=mix34(f[pos],neutral,strength);
+  }
+ }
+ for(int y=205;y<240;y++) {
+  int original=203-(y-205)*20/34;
+  unsigned fade=(unsigned)(y-205)*55u/34u;
+  for(int x=0;x<320;x++) {
+   uint16_t reflected=f[(size_t)original*320+x];
+   f[(size_t)y*320+x]=mix34(reflected,DEEP,fade);
+  }
+ }
+}
 static void draw_tile34(uint16_t *f,const EhTile *t,const EhRegistry *r,
                         const EhPalette *p,int selected){
  const int w=66,h=63,x=t->center-w/2,y=t->top;
@@ -73,22 +98,13 @@ void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
  if(!f||!s||!r)return;
  EhPalette p=eh_palette(r->appearance);
  if(!decode34(f))eh_box(f,0,0,320,240,DEEP);
- /* Slim wordmark replaces the oversize E cube + second title row. */
- /* Opaque chrome hides the image's baked-in former logo and 96% battery. */
- eh_box(f,0,0,320,43,DEEP);
- eh_box(f,0,41,320,1,SKY);
- eh_box(f,0,42,320,1,EH_RGB(23,96,154));
- eh_small_text(f,12,14,"ENDRAHOME",INK,2,9);
- /* The full-color artwork already carries the Explore / Organize motto. */
- eh_small_text(f,216,10,"TI-NSPIRE",EH_RGB(142,214,250),1,10);
- eh_small_text(f,267,26,"RUN 034",SKY,1,7);
+ /* Show the original illustrated logo/header. No duplicate text or title bar. */
+ restore_wallpaper35(f);
  EhTile tiles[EH7_SLOT_COUNT];
  int count=eh_desktop_layout(r,tiles);
  /* Keep the real artwork visible between tiles; no full rectangular
   * overlay covering the centerpiece. */
  if(count==1)glass34(f,117,94,86,84,DEEP,22);
  for(int i=0;i<count;i++)draw_tile34(f,&tiles[i],r,&p,tiles[i].slot==s->selected);
- eh_box(f,0,217,320,23,DEEP);
- eh_box(f,0,217,320,1,SKY);
- eh_small_text(f,10,227,"ESC  BACK   ENTER  OPEN   MENU  MANAGE",INK,1,48);
+ /* No instructional footer: Esc / Enter / Menu retain their native bindings. */
 }

@@ -1,4 +1,4 @@
-APP := EndraHome_Run034_Desktop
+APP := EndraHome_Run035_Desktop
 CC := nspire-gcc
 LD := nspire-ld
 GENZEHN := genzehn

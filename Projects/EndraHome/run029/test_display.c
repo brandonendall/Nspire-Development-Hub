@@ -26,7 +26,8 @@ int main(void) {
     guarded[0]=0x1881;guarded[320*240+1]=0x8118;
     EhUniversalUI ui;eh7_ui_init(&ui,&r);
     eh7_render(frame,&ui.page,&r);
-    /* Run034 wordmark: approved 5x7 font and cyan trimming replace the E cube. */
+    /* Run035: original artwork header remains, fake Run031/96% readout is scrubbed. */
+    assert(frame[15*320+265] == frame[15*320+211]);
     assert(color_count(EH_RGB(53,219,252))>20);
     assert(color_count(EH_RGB(239,250,255))>15);
     (void)mark;
