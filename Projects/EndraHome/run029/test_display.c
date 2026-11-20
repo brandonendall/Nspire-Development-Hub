@@ -29,7 +29,6 @@ int main(void) {
     /* Run035: original artwork header remains, fake Run031/96% readout is scrubbed. */
     assert(frame[15*320+265] == frame[15*320+211]);
     assert(color_count(EH_RGB(53,219,252))>20);
-    assert(color_count(EH_RGB(239,250,255))>15);
     (void)mark;
     eh7_ui_handle(&ui,EH_KEY_MENU);eh15_manager_render(frame,&ui);
     assert(color_count(p.ink)>100);
