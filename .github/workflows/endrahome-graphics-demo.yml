@@ -4,6 +4,7 @@ on:
     branches: [feature/endrahome-run001]
     paths:
       - 'Projects/EndraHome/run029/graphics_demo_main.c'
+      - 'Projects/EndraHome/run029/background_asset.h'
       - 'Projects/EndraHome/run029/Makefile.demo'
       - '.github/workflows/endrahome-graphics-demo.yml'
   workflow_dispatch:
