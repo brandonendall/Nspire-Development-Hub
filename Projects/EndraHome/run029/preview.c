@@ -22,6 +22,10 @@ static int save(const char *name){
  fclose(f);return 0;
 }
 int main(void){
+ EhRegistry empty;eh7_registry_init(&empty);
+ EhUniversalUI only;eh7_ui_init(&only,&empty);
+ eh7_render(fb,&only.page,&empty);
+ if(save("build/home_default.ppm"))return 1;
  EhRegistry reg;eh7_registry_init(&reg);
  eh7_registry_parse(&reg,"0=EndraGBA|/documents/Apps/test.tns");
  eh7_registry_parse(&reg,"1=EndraZIP|/documents/Apps/Zip.tns");
@@ -57,5 +61,8 @@ int main(void){
  if(save("build/picker.ppm"))return 1;
  p.show_all=1;entries[1].bytes=111282;
  eh13_picker_render(fb,&p,&reg);
- return save("build/files.ppm");
+ if(save("build/files.ppm"))return 1;
+ Eh17Files popup={0};popup.active=1;popup.nav=p;popup.menu_open=1;popup.menu_item=3;
+ eh17_files_render(fb,&popup,&reg);
+ return save("build/files_menu.ppm");
 }

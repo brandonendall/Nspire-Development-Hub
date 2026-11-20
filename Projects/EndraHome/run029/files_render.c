@@ -38,11 +38,11 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   if(v->clip_mode && !v->status.text[0]){box(f,8,200,304,19,p.panel);txt(f,12,205,v->clip_mode==1?"Clipboard: copy":"Clipboard: cut",p.ink,28);}
   if(v->menu_open){
    static const char *menu[8]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES"};
-   box(f,55,18,210,205,p.accent);box(f,57,20,206,201,p.background);box(f,60,23,200,195,p.panel);box(f,60,43,200,2,p.accent);
-   txt(f,77,30,"FILE ACTIONS",p.accent,18);
+   box(f,55,18,210,205,EH_RGB(51,217,254));box(f,57,20,206,201,EH_RGB(2,12,24));box(f,60,23,200,195,EH_RGB(7,24,41));box(f,60,43,200,2,EH_RGB(51,217,254));
+   txt(f,77,30,"FILE ACTIONS",EH_RGB(115,238,255),18);
    for(int i=0;i<8;i++){int y=53+i*19;
-    if(i==v->menu_item){box(f,64,y-4,192,19,p.accent);box(f,66,y-3,188,17,p.selected);}
-    txt(f,79,y,menu[i],p.ink,19);
+    if(i==v->menu_item){box(f,64,y-4,192,19,EH_RGB(51,217,254));box(f,66,y-3,188,17,EH_RGB(12,52,79));}
+    txt(f,79,y,menu[i],EH_RGB(242,251,255),19);
    }
   }
   if(v->confirm_delete){
