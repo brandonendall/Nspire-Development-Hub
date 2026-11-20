@@ -1,0 +1,19 @@
+CC := nspire-gcc
+LD := nspire-ld
+GENZEHN := genzehn
+FLAGS := -std=gnu99 -Os -marm -I../../UltimateCommander/vendor -I../gba-ui -I../run005
+OUT := EndraHome_Run031_GraphicsDemo.tns
+.PHONY: all clean
+all: $(OUT)
+build:
+	mkdir -p build
+build/graphics_demo_main.o: graphics_demo_main.c platform029.h | build
+	$(CC) $(FLAGS) -c $< -o $@
+build/graphics_demo_platform.o: platform.c platform029.h | build
+	$(CC) $(FLAGS) -c $< -o $@
+build/graphics_demo.elf: build/graphics_demo_main.o build/graphics_demo_platform.o
+	$(LD) -marm $^ -o $@ -lm
+$(OUT): build/graphics_demo.elf
+	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Graphics Demo" --input $< --output $@
+clean:
+	rm -f build/graphics_demo_main.o build/graphics_demo_platform.o build/graphics_demo.elf $(OUT)
