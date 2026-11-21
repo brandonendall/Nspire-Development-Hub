@@ -1,4 +1,23 @@
-# EndraGBA — Run008 branding
+# EndraGBA — Run012 Loading NightMode
+
+Current branch: `feature/endragba-run012-loading-nightmode`.
+Output: **EndraGBA_Run012_LoadingNightMode.tns**.
+Read [project memory](PROJECT_MEMORY.md) and [Run012 build/test notes](RUN012_NOTES.md)
+for verified build identity and current hardware status.
+
+Run012 extends the approved Run011 black/gray menus to the separate loading,
+status and failure renderer. Progress, GBZ, saves, RTC, browser and FastExit
+behavior are preserved. Build with **EndraGBA Run012 - Loading NightMode**;
+keep Run011 alongside it as rollback. Native-size previews are host renders;
+Run012 calculator testing remains pending.
+
+Transfer from Android Downloads:
+```sh
+clear
+push /storage/emulated/0/Download/EndraGBA_Run012_LoadingNightMode.tns /upload
+```
+
+## Historical Run008 branding and association notes
 
 EndraGBA is the new name for UltraGBA. Run008 layers the new menu title,
 exit label and executable metadata onto the preserved Run007 patch.

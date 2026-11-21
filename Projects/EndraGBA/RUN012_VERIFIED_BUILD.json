@@ -1,0 +1,15 @@
+{
+  "file": "EndraGBA_Run012_LoadingNightMode.tns",
+  "size_bytes": 480198,
+  "sha256": "ec855a1cd498da024cf07a1705901f2492669d72e7e741cf306a72baf58bf9db",
+  "format": "Zehn",
+  "format_version": 1,
+  "header_file_size": 480198,
+  "source_commit": "551687aa3cdb062365299582250f1163ee620981",
+  "run": 44874060224,
+  "artifact_id": 14694973380,
+  "artifact_archive_sha256": "f8276f3fb498d68fc83dd06b80d841b7a6d0f5f6f996a2316c85e8078f4a724c",
+  "host_preview_count": 9,
+  "ci_preview_matches_local": true,
+  "hardware_test": "PENDING"
+}
