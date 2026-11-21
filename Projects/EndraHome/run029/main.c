@@ -23,10 +23,10 @@ void __attribute__((weak)) _fini(void){}
 /* BSS, not stack: 4KiB bounded text preview */
 static Eh17Files built_files;
 static int desktop_minute;
-static int read_minute(void){
+static int read_minute(int offset){
  /* nClock stores local wall time in the CX II RTC seconds register. */
  uint32_t seconds=*(const volatile uint32_t *)0x90090000u;
- return seconds<1325376000u || seconds==UINT32_MAX ? -1 : (int)((seconds/60u)%1440u);
+ return seconds<1325376000u || seconds==UINT32_MAX ? -1 : (int)((seconds/60u+(unsigned)offset)%1440u);
 }
 static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  uint16_t *fb=eh_framebuffer();
@@ -78,7 +78,7 @@ int main(int argc,char **argv){
  Eh13Picker picker;memset(&picker,0,sizeof(picker));
  for(;;){
   if(!eh_platform_start())return 1;
-  desktop_minute=read_minute();
+  desktop_minute=read_minute(apps.clock_offset);
   uint32_t clock_tick=eh_platform_ticks();
   paint(&ui,&picker);
   while(!ui.page.should_exit&&!ui.request){
@@ -96,7 +96,7 @@ int main(int argc,char **argv){
    if(!built_files.active&&!picker.active&&ui.page.page==EH_PAGE_HOME &&
       now-clock_tick>=EH_TICKS_PER_SECOND){
     clock_tick=now;
-    int minute=read_minute();
+    int minute=read_minute(apps.clock_offset);
     expired|=minute!=desktop_minute;
     desktop_minute=minute;
    }
@@ -169,7 +169,18 @@ int main(int argc,char **argv){
       int action=ui.edit_action;ui.edit_action=EH15_NONE;
       Eh14SaveError diag={EH14_OK,0};
       int slot=ui.page.selected,ok=0;
-      if(action==EH15_THEME){
+      if(action==EH_CLOCK_OPEN||action==EH_CLOCK_SAVE){
+       int raw=read_minute(0);
+       if(raw<0)eh_toast_set(&ui.notice,"CLOCK SOURCE UNAVAILABLE");
+       else if(action==EH_CLOCK_OPEN){
+        ui.clock_draft=(raw+apps.clock_offset)%1440;
+        ui.clock_field=0;ui.subview=2;
+       }else if(shortcuts_writable && eh_save_clock(&apps,(1440+ui.clock_draft-raw)%1440,cfg,&diag)){
+        desktop_minute=ui.clock_draft;
+        ui.subview=1;
+        eh_toast_set(&ui.notice,"Clock saved");
+       }else eh_toast_set(&ui.notice,shortcuts_writable?eh14_save_stage_name(diag.stage):"Config path unavailable");
+      }else if(action==EH15_THEME){
        if(shortcuts_writable&&eh_save_appearance(&apps,ui.preview,cfg,&diag)){
         eh_toast_set(&ui.notice,"Appearance saved");
         ui.page.page=EH_PAGE_HOME;

@@ -172,6 +172,11 @@ int main(void){
  for(int i=0;i<10;i++)eh7_ui_handle(&shortcut,EH_KEY_DOWN);
  assert(shortcut.manager_item==EH_MANAGER_FILES);
  eh7_ui_handle(&shortcut,EH_KEY_ENTER);assert(shortcut.open_files);
+ info.page.page=EH_PAGE_HELP;info.subview=2;info.clock_field=0;info.clock_draft=23*60+59;info.edit_action=0;
+ eh7_ui_handle(&info,EH_KEY_UP);assert(info.clock_draft==59);
+ eh7_ui_handle(&info,EH_KEY_RIGHT);eh7_ui_handle(&info,EH_KEY_UP);assert(info.clock_draft==0);
+ eh7_ui_handle(&info,EH_KEY_ESC);assert(info.subview==1 && !info.edit_action);
+ info.setting_row=EH_LOOK_CLOCK;eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH_CLOCK_OPEN);
  EhToast toast={0};
  eh_toast_set(&toast,"Opened");uint32_t start=UINT32_MAX-100;
  assert(!eh_toast_tick(&toast,start));assert(!eh_toast_tick(&toast,start+3u*EH_TICKS_PER_SECOND-1));

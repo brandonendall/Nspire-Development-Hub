@@ -6,15 +6,15 @@
 enum {EH_MANAGER_ADD, EH_MANAGER_REASSIGN, EH_MANAGER_RENAME, EH_MANAGER_REMOVE,
       EH_MANAGER_INFO, EH_MANAGER_APPEARANCE, EH_MANAGER_FILES,
       EH15_MENU_COUNT};
-enum {EH15_NONE=0, EH15_RENAME=1, EH15_REMOVE=2, EH15_THEME=3};
+enum {EH15_NONE=0, EH15_RENAME=1, EH15_REMOVE=2, EH15_THEME=3, EH_CLOCK_OPEN, EH_CLOCK_SAVE};
 enum {EH_LOOK_THEME, EH_LOOK_FOLDER, EH_LOOK_TEXT, EH_LOOK_WALLPAPER,
-      EH_LOOK_ICON, EH_LOOK_DEFAULTS};
+      EH_LOOK_ICON, EH_LOOK_CLOCK, EH_LOOK_DEFAULTS};
 typedef struct {
  EhUI7 page;
  const EhRegistry *apps;
  int missing,request,assign_slot,adding_app,edit_action,open_files;
  int manager_item,subview,renaming,confirm_remove;
- int setting_row;
+ int setting_row,clock_field,clock_draft;
  EhAppearance preview;
  EhToast notice;
  char rename_input[EH7_LABEL_CAP];

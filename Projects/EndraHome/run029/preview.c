@@ -154,5 +154,8 @@ int main(void){
  eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;
  eh7_render(fb,&only.page,&empty);
  eh_desktop_clock(fb,empty.appearance,783);
- return save("build/clock.ppm");
+ if(save("build/clock.ppm"))return 1;
+ s.page.page=EH_PAGE_HELP;s.subview=2;s.clock_draft=11*60+47;s.clock_field=1;
+ eh15_manager_render(fb,&s);
+ return save("build/set_clock.ppm");
 }

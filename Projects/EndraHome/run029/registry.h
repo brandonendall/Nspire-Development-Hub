@@ -6,6 +6,7 @@
 #define EH_FILES_SLOT 3
 #define EH7_LABEL_CAP 16
 #define EH7_PATH_CAP 256
+#define EH_CLOCK_LINE "# clock-offset "
 #define EH7_CONFIG_FILE "EndraHome_Apps.cfg.tns"
 typedef struct {
  char label[EH7_LABEL_CAP];
@@ -18,6 +19,7 @@ typedef struct {
  int errors;
  int enabled;
  int has_appearance;
+ int clock_offset;
  int theme; /* Run028 shortcut file theme, used until separate preferences exist. */
  EhAppearance appearance;
 } EhRegistry;

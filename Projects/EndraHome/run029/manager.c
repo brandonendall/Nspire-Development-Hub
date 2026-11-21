@@ -46,11 +46,22 @@ static void row34(uint16_t *f,int y,int selected,const EhPalette *p){
 void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
  if(!f||!s||!s->apps)return;
  const EhAppSlot *app=&s->apps->slots[s->page.selected];
- int settings=s->page.page==EH_PAGE_HELP&&s->subview==1;
+ int settings=s->page.page==EH_PAGE_HELP&&s->subview!=0;
  EhAppearance appearance=settings?s->preview:s->apps->appearance;
  EhPalette p=eh_palette(appearance);
  uint16_t custom=p.ink;
  head34(f,settings?"SETTINGS":rightpart(app->label,17),appearance,&p);
+ if(settings&&s->subview==2){
+  char time[9];eh_clock_label(time,s->clock_draft);
+  title34(f,"SET CLOCK",&p);
+  eh_small_text(f,62,88,"ENDRAHOME LOCAL TIME",custom,1,20);
+  eh_small_text(f,62,111,time,custom,3,8);
+  box(f,62+s->clock_field*54,136,33,2,eh_skin(&p,SKY));
+  eh_small_text(f,62,155,"LEFT / RIGHT   HOUR OR MINUTE",custom,1,32);
+  eh_small_text(f,62,174,"UP / DOWN      CHANGE VALUE",custom,1,32);
+  eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",p.ink,1,32);
+  return;
+ }
  if(s->renaming){
   title34(f,"RENAME SHORTCUT",&p);
   txt(f,20,86,"CURRENT NAME:",eh_skin(&p,MUTED),20);
@@ -108,13 +119,13 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   eh_small_text(f,15,225,"ESC BACK TO APP MANAGER",p.ink,1,48);
  }else{
   static const char *const choices[]={"Interface","Folders","Text","Wallpaper","App Icon",
-                                      "Restore defaults"};
+                                      "Set clock","Restore defaults"};
   char wall[19], icon[19];
   snprintf(wall,sizeof(wall),"%u %s",appearance.wallpaper+1,
            eh_wallpaper_names[appearance.wallpaper]);
   snprintf(icon,sizeof(icon),"%u %s",appearance.icon+1,eh_icon_names[appearance.icon]);
   const char *values[]={eh_theme_names[p.theme],eh_folder_names[appearance.folder],
-                        eh_font_names[appearance.font],wall,icon,""};
+                        eh_font_names[appearance.font],wall,icon,"",""};
   title34(f,"APPEARANCE",&p);
   for(int i=0;i<=EH_LOOK_DEFAULTS;i++){
    int y=79+i*20;
@@ -132,7 +143,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   eh_icon_caption(f,229,141,"Files",&p);
   eh_folder_icon(f,200,173,1,&p);
   eh_icon_caption(f,226,178,"Folder",&p);
-  eh_small_text(f,15,225,s->setting_row==EH_LOOK_DEFAULTS
+  eh_small_text(f,15,225,s->setting_row==EH_LOOK_CLOCK ? "ENTER SET LOCAL TIME         ESC CANCEL" : s->setting_row==EH_LOOK_DEFAULTS
                 ?"ENTER PREVIEW DEFAULTS       ESC CANCEL"
                 :"L / R PREVIEW   ENTER SAVE    ESC CANCEL",p.ink,1,48);
  }

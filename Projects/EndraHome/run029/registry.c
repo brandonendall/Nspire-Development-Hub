@@ -47,6 +47,16 @@ int eh7_config_path(char *dst,size_t cap,const char *app_executable){
 int eh7_registry_parse(EhRegistry *apps,const char *line){
  if(!apps||!line)return 0;
  while(*line==' '||*line=='\t')line++;
+ if(!strncmp(line,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1)){
+  const char *value=line+sizeof(EH_CLOCK_LINE)-1;
+  size_t len=strspn(value,"0123456789");
+  if(len==0 || len>4 || value[len+strspn(value+len,"\r\n")])return 0;
+  int minutes=0;
+  for(size_t i=0;i<len;i++)minutes=minutes*10+value[i]-'0';
+  if(minutes>=1440)return 0;
+  apps->clock_offset=minutes;
+  return 1;
+ }
  if(!strncmp(line,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1)){
   EhAppearance parsed;
   if(eh_prefs_parse(line+sizeof(EH_APPEARANCE_LINE)-1,&parsed,4)){

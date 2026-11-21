@@ -9,7 +9,7 @@ void eh7_ui_init(EhUniversalUI *s,const EhRegistry *apps){
  s->missing=s->request=s->assign_slot=s->adding_app=s->edit_action=s->open_files=0;
  s->manager_item=s->subview=s->renaming=s->confirm_remove=0;
  s->preview=apps?apps->appearance:(EhAppearance){0};
- s->setting_row=0;
+ s->setting_row=s->clock_field=s->clock_draft=0;
  s->notice=(EhToast){0};
  s->rename_input[0]=0;
 }
@@ -112,13 +112,27 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
    return 1;
   }
  }
+ if(s->page.page==EH_PAGE_HELP&&s->subview==2){
+  if(k==EH_KEY_ESC||k==EH_KEY_MENU){s->subview=1;return 1;}
+  if(k==EH_KEY_ENTER){s->edit_action=EH_CLOCK_SAVE;return 1;}
+  if(k==EH_KEY_LEFT||k==EH_KEY_RIGHT){s->clock_field=1-s->clock_field;return 1;}
+  if(k==EH_KEY_UP||k==EH_KEY_DOWN){
+   int delta=k==EH_KEY_UP?1:-1;
+   int hour=s->clock_draft/60,minute=s->clock_draft%60;
+   if(s->clock_field==0)hour=(hour+delta+24)%24;
+   else minute=(minute+delta+60)%60;
+   s->clock_draft=hour*60+minute;
+   return 1;
+  }
+  return 0;
+ }
  if(s->page.page==EH_PAGE_HELP&&s->subview==1){
   if(k==EH_KEY_UP || k==EH_KEY_DOWN){
    if(k==EH_KEY_UP && s->setting_row>0) --s->setting_row;
    if(k==EH_KEY_DOWN && s->setting_row<EH_LOOK_DEFAULTS) ++s->setting_row;
    return 1;
   }
-  if((k==EH_KEY_LEFT||k==EH_KEY_RIGHT) && s->setting_row<EH_LOOK_DEFAULTS){
+  if((k==EH_KEY_LEFT||k==EH_KEY_RIGHT) && s->setting_row<EH_LOOK_CLOCK){
    unsigned *values[]={&s->preview.theme,&s->preview.folder,&s->preview.font,
                        &s->preview.wallpaper,&s->preview.icon};
    const unsigned counts[]={EH_THEME_COUNT,EH_COLOR_COUNT,EH_COLOR_COUNT,
@@ -128,6 +142,7 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
    return 1;
   }
   if(k==EH_KEY_ENTER){
+   if(s->setting_row==EH_LOOK_CLOCK){s->edit_action=EH_CLOCK_OPEN;return 1;}
    if(s->setting_row==EH_LOOK_DEFAULTS){
     s->preview=(EhAppearance){0};
     s->setting_row=EH_LOOK_THEME;

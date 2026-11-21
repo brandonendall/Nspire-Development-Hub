@@ -1,5 +1,5 @@
-name: EndraHome Run043 - Integrated Desktop
-# Integrated Run043 appearance build: branch source changes trigger host + native validation.
+name: EndraHome Run044 - Integrated Desktop
+# Integrated Run044 appearance build: branch source changes trigger host + native validation.
 on:
   push:
     branches: [feature/endrahome-run001]
@@ -8,7 +8,7 @@ on:
       - '.github/workflows/endrahome-run029.yml'
   workflow_dispatch:
 concurrency:
-  group: endrahome-run043-single-build
+  group: endrahome-run044-single-build
   cancel-in-progress: true
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
         run: |
           make -C Projects/EndraHome/run029 test
           make -C Projects/EndraHome/run029 preview
-          for p in home home_default home_red manager manager_red rename settings picker picker_add files files_menu files_menu_red clock ring_blue_gba ring_blue_files ring_black_gba ring_black_files text_editor text_discard; do test -s "Projects/EndraHome/run029/build/$p.ppm"; done
+          for p in home home_default home_red manager manager_red rename settings picker picker_add files files_menu files_menu_red clock set_clock ring_blue_gba ring_blue_files ring_black_gba ring_black_files text_editor text_discard; do test -s "Projects/EndraHome/run029/build/$p.ppm"; done
           for theme in blue green; do
             for n in {1..5}; do test -s "Projects/EndraHome/run029/build/wallpaper_${n}_${theme}.ppm"; done
           done
@@ -40,7 +40,7 @@ jobs:
           ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run029/platform.c Projects/EndraHome/run029/main.c
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraHome_Run043_Previews
+          name: EndraHome_Run044_Previews
           path: Projects/EndraHome/run029/build/*.ppm
   native:
     needs: host
@@ -57,15 +57,15 @@ jobs:
       - name: Verify output and checksum
         run: |
           cd Projects/EndraHome/run029
-          test -s EndraHome_Run043_Desktop.tns
+          test -s EndraHome_Run044_Desktop.tns
           test -s EndraHome_Apps.cfg.tns
-          test "$(head -c 4 EndraHome_Run043_Desktop.tns)" = Zehn
-          sha256sum EndraHome_Run043_Desktop.tns > SHA256SUMS.txt
+          test "$(head -c 4 EndraHome_Run044_Desktop.tns)" = Zehn
+          sha256sum EndraHome_Run044_Desktop.tns > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraHome_Run043_Desktop
+          name: EndraHome_Run044_Desktop
           path: |
-            Projects/EndraHome/run029/EndraHome_Run043_Desktop.tns
+            Projects/EndraHome/run029/EndraHome_Run044_Desktop.tns
             Projects/EndraHome/run029/README.md
             Projects/EndraHome/run029/SHA256SUMS.txt
           if-no-files-found: error
@@ -101,7 +101,7 @@ jobs:
           **Host tests:** $HOST_RESULT
           **Native Ndless build:** $NATIVE_RESULT
 
-          **Artifact if native succeeded:** EndraHome_Run043_Desktop
+          **Artifact if native succeeded:** EndraHome_Run044_Desktop
           Download it from the run's **Artifacts** section.
 
           **Troubleshooting:** Open the run link, select the failed job, then inspect its log. The issue is automatically updated after each run, including failures. A green report job alone does not mean the native build passed.
