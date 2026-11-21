@@ -20,7 +20,9 @@ Preserve Run037 `EndraHome_Run037_Desktop.tns`, 208,327 bytes, SHA-256 `a0a8878e
 
 ## Calculator status and OS research
 
-**Run038 has not been tested on a physical calculator.** The owner's Run037 photos show green desktop and metallic E icons, browser and compatibility UI, a stock Settings menu pointer, and the native menu displaying items 1–8. This establishes the observed menu state and UI rendering. File mutations, OS standby and hook coexistence are still unverified.
+**Run038 physical update (2026-11-21 ET).** The owner subsequently supplied four Run038 calculator photos. Appearance shows Charcoal/Silver/Gray, Reactor and Dragon Core. The desktop shows four configured shortcuts. Files and the read-only native probe render, and the photographed probe reports a stock Settings menu pointer. These observations leave persistence, file mutations, standby and native shortcut installation unverified.
+
+Earlier hardware evidence follows. The owner's Run037 photos show green desktop and metallic E icons, browser and compatibility UI, a stock Settings menu pointer, and the native menu displaying items 1–8. This establishes the observed menu state and UI rendering. File mutations, OS standby and hook coexistence are still unverified.
 
 The [TI handheld eGuide](https://education.ti.com/html/webhelp/EG_TINspire/EN/content/m_hh_gs/gsc_turning_on_hh_first_time.HTML) documents Ctrl+On as the OS power-off chord. The [Ndless public header](https://github.com/ndless-nspire/Ndless/blob/master/ndless-sdk/include/libndls.h) exposes key polling, idle and timed sleep services. No documented native standby entry point was identified there. Run038 preserves the existing clean launcher exit path, including the current Ctrl+Home exit behavior. The [native Settings research](NATIVE_SETTINGS_SHORTCUT_RESEARCH.md) records the remaining coexistence, callback and standby constraints.
 
