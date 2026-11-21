@@ -1,3 +1,5 @@
+> **Current EndraHome build — Run038, 2026-11-20 ET.** Active branch `feature/endrahome-run001`, source `Projects/EndraHome/run029/`, commit `8bc8d111a577e0783d3290d16e014362d0c455c5`. [Actions #48](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44867780859) (ID 44867780859) passed host, native Ndless, and report jobs. Native artifact **14691888846**, `EndraHome_Run038_Desktop.tns`, **440,638 bytes**, Zehn, SHA-256 `dba8c3cfd218b204d20b8788e0eb637e2e6a2afc5b57f19bec5e82b7ba16e9fd`. Preview artifact **14692278912** contains 33 verified 320×240 renders. **Run038 physical calculator testing is pending.** Run037 is the rollback. Its physical photos confirm green theme rendering and a stock Settings menu pointer with only items 1–8 visible. File mutations and OS standby are unverified. Native TI Settings registration and true Ctrl+Home standby remain open. Transfer with `push /storage/emulated/0/Download/EndraHome_Run038_Desktop.tns /upload` after `clear`.
+
 # Hydra / AI collaborator handoff — Nspire Development Hub
 _Last documented: 2026-11-14 • Maintained in GitHub source control._
 
