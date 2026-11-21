@@ -2,6 +2,7 @@
 #include "picker.h"
 #include "display.h"
 #include "render.h"
+#include "art.h"
 #include "files.h"
 #include <stdio.h>
 #include <string.h>
@@ -85,13 +86,12 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  EhPalette colors=eh_palette(apps->appearance);
  const uint16_t cyan=eh_skin(&colors,EH_RGB(52,219,253)),pale=colors.ink;
  const uint16_t steel=eh_skin(&colors,EH_RGB(126,210,247)),line=eh_skin(&colors,EH_RGB(23,111,169));
- eh_wallpaper_paint(f);eh_skin_frame(f,&colors);
- /* Opaque brand strip prevents ghosting the wallpaper's old EndraHome
-  * wordmark behind the Files title. */
+ eh_wallpaper_paint(f,apps->appearance);
+ /* Match the Files title to the browser label. */
  eh_box(f,0,0,320,37,eh_skin(&colors,EH_RGB(5,16,31)));
  eh_box(f,0,35,320,2,cyan);
- eh_small_text(f,11,10,p->show_all?"ENDRA FILES":"ASSIGN APP",pale,2,12);
- eh_small_text(f,255,21,p->show_all?"BROWSER":"PICKER",steel,1,12);
+ eh_small_text(f,11,p->show_all?15:10,p->show_all?"ENDRA FILES":"ASSIGN APP",pale,p->show_all?1:2,12);
+ eh_small_text(f,255,p->show_all?15:21,p->show_all?"BROWSER":"PICKER",steel,1,12);
  eh_theme_glass(f,7,41,306,28,88,&colors);
  eh_box(f,7,41,306,1,cyan);
  eh_box(f,7,68,306,1,cyan);

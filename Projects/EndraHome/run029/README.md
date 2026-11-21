@@ -1,9 +1,28 @@
-# EndraHome Run037 Desktop
-Keep existing EndraHome_Apps.cfg.tns and EndraHome_Appearance.cfg.tns. New clean themed wallpaper, original-art metallic E, consistent saved caption colour, theme-aware browser/menu/manager/settings. Menu > TI Settings Shortcut > Enter only reads matching OS49 fingerprint and menu pointer; NOT an installer. No OS hooks or firmware writes. Ctrl+On true standby remains unresolved.
+# EndraHome Run038 Desktop
 
-Transfer: `clear` then `push /storage/emulated/0/Download/EndraHome_Run037_Desktop.tns /upload`.
+Open **Menu > Appearance**. Use Up/Down to choose a setting and Left/Right to preview.
+Wallpaper, App Icon, Interface, Folders and Text are independent. The preview shows
+the selected wallpaper and a native 48×48 launcher icon. Enter saves all pending choices.
+Esc cancels. Enter on Restore defaults previews the defaults, then Enter saves them.
 
-Historical Run029 documentation below; newer build state takes precedence.
+Keep the executable with the existing `EndraHome_Apps.cfg.tns`. The new
+`EndraHome_Appearance3.cfg.tns` loads from the old appearance file on first use.
+The prior appearance and app files remain available for the Run037 rollback.
+
+The five supplied 320×240 wallpapers use 8-bit indices into RGB565 palettes.
+The ten supplied emblems use traced silhouettes and 8-bit transparency.
+Both the theme and wallpaper palette are applied directly in the existing framebuffer.
+See `make_run038_art.py` to repack the supplied handoff artwork.
+
+Menu > TI Settings Shortcut runs the existing read-only compatibility check.
+Native shortcut registration and Ctrl+Home OS standby are pending investigation.
+
+```sh
+clear
+push /storage/emulated/0/Download/EndraHome_Run038_Desktop.tns /upload
+```
+
+Historical source notes follow.
 
 # EndraHome Run029 Desktop
 

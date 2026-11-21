@@ -15,8 +15,8 @@ int eh_desktop_layout(const EhRegistry *apps, EhTile tiles[EH7_SLOT_COUNT]) {
         int col = row ? i - first : i;
         tiles[i].row = row;
         tiles[i].center = 160 + (2 * col + 1 - cols) * spacing / 2;
-        /* Run034: separation between rows, no overlap, aligned to slim header. */
-        tiles[i].top = count <= 4 ? 106 : (row ? 145 : 68);
+        /* Keep both 48-pixel icon rows and their captions clear of the header. */
+        tiles[i].top = count <= 4 ? 106 : (row ? 146 : 57);
     }
     return count;
 }

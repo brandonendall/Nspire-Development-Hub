@@ -3,6 +3,8 @@
 #include "manager.h"
 #include "display.h"
 #include "render.h"
+#include "art.h"
+#include <stdio.h>
 #include <string.h>
 #define box eh_box
 #define SKY EH_RGB(55,219,252)
@@ -18,8 +20,8 @@ static const char *rightpart(const char *s,int cap){
  size_t n=strlen(s);
  return n>(size_t)cap?s+n-cap:s;
 }
-static void head34(uint16_t *f,const char *right,const EhPalette *p){
- eh_wallpaper_paint(f);eh_skin_frame(f,p);
+static void head34(uint16_t *f,const char *right,EhAppearance appearance,const EhPalette *p){
+ eh_wallpaper_paint(f,appearance);
  box(f,0,0,320,37,eh_skin(p,EH_RGB(5,16,31)));
  box(f,0,35,320,2,eh_skin(p,SKY));
  eh_small_text(f,11,10,"ENDRAHOME",p->ink,2,9);
@@ -45,9 +47,10 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
  if(!f||!s||!s->apps)return;
  const EhAppSlot *app=&s->apps->slots[s->page.selected];
  int settings=s->page.page==EH_PAGE_HELP&&s->subview==1;
- EhPalette p=eh_palette(settings?s->preview:s->apps->appearance);
+ EhAppearance appearance=settings?s->preview:s->apps->appearance;
+ EhPalette p=eh_palette(appearance);
  uint16_t custom=p.ink;
- head34(f,settings?"SETTINGS":s->subview==2&&s->page.page==EH_PAGE_HELP?"TI SETTINGS":rightpart(app->label,17),&p);
+ head34(f,settings?"SETTINGS":s->subview==2&&s->page.page==EH_PAGE_HELP?"TI SETTINGS":rightpart(app->label,17),appearance,&p);
  if(s->renaming){
   title34(f,"RENAME SHORTCUT",&p);
   txt(f,20,86,"CURRENT NAME:",eh_skin(&p,MUTED),20);
@@ -105,22 +108,33 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   eh_small_text(f,19,189,"REMOVING LINK DOES NOT DELETE APP",eh_skin(&p,MUTED),1,48);
   eh_small_text(f,15,225,"ESC BACK TO APP MANAGER",p.ink,1,48);
  }else{
-  static const char *const choices[]={"Interface","Folders","Text","Restore defaults"};
-  const char *values[]={eh_theme_names[s->preview.theme],eh_folder_names[s->preview.folder],
-    eh_font_names[s->preview.font],""};
-  const uint16_t chips[]={p.accent,p.folder,p.ink,p.panel};
+  static const char *const choices[]={"Interface","Folders","Text","Wallpaper","App Icon",
+                                      "Restore defaults"};
+  char wall[19], icon[19];
+  snprintf(wall,sizeof(wall),"%u %s",appearance.wallpaper+1,
+           eh_wallpaper_names[appearance.wallpaper]);
+  snprintf(icon,sizeof(icon),"%u %s",appearance.icon+1,eh_icon_names[appearance.icon]);
+  const char *values[]={eh_theme_names[appearance.theme],eh_folder_names[appearance.folder],
+                        eh_font_names[appearance.font],wall,icon,""};
   title34(f,"APPEARANCE",&p);
-  for(int i=0;i<4;i++){
-   int y=88+i*24;
-   row34(f,y,s->setting_row==i,&p);
-   txt(f,26,y,choices[i],custom,18);
-   if(i<3){
-    box(f,166,y-1,13,13,eh_skin(&p,SKY));
-    box(f,168,y+1,9,9,chips[i]);
-    txt(f,186,y,values[i],custom,14);
+  for(int i=0;i<=EH_LOOK_DEFAULTS;i++){
+   int y=79+i*20;
+   if(s->setting_row==i){
+    eh_theme_glass(f,16,y-4,162,16,55,&p);
+    box(f,16,y-4,2,16,eh_skin(&p,SKY));
    }
+   eh_small_text(f,22,y,choices[i],custom,1,16);
+   eh_small_text(f,83,y,values[i],eh_skin(&p,MUTED),1,15);
   }
-  eh_small_text(f,21,194,"LEFT / RIGHT  PREVIEW COLOR",eh_skin(&p,MUTED),1,46);
-  eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",p.ink,1,48);
+
+  box(f,187,77,114,86,eh_skin(&p,SKY));
+  eh_wallpaper_preview(f,appearance,188,78);
+  eh_icon_paint(f,appearance,220,87);
+  eh_icon_caption(f,229,141,"Files",&p);
+  eh_folder_icon(f,200,173,1,&p);
+  eh_icon_caption(f,226,178,"Folder",&p);
+  eh_small_text(f,15,225,s->setting_row==EH_LOOK_DEFAULTS
+                ?"ENTER PREVIEW DEFAULTS       ESC CANCEL"
+                :"L / R PREVIEW   ENTER SAVE    ESC CANCEL",p.ink,1,48);
  }
 }

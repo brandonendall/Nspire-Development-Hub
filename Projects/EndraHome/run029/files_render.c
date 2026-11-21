@@ -39,9 +39,8 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   if(v->clip_mode && !v->status.text[0]){box(f,8,200,304,19,p.panel);txt(f,12,205,v->clip_mode==1?"Clipboard: copy":"Clipboard: cut",p.ink,28);}
   if(v->menu_open){
    static const char *menu[8]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES"};
-   /* Design-selected Run036 neon-glass actions popup. 84% tinted backdrop
-    * preserves readability without filling the screen with solid gray. */
-   eh_theme_glass(f,57,24,206,191,93,&p);
+   /* Keep the neon frame while masking file names behind the popup. */
+   eh_theme_glass(f,57,24,206,191,99,&p);
    box(f,57,24,206,1,eh_skin(&p,EH_RGB(67,220,253)));
    box(f,57,213,206,1,eh_skin(&p,EH_RGB(67,220,253)));
    box(f,57,24,1,190,eh_skin(&p,EH_RGB(67,220,253)));

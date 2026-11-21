@@ -7,9 +7,11 @@
 #define EH_SCREEN_HEIGHT 240
 #define EH_GLYPH_WIDTH 8
 #define EH_COLOR_COUNT 20
+#define EH_WALLPAPER_COUNT 5
+#define EH_ICON_COUNT 10
 #define EH_RGB(r,g,b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 
-typedef struct { unsigned theme, folder, font; } EhAppearance;
+typedef struct { unsigned theme, folder, font, wallpaper, icon; } EhAppearance;
 typedef struct {
     uint16_t background, panel, raised, selected, accent, folder, ink;
 } EhPalette;

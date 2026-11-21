@@ -8,7 +8,7 @@ void eh7_ui_init(EhUniversalUI *s,const EhRegistry *apps){
  s->page.selected=eh_desktop_select(apps,-1,EH_KEY_NONE);
  s->missing=s->request=s->assign_slot=s->edit_action=s->open_files=0;
  s->manager_item=s->subview=s->renaming=s->confirm_remove=0;
- s->preview=apps?apps->appearance:(EhAppearance){0,0,0};
+ s->preview=apps?apps->appearance:(EhAppearance){0};
  s->setting_row=0;s->native_status=0;
  s->notice=(EhToast){0};
  s->rename_input[0]=0;
@@ -90,7 +90,7 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
     case 1:s->renaming=1;s->rename_input[0]=0;break;
     case 2:s->confirm_remove=1;break;
     case 3:s->subview=0;s->page.page=EH_PAGE_HELP;break;
-    case 4:s->subview=1;s->preview=s->apps->appearance;s->setting_row=0;s->page.page=EH_PAGE_HELP;break;
+    case 4:s->subview=1;s->preview=s->apps?s->apps->appearance:(EhAppearance){0};s->setting_row=EH_LOOK_THEME;s->page.page=EH_PAGE_HELP;break;
     case 5:s->open_files=1;break;
     case 6:s->subview=2;s->native_status=0;s->page.page=EH_PAGE_HELP;break;
    }
@@ -105,22 +105,29 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
  if(s->page.page==EH_PAGE_HELP&&s->subview==1){
   if(k==EH_KEY_UP || k==EH_KEY_DOWN){
    if(k==EH_KEY_UP && s->setting_row>0) --s->setting_row;
-   if(k==EH_KEY_DOWN && s->setting_row<3) ++s->setting_row;
+   if(k==EH_KEY_DOWN && s->setting_row<EH_LOOK_DEFAULTS) ++s->setting_row;
    return 1;
   }
-  if((k==EH_KEY_LEFT||k==EH_KEY_RIGHT) && s->setting_row<3){
-   unsigned *value=s->setting_row==0?&s->preview.theme:
-                   s->setting_row==1?&s->preview.folder:&s->preview.font;
-   *value=(*value+(k==EH_KEY_RIGHT?1:EH_COLOR_COUNT-1))%EH_COLOR_COUNT;
+  if((k==EH_KEY_LEFT||k==EH_KEY_RIGHT) && s->setting_row<EH_LOOK_DEFAULTS){
+   unsigned *values[]={&s->preview.theme,&s->preview.folder,&s->preview.font,
+                       &s->preview.wallpaper,&s->preview.icon};
+   const unsigned counts[]={EH_COLOR_COUNT,EH_COLOR_COUNT,EH_COLOR_COUNT,
+                            EH_WALLPAPER_COUNT,EH_ICON_COUNT};
+   unsigned n=counts[s->setting_row], *value=values[s->setting_row];
+   *value=(*value+(k==EH_KEY_RIGHT?1:n-1))%n;
    return 1;
   }
   if(k==EH_KEY_ENTER){
-   if(s->setting_row==3)s->preview=(EhAppearance){0,0,0};
-   s->edit_action=EH15_THEME;
+   if(s->setting_row==EH_LOOK_DEFAULTS){
+    s->preview=(EhAppearance){0};
+    s->setting_row=EH_LOOK_THEME;
+   }else{
+    s->edit_action=EH15_THEME;
+   }
    return 1;
   }
   if(k==EH_KEY_ESC||k==EH_KEY_MENU){
-   s->preview=s->apps->appearance;
+   s->preview=s->apps?s->apps->appearance:(EhAppearance){0};
    s->page.page=EH_PAGE_DETAIL;
    return 1;
   }

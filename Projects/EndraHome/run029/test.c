@@ -116,6 +116,37 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_ESC);assert(!info.preview.font && !info.preview.folder);
  eh7_ui_handle(&info,EH_KEY_ENTER);eh7_ui_handle(&info,EH_KEY_RIGHT);
  eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH15_THEME && !r.appearance.theme);
+ info.edit_action=0;
+ eh7_ui_handle(&info,EH_KEY_ESC);
+ r.appearance=(EhAppearance){5,3,2,1,4};
+ eh7_ui_handle(&info,EH_KEY_ENTER);
+ for(int i=0;i<EH_LOOK_WALLPAPER;i++)eh7_ui_handle(&info,EH_KEY_DOWN);
+ assert(info.setting_row==EH_LOOK_WALLPAPER);
+ for(unsigned n=1;n<=EH_WALLPAPER_COUNT;n++){
+  eh7_ui_handle(&info,EH_KEY_RIGHT);
+  assert(info.preview.wallpaper==(n+1)%EH_WALLPAPER_COUNT);
+  assert(!info.edit_action && r.appearance.wallpaper==1 && info.preview.icon==4);
+ }
+ eh7_ui_handle(&info,EH_KEY_DOWN);
+ assert(info.setting_row==EH_LOOK_ICON);
+ for(unsigned n=1;n<=EH_ICON_COUNT;n++){
+  eh7_ui_handle(&info,EH_KEY_LEFT);
+  assert(info.preview.icon==(4+EH_ICON_COUNT-n)%EH_ICON_COUNT);
+  assert(!info.edit_action && r.appearance.icon==4 && info.preview.wallpaper==1);
+ }
+ eh7_ui_handle(&info,EH_KEY_RIGHT);
+ eh7_ui_handle(&info,EH_KEY_ESC);
+ assert(info.preview.icon==4 && info.preview.wallpaper==1);
+ eh7_ui_handle(&info,EH_KEY_ENTER);
+ for(int i=0;i<EH_LOOK_DEFAULTS;i++)eh7_ui_handle(&info,EH_KEY_DOWN);
+ eh7_ui_handle(&info,EH_KEY_ENTER);
+ assert(info.setting_row==EH_LOOK_THEME && !info.edit_action);
+ assert(!info.preview.theme && !info.preview.folder && !info.preview.font &&
+        !info.preview.wallpaper && !info.preview.icon);
+ assert(r.appearance.theme==5 && r.appearance.font==2 &&
+        r.appearance.wallpaper==1 && r.appearance.icon==4);
+ eh7_ui_handle(&info,EH_KEY_ENTER);
+ assert(info.edit_action==EH15_THEME);
  EhUniversalUI shortcut;eh7_ui_init(&shortcut,&r);
  eh7_ui_handle(&shortcut,EH_KEY_MENU);
  for(int i=0;i<6;i++)eh7_ui_handle(&shortcut,EH_KEY_DOWN);

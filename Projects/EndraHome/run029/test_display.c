@@ -1,5 +1,7 @@
 #include "render.h"
 #include "display.h"
+#include "art.h"
+#include "desktop.h"
 #include "manager.h"
 #include "overlay.h"
 #include "files.h"
@@ -9,6 +11,11 @@
 
 static uint16_t guarded[320*240+2], *frame=guarded+1;
 static uint16_t raw_wallpaper[320*240];
+static uint32_t fingerprint(void) {
+    uint32_t hash=2166136261u;
+    for(int i=0;i<320*240;i++) hash=(hash^frame[i])*16777619u;
+    return hash;
+}
 static int color_count(uint16_t color) {
     int n=0;
     for(int i=0;i<320*240;i++) n+=frame[i]==color;
@@ -16,7 +23,7 @@ static int color_count(uint16_t color) {
 }
 int main(void) {
     EhRegistry r;eh7_registry_init(&r);
-    r.appearance=(EhAppearance){4,2,1};
+    r.appearance=(EhAppearance){4,2,1,0,0};
     EhPalette p=eh_palette(r.appearance);
     assert(p.folder!=p.ink && p.accent!=p.ink);
     /* Run030 theme-dependent icon and shaded badge. */
@@ -26,17 +33,44 @@ int main(void) {
     assert(frame[0]!=0);
     guarded[0]=0x1881;guarded[320*240+1]=0x8118;
     EhUniversalUI ui;eh7_ui_init(&ui,&r);
-    eh_desktop_wallpaper(raw_wallpaper,&p);
+    eh_desktop_wallpaper(raw_wallpaper,r.appearance);
     eh7_render(frame,&ui.page,&r);
     assert(frame[84*320+121]==raw_wallpaper[84*320+121]);
-    assert(frame[15*320+265] == frame[15*320+211]);
+
     assert(color_count(p.ink)>5);
-    for(int y=47;y<240;y++)for(int x=0;x<320;x++)
-      if(x<120||x>=200||y<100||y>=168)assert(frame[y*320+x]==raw_wallpaper[y*320+x]);
-    EhPalette ocean=eh_palette((EhAppearance){0,2,1});
-    eh_desktop_wallpaper(frame,&ocean);
+    EhTile tiles[EH7_SLOT_COUNT];
+    assert(eh_desktop_layout(&r,tiles)==1 && tiles[0].slot==EH_FILES_SLOT);
+    int center=tiles[0].center, top=tiles[0].top;
+    for(int y=0;y<240;y++)for(int x=0;x<320;x++)
+        if(x<center-EH_ICON_SIZE/2 || x>=center+EH_ICON_SIZE/2 || y<top || y>top+64)
+            assert(frame[y*320+x]==raw_wallpaper[y*320+x]);
+    eh_desktop_wallpaper(frame,(EhAppearance){.folder=2,.font=1});
     assert(frame[200*320+160]!=raw_wallpaper[200*320+160]);
     (void)mark;
+    uint32_t wallpaper_hash[EH_WALLPAPER_COUNT], icon_hash[EH_ICON_COUNT];
+    for(unsigned i=0;i<EH_WALLPAPER_COUNT;i++){
+        EhAppearance a={.wallpaper=i};
+        eh_wallpaper_paint(frame,a);
+        wallpaper_hash[i]=fingerprint();
+        for(unsigned j=0;j<i;j++)assert(wallpaper_hash[j]!=wallpaper_hash[i]);
+        a.theme=5;eh_wallpaper_paint(frame,a);
+        assert(fingerprint()!=wallpaper_hash[i]);
+    }
+    for(unsigned i=0;i<EH_ICON_COUNT;i++){
+        EhAppearance a={.icon=i};
+        eh_box(frame,0,0,320,240,0x1234);
+        eh_icon_paint(frame,a,0,0);
+        assert(frame[0]==0x1234 && frame[47*320+47]==0x1234);
+        assert(color_count(0x1234)>320*240-EH_ICON_SIZE*EH_ICON_SIZE);
+        icon_hash[i]=fingerprint();
+        for(unsigned j=0;j<i;j++)assert(icon_hash[j]!=icon_hash[i]);
+        a.theme=14;
+        eh_box(frame,0,0,320,240,0x1234);
+        eh_icon_paint(frame,a,0,0);
+        assert(fingerprint()!=icon_hash[i]);
+        eh_icon_paint(frame,a,-1,-1);
+        eh_icon_paint(frame,a,319,239);
+    }
     eh7_ui_handle(&ui,EH_KEY_MENU);eh15_manager_render(frame,&ui);
     assert(color_count(p.ink)>100);
     ui.manager_item=4;eh7_ui_handle(&ui,EH_KEY_ENTER);

@@ -1,4 +1,5 @@
 #include "render.h"
+#include "art.h"
 #include "ui.h"
 #include "overlay.h"
 #include "picker.h"
@@ -17,9 +18,9 @@ static int save(const char *name){
    (unsigned char)(((c>>5)&63)*255/63),
    (unsigned char)((c&31)*255/31)
   };
-  fwrite(b,1,3,f);
+  if(fwrite(b,1,3,f)!=3){fclose(f);return 1;}
  }
- fclose(f);return 0;
+ return fclose(f)!=0;
 }
 int main(void){
  EhRegistry empty;eh7_registry_init(&empty);
@@ -37,6 +38,16 @@ int main(void){
  if(save("build/home.ppm"))return 1;
  reg.appearance.theme=14;
  eh7_render(fb,&s.page,&reg);if(save("build/home_red.ppm"))return 1;
+ for(unsigned i=0;i<EH_WALLPAPER_COUNT;i++){
+  char name[40];
+  empty.appearance.wallpaper=i;
+  for(unsigned variant=0;variant<2;variant++){
+   empty.appearance.theme=variant?5:0;
+   eh7_render(fb,&only.page,&empty);
+   snprintf(name,sizeof(name),"build/wallpaper_%u_%s.ppm",i+1,variant?"green":"ocean");
+   if(save(name))return 1;
+  }
+ }
  reg.appearance.theme=0;
  eh7_ui_handle(&s,EH_KEY_MENU);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
@@ -47,6 +58,17 @@ int main(void){
  eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=4;eh7_ui_handle(&s,EH_KEY_ENTER);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
  if(save("build/settings.ppm"))return 1;
+ s.setting_row=EH_LOOK_ICON;
+ for(unsigned i=0;i<EH_ICON_COUNT;i++){
+  char name[40];
+  s.preview.theme=i&1?5:0;
+  s.preview.wallpaper=i%EH_WALLPAPER_COUNT;
+  s.preview.icon=i;
+  eh15_manager_render(fb,&s);
+  snprintf(name,sizeof(name),"build/icon_%02u.ppm",i+1);
+  if(save(name))return 1;
+ }
+
  eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=1;eh7_ui_handle(&s,EH_KEY_ENTER);
  eh16_ui_type(&s,'E');eh16_ui_type(&s,'n');eh16_ui_type(&s,'d');
  eh16_ui_type(&s,'r');eh16_ui_type(&s,'a');
@@ -68,7 +90,7 @@ int main(void){
  Eh17Files popup={0};popup.active=1;popup.nav=p;popup.menu_open=1;popup.menu_item=3;
  eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu.ppm"))return 1;
- reg.appearance.theme=14;eh17_files_render(fb,&popup,&reg);
+ reg.appearance.theme=14;reg.appearance.wallpaper=2;eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu_red.ppm"))return 1;
  eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
  eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;

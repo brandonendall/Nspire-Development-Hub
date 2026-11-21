@@ -5,6 +5,8 @@
 #include "toast.h"
 #define EH15_MENU_COUNT 7
 enum {EH15_NONE=0, EH15_RENAME=1, EH15_REMOVE=2, EH15_THEME=3, EH15_NATIVE_CHECK=4};
+enum {EH_LOOK_THEME, EH_LOOK_FOLDER, EH_LOOK_TEXT, EH_LOOK_WALLPAPER,
+      EH_LOOK_ICON, EH_LOOK_DEFAULTS};
 typedef struct {
  EhUI7 page;
  const EhRegistry *apps;
