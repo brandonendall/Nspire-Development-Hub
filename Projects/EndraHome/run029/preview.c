@@ -36,15 +36,15 @@ int main(void){
  EhUniversalUI s;eh7_ui_init(&s,&reg);
  eh7_render(fb,&s.page,&reg);
  if(save("build/home.ppm"))return 1;
- reg.appearance.theme=14;
+ reg.appearance.theme=EH_RED;
  eh7_render(fb,&s.page,&reg);if(save("build/home_red.ppm"))return 1;
  for(unsigned i=0;i<EH_WALLPAPER_COUNT;i++){
   char name[40];
   empty.appearance.wallpaper=i;
   for(unsigned variant=0;variant<2;variant++){
-   empty.appearance.theme=variant?5:0;
+   empty.appearance.theme=variant?EH_GREEN:EH_BLUE;
    eh7_render(fb,&only.page,&empty);
-   snprintf(name,sizeof(name),"build/wallpaper_%u_%s.ppm",i+1,variant?"green":"ocean");
+   snprintf(name,sizeof(name),"build/wallpaper_%u_%s.ppm",i+1,variant?"green":"blue");
    if(save(name))return 1;
   }
  }
@@ -58,10 +58,21 @@ int main(void){
  eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=4;eh7_ui_handle(&s,EH_KEY_ENTER);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
  if(save("build/settings.ppm"))return 1;
+ for(unsigned i=0;i<EH_THEME_COUNT;i++){
+  char name[48];
+  s.preview.theme=i;
+  eh15_manager_render(fb,&s);
+  snprintf(name,sizeof(name),"build/appearance_%s.ppm",eh_theme_names[i]);
+  if(save(name))return 1;
+  empty.appearance=(EhAppearance){.theme=i,.wallpaper=3,.icon=9};
+  eh7_render(fb,&only.page,&empty);
+  snprintf(name,sizeof(name),"build/theme_%s.ppm",eh_theme_names[i]);
+  if(save(name))return 1;
+ }
  s.setting_row=EH_LOOK_ICON;
  for(unsigned i=0;i<EH_ICON_COUNT;i++){
   char name[40];
-  s.preview.theme=i&1?5:0;
+  s.preview.theme=i&1?EH_GREEN:EH_BLUE;
   s.preview.wallpaper=i%EH_WALLPAPER_COUNT;
   s.preview.icon=i;
   eh15_manager_render(fb,&s);
@@ -78,23 +89,42 @@ int main(void){
  /* Preview without scanning a host /documents path. */
  strcpy(p.dir,"/documents");strcpy(p.root,"/documents");
  p.slot=0;p.active=1;
- Eh13PickEntry entries[2];memset(entries,0,sizeof(entries));
- strcpy(entries[0].name,"GBA");entries[0].directory=1;
- strcpy(entries[1].name,"EndraHome_Test006.tns");entries[1].directory=0;
- p.items=entries;p.count=2;p.selected=1;
+ Eh13PickEntry entries[]={
+   {.name="Games",.directory=1},{.name="Notes.TXT.TNS"},{.name="Backup.ZIP.TNS"},
+   {.name="Photo.JPG.TNS"},{.name="Manual.PDF.TNS"},{.name="Look.CFG.TNS"},
+   {.name="Table.CSV.TNS"},{.name="Quest.GBZ.TNS"},{.name="Tool.Zehn.TNS"},
+   {.name="Scratchpad.tns"},{.name="Data.bin"}
+ };
+ p.items=entries;p.count=(int)(sizeof(entries)/sizeof(entries[0]));p.selected=1;
  eh13_picker_render(fb,&p,&reg);
  if(save("build/picker.ppm"))return 1;
  p.show_all=1;entries[1].bytes=111282;
  eh13_picker_render(fb,&p,&reg);
  if(save("build/files.ppm"))return 1;
+ for(unsigned variant=0;variant<2;variant++){
+  const char *theme=variant?"white":"black";
+  reg.appearance.theme=variant?EH_WHITE:EH_BLACK;
+  reg.appearance.font=variant?0:7;
+  reg.appearance.folder=variant?5:7;
+  for(int page=0;page<2;page++){
+   char name[48];
+   p.scroll=page?p.count-EH13_VIEW_ROWS:0;
+   p.selected=p.scroll+1;
+   eh13_picker_render(fb,&p,&reg);
+   snprintf(name,sizeof(name),"build/files_%s_%d.ppm",theme,page+1);
+   if(save(name))return 1;
+  }
+ }
+ p.scroll=0;p.selected=1;
+ reg.appearance=(EhAppearance){.theme=EH_BLUE};
  Eh17Files popup={0};popup.active=1;popup.nav=p;popup.menu_open=1;popup.menu_item=3;
  eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu.ppm"))return 1;
- reg.appearance.theme=14;reg.appearance.wallpaper=2;eh17_files_render(fb,&popup,&reg);
+ reg.appearance.theme=EH_RED;reg.appearance.wallpaper=2;eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu_red.ppm"))return 1;
  eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
  eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;
- s.manager_item=6;eh7_ui_handle(&s,EH_KEY_ENTER);s.native_status=2;
+ s.manager_item=6;eh7_ui_handle(&s,EH_KEY_ENTER);s.native_status=1;
  eh15_manager_render(fb,&s);
  return save("build/native_shortcut.ppm");
 }

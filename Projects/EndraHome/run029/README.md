@@ -1,13 +1,18 @@
-# EndraHome Run038 Desktop
+# EndraHome Run039 Desktop
 
 Open **Menu > Appearance**. Use Up/Down to choose a setting and Left/Right to preview.
 Wallpaper, App Icon, Interface, Folders and Text are independent. The preview shows
 the selected wallpaper and a native 48×48 launcher icon. Enter saves all pending choices.
 Esc cancels. Enter on Restore defaults previews the defaults, then Enter saves them.
 
-Keep the executable with the existing `EndraHome_Apps.cfg.tns`. The new
-`EndraHome_Appearance3.cfg.tns` loads from the old appearance file on first use.
-The prior appearance and app files remain available for the Run037 rollback.
+Interface has eight choices: Blue (default), Red, Green, Yellow, Orange, Purple,
+Black and White. Endra Files uses distinct file-type glyphs based on the suffix.
+An ordinary .tns uses the TI document glyph. Glyphs do not change open or launch behavior.
+
+Keep the executable with `EndraHome_Apps.cfg.tns`. Run039 reads prior appearance
+settings and maps legacy interface colors to their closest retained choice. Save
+writes `EndraHome_Appearance4.cfg.tns` and leaves the Run038 configuration available
+to the rollback executable. Folder, text, wallpaper and icon choices keep their IDs.
 
 The five supplied 320×240 wallpapers use 8-bit indices into RGB565 palettes.
 The ten supplied emblems use traced silhouettes and 8-bit transparency.
@@ -19,7 +24,7 @@ Native shortcut registration and Ctrl+Home OS standby are pending investigation.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraHome_Run038_Desktop.tns /upload
+push /storage/emulated/0/Download/EndraHome_Run039_Desktop.tns /upload
 ```
 
 Historical source notes follow.

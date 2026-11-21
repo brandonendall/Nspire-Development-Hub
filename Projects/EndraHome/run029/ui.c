@@ -111,7 +111,7 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
   if((k==EH_KEY_LEFT||k==EH_KEY_RIGHT) && s->setting_row<EH_LOOK_DEFAULTS){
    unsigned *values[]={&s->preview.theme,&s->preview.folder,&s->preview.font,
                        &s->preview.wallpaper,&s->preview.icon};
-   const unsigned counts[]={EH_COLOR_COUNT,EH_COLOR_COUNT,EH_COLOR_COUNT,
+   const unsigned counts[]={EH_THEME_COUNT,EH_COLOR_COUNT,EH_COLOR_COUNT,
                             EH_WALLPAPER_COUNT,EH_ICON_COUNT};
    unsigned n=counts[s->setting_row], *value=values[s->setting_row];
    *value=(*value+(k==EH_KEY_RIGHT?1:n-1))%n;

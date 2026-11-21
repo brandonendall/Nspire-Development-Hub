@@ -2,7 +2,9 @@
 #include "font8x8_basic.h"
 #include <string.h>
 
-const char *const eh_theme_names[] = {"Ocean","Blue","Charcoal","Slate","Red","Green","Purple","Yellow","Orange","Gold","White","Black","Gray","Silver","Dark Red","Lime","Pink","Cyan","Teal","Brown"};
+const char *const eh_theme_names[EH_THEME_COUNT] = {
+    "Blue","Red","Green","Yellow","Orange","Purple","Black","White"
+};
 const char *const eh_folder_names[] = {"Yellow","Blue","Green","Purple","Red","White","Orange","Black","Cyan","Gold","Gray","Silver","Dark Red","Lime","Pink","Teal","Navy","Brown","Lavender","Charcoal"};
 const char *const eh_font_names[] = {"White","Blue","Green","Yellow","Red","Purple","Orange","Black","Cyan","Gold","Gray","Silver","Dark Red","Lime","Pink","Teal","Navy","Brown","Lavender","Charcoal"};
 
@@ -15,17 +17,28 @@ static uint16_t blend(uint16_t a, uint16_t b, unsigned percent) {
     return (uint16_t)((r << 11) | (g << 5) | blue);
 }
 EhPalette eh_palette(EhAppearance a) {
-    static const uint16_t accents[] = {EH_RGB(61,205,214),EH_RGB(93,165,252),EH_RGB(163,179,189),EH_RGB(163,185,212),EH_RGB(235,72,75),EH_RGB(65,200,115),EH_RGB(182,146,247),EH_RGB(255,216,55),EH_RGB(255,139,56),EH_RGB(231,184,65),EH_RGB(255,255,255),EH_RGB(0,0,0),EH_RGB(128,128,128),EH_RGB(190,196,203),EH_RGB(145,30,45),EH_RGB(155,240,45),EH_RGB(255,130,180),EH_RGB(50,215,240),EH_RGB(30,140,145),EH_RGB(140,92,55)};
+    static const uint16_t accents[EH_THEME_COUNT] = {
+      EH_RGB(61,205,214), EH_RGB(255,70,73), EH_RGB(52,225,92),
+      EH_RGB(255,252,60), EH_RGB(255,123,25), EH_RGB(187,75,255),
+      EH_RGB(138,145,153), EH_RGB(56,62,71)
+    };
     static const uint16_t folders[] = {EH_RGB(245,189,86),EH_RGB(110,196,250),EH_RGB(112,226,174),EH_RGB(200,165,251),EH_RGB(245,100,100),EH_RGB(247,249,252),EH_RGB(255,154,64),EH_RGB(30,35,42),EH_RGB(61,205,214),EH_RGB(231,184,65),EH_RGB(125,130,140),EH_RGB(192,197,204),EH_RGB(145,30,45),EH_RGB(155,240,45),EH_RGB(255,130,180),EH_RGB(30,140,145),EH_RGB(20,55,110),EH_RGB(140,92,55),EH_RGB(190,160,240),EH_RGB(50,55,65)};
     static const uint16_t fonts[] = {EH_RGB(247,249,252),EH_RGB(110,196,250),EH_RGB(112,226,174),EH_RGB(255,236,91),EH_RGB(255,125,130),EH_RGB(200,165,251),EH_RGB(255,174,98),EH_RGB(30,35,42),EH_RGB(103,222,255),EH_RGB(255,215,92),EH_RGB(125,130,140),EH_RGB(192,197,204),EH_RGB(145,30,45),EH_RGB(155,240,45),EH_RGB(255,130,180),EH_RGB(30,140,145),EH_RGB(20,55,110),EH_RGB(140,92,55),EH_RGB(190,160,240),EH_RGB(50,55,65)};
     EhPalette p;
-    p.accent = accents[checked(a.theme)];
+    p.theme = a.theme<EH_THEME_COUNT?a.theme:EH_BLUE;
+    p.accent = accents[p.theme];
     p.folder = folders[checked(a.folder)];
     p.ink = fonts[checked(a.font)];
     p.background = blend(EH_RGB(9,13,20), p.accent, 4);
     p.panel = blend(EH_RGB(14,20,28), p.accent, 9);
     p.raised = blend(EH_RGB(18,25,34), p.accent, 15);
     p.selected = blend(EH_RGB(14,22,32), p.accent, 26);
+    if(p.theme==EH_WHITE){
+        p.background=EH_RGB(224,227,231);
+        p.panel=EH_RGB(240,242,245);
+        p.raised=EH_RGB(250,251,253);
+        p.selected=EH_RGB(202,212,223);
+    }
     return p;
 }
 
@@ -40,16 +53,39 @@ void eh_box(uint16_t *f, int x, int y, int w, int h, uint16_t color) {
             f[row * EH_SCREEN_WIDTH + col] = color;
 }
 
+static int contrast_edge(const uint16_t *f,int x,int y,uint16_t c,uint16_t *edge){
+    if((unsigned)x>=EH_SCREEN_WIDTH||(unsigned)y>=EH_SCREEN_HEIGHT)return 0;
+    int fg=(int)eh_luma(c), bg=(int)eh_luma(f[y*EH_SCREEN_WIDTH+x]);
+    *edge=fg>=128?EH_RGB(4,8,15):EH_RGB(244,248,252);
+    return fg-bg<66 && bg-fg<66;
+}
+
+static void text_backing(uint16_t *f,int x,int y,const char *s,int count,
+                         int pitch,int width,int height,uint16_t ink){
+    int length=0;
+    while(length<count&&s[length])++length;
+    if(!length)return;
+    int span=(length-1)*pitch+width;
+    uint16_t edge;
+    if(contrast_edge(f,x+span/4,y+height/2,ink,&edge) ||
+       contrast_edge(f,x+span*3/4,y+height/2,ink,&edge))
+        eh_box(f,x-1,y-1,span+2,height+2,edge);
+}
+
+static void glyph(uint16_t *f,int x,int y,const uint8_t *rows,unsigned w,unsigned h,
+                  int scale,uint16_t ink,int reverse){
+    for(unsigned row=0;row<h;++row)
+        for(unsigned col=0;col<w;++col)
+            if(rows[row]&(1u<<(reverse?w-1-col:col)))
+                eh_box(f,x+(int)col*scale,y+(int)row*scale,scale,scale,ink);
+}
+
 void eh_text(uint16_t *f, int x, int y, const char *s, uint16_t ink, int limit, int scale) {
+    text_backing(f,x,y,s,limit,8*scale,7*scale,8*scale,ink);
     for (int i = 0; i < limit && s[i]; ++i) {
         unsigned ch = (unsigned char)s[i];
         if (ch < 32 || ch >= 127) ch = '?';
-        for (int row = 0; row < 8; ++row) {
-            unsigned bits = (unsigned char)font8x8_basic[ch][row];
-            for (int col = 0; col < 8; ++col)
-                if (bits & (1u << col))
-                    eh_box(f, x + (i * 8 + col) * scale, y + row * scale, scale, scale, ink);
-        }
+        glyph(f,x+i*8*scale,y,(const uint8_t *)font8x8_basic[ch],8,8,scale,ink,0);
     }
 }
 
@@ -64,6 +100,11 @@ void eh_fit_text(uint16_t *f, int x, int y, const char *s, uint16_t ink, int col
 }
 
 void eh_folder_icon(uint16_t *f, int x, int y, int s, const EhPalette *p) {
+    uint16_t edge;
+    if(contrast_edge(f,x+8*s,y+9*s,p->folder,&edge)){
+        eh_box(f,x+s-1,y+2*s-1,7*s+2,4*s+2,edge);
+        eh_box(f,x-1,y+5*s-1,16*s+2,11*s,edge);
+    }
     eh_box(f,x+s,y+2*s,7*s,4*s,p->folder);
     eh_box(f,x,y+5*s,16*s,10*s,blend(p->folder,0,25));
     eh_box(f,x,y+7*s,16*s,7*s,p->folder);
@@ -173,6 +214,7 @@ static const EhMiniGlyph mini34[]={
 };
 void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
  if(!f||!s||scale<1||scale>3||max_chars<1)return;
+ text_backing(f,x,y,s,max_chars,6*scale,5*scale,7*scale,color);
  for(int i=0;i<max_chars&&s[i];i++){
   unsigned char ch=(unsigned char)s[i];
   if(ch>='a'&&ch<='z')ch=(unsigned char)(ch-'a'+'A');
@@ -180,34 +222,31 @@ void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scal
   for(size_t g=0;g<sizeof(mini34)/sizeof(mini34[0]);g++)
    if(mini34[g].ch==(char)ch){rows=mini34[g].bits;break;}
   if(!rows)rows=mini34[sizeof(mini34)/sizeof(mini34[0])-4].bits;
-  for(int row=0;row<7;row++)
-   for(int col=0;col<5;col++)
-    if(rows[row]&(16u>>col))
-     eh_box(f,x+(i*6+col)*scale,y+row*scale,scale,scale,color);
+  glyph(f,x+i*6*scale,y,rows,5,7,scale,color,1);
  }
 }
 
-/* Run037: shared palette for artwork and chrome, preserving neutral whites. */
-uint16_t eh_skin(const EhPalette *p,uint16_t c){
- if(p->accent==EH_RGB(61,205,214))return c;
- unsigned r=c>>11,g=((c>>5)&63)>>1,b=c&31;
- unsigned hi=r>g?r:g;if(b>hi)hi=b;
- unsigned lo=r<g?r:g;if(b<lo)lo=b;
- unsigned ar=p->accent>>11,ag=((p->accent>>5)&63)>>1,ab=p->accent&31;
- unsigned peak=ar>ag?ar:ag;if(ab>peak)peak=ab;
- if(!peak){ar=ag=ab=31;peak=31;}
- unsigned d=hi-lo,rr=lo+d*ar/peak,gg=lo+d*ag/peak,bb=lo+d*ab/peak;
- return (uint16_t)((rr<<11)|((gg*2+(gg>>4))<<5)|bb);
+/* Weighted luminance expanded from the RGB565 channels. */
+unsigned eh_luma(uint16_t c){
+    return ((c>>11)*14+((c>>5)&63)*11+(c&31)*4)/5;
 }
-void eh_skin_frame(uint16_t *f,const EhPalette *p){
- if(!f||p->accent==EH_RGB(61,205,214))return;
- uint16_t table[32][32];
- for(unsigned hi=0;hi<32;hi++)for(unsigned lo=0;lo<=hi;lo++)
-  table[hi][lo]=eh_skin(p,(uint16_t)((hi<<11)|((lo*2+(lo>>4))<<5)|lo));
- for(unsigned i=0;i<320u*240u;i++){
-  uint16_t c=f[i];unsigned r=c>>11,g=((c>>5)&63)>>1,b=c&31;
-  unsigned hi=r>g?r:g;if(b>hi)hi=b;
-  unsigned lo=r<g?r:g;if(b<lo)lo=b;
-  if(hi!=lo)f[i]=table[hi][lo];
- }
+
+uint16_t eh_tint(uint16_t c,uint16_t accent){
+    unsigned r=c>>11,g=((c>>5)&63)>>1,b=c&31;
+    unsigned hi=r>g?r:g;if(b>hi)hi=b;
+    unsigned lo=r<g?r:g;if(b<lo)lo=b;
+    unsigned ar=accent>>11,ag=((accent>>5)&63)>>1,ab=accent&31;
+    unsigned peak=ar>ag?ar:ag;if(ab>peak)peak=ab;
+    if(!peak){ar=ag=ab=31;peak=31;}
+    unsigned d=hi-lo,rr=lo+d*ar/peak,gg=lo+d*ag/peak,bb=lo+d*ab/peak;
+    return (uint16_t)((rr<<11)|((gg*2+(gg>>4))<<5)|bb);
+}
+
+uint16_t eh_skin(const EhPalette *p,uint16_t c){
+    if(p->theme==EH_BLUE)return c;
+    if(p->theme==EH_WHITE){
+        unsigned level=252-eh_luma(c);
+        return EH_RGB(level,level,level);
+    }
+    return eh_tint(c,p->accent);
 }

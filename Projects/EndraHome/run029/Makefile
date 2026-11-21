@@ -1,4 +1,4 @@
-APP := EndraHome_Run038_Desktop
+APP := EndraHome_Run039_Desktop
 CC := nspire-gcc
 LD := nspire-ld
 GENZEHN := genzehn
@@ -8,9 +8,9 @@ NATIVE_FLAGS := -std=gnu99 -Wall -Wextra -Os -marm $(INCLUDES)
 HOST_FLAGS := -std=c11 -O2 -Wall -Wextra -Werror -Wno-unused-function $(INCLUDES)
 DESKTOP := ui.c registry.c desktop.c toast.c ../run005/logic7.c
 BROWSER := files.c file_ops.c image_viewer.c picker.c registry.c toast.c
-DRAW := art.c art_data.S render.c display.c caption.c overlay.c manager.c picker_render.c files_render.c
+DRAW := art.c art_data.S render.c display.c caption.c overlay.c manager.c picker_render.c files_render.c file_icons.c
 NATIVE := main platform art art_data render display caption overlay registry ui desktop toast preferences \
-          session picker picker_render config_save edit manager text_input files file_ops \
+          session picker picker_render config_save edit manager text_input files file_ops file_icons \
           files_render image_viewer image_keys
 OBJECTS := $(addprefix build/,$(addsuffix .o,$(NATIVE))) build/logic7.o
 TESTS := caption registry return picker files image ops preferences display
@@ -29,7 +29,7 @@ build/logic7.o: ../run005/logic7.c | build
 build/$(APP).elf: $(OBJECTS)
 	$(LD) -marm $^ -o $@ -lm
 $(APP).tns: build/$(APP).elf
-	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Desktop 038" --input $< --output $@
+	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Desktop 039" --input $< --output $@
 
 HEADERS := $(wildcard *.h) ../run005/logic7.h ../gba-ui/logic.h
 build/test_caption: test_caption.c caption.c

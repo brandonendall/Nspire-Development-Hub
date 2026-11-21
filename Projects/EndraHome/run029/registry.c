@@ -5,6 +5,14 @@
 static const char *defaults[EH7_SLOT_COUNT]={
  "EndraGBA","EndraZIP","EndraCmd","Files","Images","Tools","Favorites"
 };
+unsigned eh_legacy_theme(unsigned old) {
+ static const unsigned map[EH_LEGACY_THEME_COUNT]={
+  EH_BLUE, EH_BLUE, EH_BLACK, EH_BLACK, EH_RED, EH_GREEN, EH_PURPLE,
+  EH_YELLOW, EH_ORANGE, EH_YELLOW, EH_WHITE, EH_BLACK, EH_WHITE, EH_WHITE,
+  EH_RED, EH_GREEN, EH_PURPLE, EH_BLUE, EH_BLUE, EH_ORANGE
+ };
+ return old<EH_LEGACY_THEME_COUNT?map[old]:EH_BLUE;
+}
 void eh7_registry_init(EhRegistry *apps){
  if(!apps)return;
  memset(apps,0,sizeof(*apps));
@@ -39,7 +47,7 @@ int eh7_registry_parse(EhRegistry *apps,const char *line){
  if(!*line||*line=='#'||*line=='\n'||*line=='\r')return 0;
  if(line[0]=='T'&&line[1]=='='&&line[2]>='0'&&line[2]<='6'&&(line[3]=='\n'||line[3]=='\r'||line[3]==0)){
   apps->theme=line[2]-'0';
-  apps->appearance.theme=(unsigned)apps->theme;return 1;
+  apps->appearance.theme=eh_legacy_theme((unsigned)apps->theme);return 1;
  }
  if(line[0]<'0'||line[0]>'6'||line[1]!='='){apps->errors++;return -1;}
  int slot=line[0]-'0';

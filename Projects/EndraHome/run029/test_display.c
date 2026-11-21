@@ -1,6 +1,7 @@
 #include "render.h"
 #include "display.h"
 #include "art.h"
+#include "file_icons.h"
 #include "desktop.h"
 #include "manager.h"
 #include "overlay.h"
@@ -23,7 +24,7 @@ static int color_count(uint16_t color) {
 }
 int main(void) {
     EhRegistry r;eh7_registry_init(&r);
-    r.appearance=(EhAppearance){4,2,1,0,0};
+    r.appearance=(EhAppearance){EH_RED,2,1,0,0};
     EhPalette p=eh_palette(r.appearance);
     assert(p.folder!=p.ink && p.accent!=p.ink);
     /* Run030 theme-dependent icon and shaded badge. */
@@ -47,13 +48,53 @@ int main(void) {
     eh_desktop_wallpaper(frame,(EhAppearance){.folder=2,.font=1});
     assert(frame[200*320+160]!=raw_wallpaper[200*320+160]);
     (void)mark;
+    uint32_t theme_hash[EH_THEME_COUNT];
+    for(unsigned i=0;i<EH_THEME_COUNT;i++){
+        eh_wallpaper_paint(frame,(EhAppearance){.theme=i});
+        theme_hash[i]=fingerprint();
+        for(unsigned j=0;j<i;j++)assert(theme_hash[j]!=theme_hash[i]);
+    }
+    EhPalette black=eh_palette((EhAppearance){.theme=EH_BLACK,.font=7,.folder=7});
+    EhPalette white=eh_palette((EhAppearance){.theme=EH_WHITE});
+    assert(eh_luma(white.panel)>eh_luma(black.panel)+125);
+    eh_box(frame,0,0,320,240,black.panel);
+    eh_small_text(frame,10,10,"Dark text",black.ink,1,9);
+    assert(color_count(black.ink)>15 && color_count(EH_RGB(244,248,252))>15);
+    eh_box(frame,0,0,320,240,white.panel);
+    eh_text(frame,10,10,"White",white.ink,5,1);
+    assert(color_count(white.ink)>15 && color_count(EH_RGB(4,8,15))>15);
+
+    static const char *const names[EH_FILE_KIND_COUNT]={
+        "Folder.JPG.TNS","notes.TxT.TnS","pack.ZiP.TNS","shot.JpEg.TnS","guide.PDF.TNS",
+        "look.CfG.TNS","list.CsV.TnS","game.GbZ.TnS","app.ZeHn.TnS","doc.TnS","data.bin"
+    };
+    uint32_t file_hash[EH_FILE_KIND_COUNT];
+    assert(eh_file_kind("game.GBA.TNS",0)==EH_FILE_ROM);
+    assert(eh_file_kind("helper.elf",0)==EH_FILE_PROGRAM);
+    assert(eh_file_kind("EndraZIP.tns",0)==EH_FILE_TI);
+    assert(eh_file_kind("data.bin.tns",0)==EH_FILE_TI);
+    assert(eh_file_kind("noext",0)==EH_FILE_UNKNOWN);
+    assert(eh_file_kind("fake.pdf.tns.bak",0)==EH_FILE_UNKNOWN);
+    for(unsigned i=0;i<EH_FILE_KIND_COUNT;i++){
+        assert(eh_file_kind(names[i],i==EH_FILE_FOLDER)==(EhFileKind)i);
+        assert(eh_file_kind(names[i],1)==EH_FILE_FOLDER);
+        eh_box(frame,0,0,320,240,white.panel);
+        eh_file_kind_icon(frame,20,20,(EhFileKind)i,&white);
+        file_hash[i]=fingerprint();
+        for(unsigned j=0;j<i;j++)assert(file_hash[j]!=file_hash[i]);
+        for(int yy=19;yy<=35;yy++)
+            for(int xx=18;xx<=37;xx++)
+                if(yy<20||yy>=35||xx<(i==EH_FILE_FOLDER?19:20)||xx>=(i==EH_FILE_FOLDER?37:36))assert(frame[yy*320+xx]==white.panel);
+        eh_file_kind_icon(frame,-3,-2,(EhFileKind)i,&black);
+        eh_file_kind_icon(frame,319,239,(EhFileKind)i,&black);
+    }
     uint32_t wallpaper_hash[EH_WALLPAPER_COUNT], icon_hash[EH_ICON_COUNT];
     for(unsigned i=0;i<EH_WALLPAPER_COUNT;i++){
         EhAppearance a={.wallpaper=i};
         eh_wallpaper_paint(frame,a);
         wallpaper_hash[i]=fingerprint();
         for(unsigned j=0;j<i;j++)assert(wallpaper_hash[j]!=wallpaper_hash[i]);
-        a.theme=5;eh_wallpaper_paint(frame,a);
+        a.theme=EH_GREEN;eh_wallpaper_paint(frame,a);
         assert(fingerprint()!=wallpaper_hash[i]);
     }
     for(unsigned i=0;i<EH_ICON_COUNT;i++){
@@ -64,7 +105,7 @@ int main(void) {
         assert(color_count(0x1234)>320*240-EH_ICON_SIZE*EH_ICON_SIZE);
         icon_hash[i]=fingerprint();
         for(unsigned j=0;j<i;j++)assert(icon_hash[j]!=icon_hash[i]);
-        a.theme=14;
+        a.theme=EH_RED;
         eh_box(frame,0,0,320,240,0x1234);
         eh_icon_paint(frame,a,0,0);
         assert(fingerprint()!=icon_hash[i]);
@@ -88,11 +129,11 @@ int main(void) {
         if(!screen)assert(color_count(p.folder)>10);
     }
     files.screen=0;files.menu_open=1;
-    r.appearance.theme=14;eh17_files_render(frame,&files,&r);
+    r.appearance.theme=EH_RED;eh17_files_render(frame,&files,&r);
     uint16_t red=frame[24*320+57];
     r.appearance.theme=0;eh17_files_render(frame,&files,&r);
     assert(frame[24*320+57]!=red);
-    r.appearance.theme=14;
+    r.appearance.theme=EH_RED;
     ui.page.page=EH_PAGE_DETAIL;ui.subview=0;ui.manager_item=6;
     eh7_ui_handle(&ui,EH_KEY_ENTER);assert(ui.subview==2);
     eh7_ui_handle(&ui,EH_KEY_ENTER);assert(ui.edit_action==EH15_NATIVE_CHECK);

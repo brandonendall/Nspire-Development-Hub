@@ -26,11 +26,17 @@ static unsigned checked(unsigned value, unsigned count) {
 }
 
 /* Every theme maps the source chroma. Neutral reflections retain their range.
- * Preserve the blue identity of Ocean and give the Black theme a darker ramp. */
+ * Keep Blue saturated and give the neutral themes distinct value ranges. */
 static uint16_t tint(EhAppearance a, EhPalette p, uint16_t color) {
-    if (a.theme == 0) p.accent = EH_RGB(27, 179, 255);
-    uint16_t tinted = eh_skin(&p, color);
-    if (a.theme == 11)
+    if (a.theme==EH_WHITE){
+        unsigned gray=eh_luma(color);
+        unsigned light=gray+(255-gray)*42/100;
+        return EH_RGB(light,light,light);
+    }
+    uint16_t accent=a.theme==EH_BLUE?EH_RGB(27,179,255):p.accent;
+    if(a.theme==EH_BLACK)accent=EH_RGB(255,255,255);
+    uint16_t tinted=eh_tint(color,accent);
+    if (a.theme == EH_BLACK)
         tinted = (uint16_t)(((tinted & 0xf7deu) >> 1) + ((tinted & 0xe79cu) >> 2));
     return tinted;
 }
@@ -46,9 +52,9 @@ static void load_palette(uint16_t table[PALETTE_COLORS], const uint8_t *asset,
 
 static const uint8_t *wallpaper(EhAppearance a, uint16_t **colors) {
     static uint16_t palette[PALETTE_COLORS];
-    static unsigned last_wall = EH_WALLPAPER_COUNT, last_theme = EH_COLOR_COUNT;
+    static unsigned last_wall = EH_WALLPAPER_COUNT, last_theme = EH_THEME_COUNT;
     unsigned wall = checked(a.wallpaper, EH_WALLPAPER_COUNT);
-    a.theme = checked(a.theme, EH_COLOR_COUNT);
+    a.theme = checked(a.theme, EH_THEME_COUNT);
     const uint8_t *asset = eh_art_data + wall * WALL_BYTES;
     if (wall != last_wall || a.theme != last_theme) {
         load_palette(palette, asset, a);
@@ -108,9 +114,9 @@ static void draw_masked(uint16_t *frame, const uint8_t *asset, const uint16_t *c
 
 void eh_icon_paint(uint16_t *frame, EhAppearance a, int x, int y) {
     static uint16_t palette[PALETTE_COLORS];
-    static unsigned last_icon = EH_ICON_COUNT, last_theme = EH_COLOR_COUNT;
+    static unsigned last_icon = EH_ICON_COUNT, last_theme = EH_THEME_COUNT;
     unsigned icon = checked(a.icon, EH_ICON_COUNT);
-    a.theme = checked(a.theme, EH_COLOR_COUNT);
+    a.theme = checked(a.theme, EH_THEME_COUNT);
     const uint8_t *asset = eh_art_data + EH_WALLPAPER_COUNT * WALL_BYTES + icon * ICON_BYTES;
     if (icon != last_icon || a.theme != last_theme) {
         load_palette(palette, asset, a);
@@ -122,8 +128,8 @@ void eh_icon_paint(uint16_t *frame, EhAppearance a, int x, int y) {
 
 void eh_header_paint(uint16_t *frame, EhAppearance a) {
     static uint16_t palette[PALETTE_COLORS];
-    static unsigned last_theme = EH_COLOR_COUNT;
-    a.theme = checked(a.theme, EH_COLOR_COUNT);
+    static unsigned last_theme = EH_THEME_COUNT;
+    a.theme = checked(a.theme, EH_THEME_COUNT);
     const uint8_t *asset = eh_art_data + EH_WALLPAPER_COUNT * WALL_BYTES +
                            EH_ICON_COUNT * ICON_BYTES;
     if (a.theme != last_theme) {

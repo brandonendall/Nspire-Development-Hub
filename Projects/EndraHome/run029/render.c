@@ -39,12 +39,6 @@ void eh_desktop_wallpaper(uint16_t *f,EhAppearance appearance){
 }
 
 void eh_icon_caption(uint16_t *f,int x,int y,const char *text,const EhPalette *p){
- unsigned brightness=(p->ink>>11)*3+((p->ink>>5)&63)*3+(p->ink&31);
- uint16_t edge=brightness>145?EH_RGB(2,5,10):EH_RGB(225,239,250);
- eh_small_text(f,x-1,y,text,edge,1,12);
- eh_small_text(f,x+1,y,text,edge,1,12);
- eh_small_text(f,x,y-1,text,edge,1,12);
- eh_small_text(f,x,y+1,text,edge,1,12);
  eh_small_text(f,x,y,text,p->ink,1,12);
 }
 

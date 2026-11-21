@@ -114,7 +114,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   snprintf(wall,sizeof(wall),"%u %s",appearance.wallpaper+1,
            eh_wallpaper_names[appearance.wallpaper]);
   snprintf(icon,sizeof(icon),"%u %s",appearance.icon+1,eh_icon_names[appearance.icon]);
-  const char *values[]={eh_theme_names[appearance.theme],eh_folder_names[appearance.folder],
+  const char *values[]={eh_theme_names[p.theme],eh_folder_names[appearance.folder],
                         eh_font_names[appearance.font],wall,icon,""};
   title34(f,"APPEARANCE",&p);
   for(int i=0;i<=EH_LOOK_DEFAULTS;i++){

@@ -19,6 +19,7 @@ typedef struct {
  int theme; /* Run028 shortcut file theme, used until separate preferences exist. */
  EhAppearance appearance;
 } EhRegistry;
+unsigned eh_legacy_theme(unsigned old);
 void eh7_registry_init(EhRegistry *apps);
 int eh7_valid_path(const char *path);
 int eh7_config_path(char *dst,size_t cap,const char *app_executable);

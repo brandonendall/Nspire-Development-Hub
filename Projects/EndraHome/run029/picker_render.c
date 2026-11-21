@@ -3,6 +3,7 @@
 #include "display.h"
 #include "render.h"
 #include "art.h"
+#include "file_icons.h"
 #include "files.h"
 #include <stdio.h>
 #include <string.h>
@@ -11,61 +12,6 @@ static void label(uint16_t *f,int x,int y,const char *s,uint16_t ink,int n){
  eh_text(f,x,y,s,ink,n,1);
 }
 
-static int suffix(const char *name,const char *ext){
- size_t n=strlen(name),length=strlen(ext);
- if(n<length)return 0;
- const char *p=name+n-length;
- for(size_t i=0;i<length;++i){
-  char c=p[i];
-  if(c>='A' && c<='Z')c=(char)(c+32);
-  if(c!=ext[i])return 0;
- }
- return 1;
-}
-static uint16_t mix565(uint16_t a,uint16_t b,unsigned percent){
- unsigned inv=100-percent;
- return (uint16_t)(((((a>>11)*inv+(b>>11)*percent)/100)<<11)|
- (((((a>>5)&63)*inv+((b>>5)&63)*percent)/100)<<5)|
- (((a&31)*inv+(b&31)*percent)/100));
-}
-static void file_icon(uint16_t *f,int x,int y,const char *name,int dir,const EhPalette *p){
- if(dir){eh_folder_icon(f,x,y,1,p);return;}
- int image=suffix(name,".jpg")||suffix(name,".png")||suffix(name,".jpeg")||
-   suffix(name,".jpg.tns")||suffix(name,".jpeg.tns")||suffix(name,".png.tns");
- int archive=suffix(name,".zip")||suffix(name,".zip.tns")||suffix(name,".7z")||suffix(name,".rar");
- int config=suffix(name,".cfg")||suffix(name,".cfg.tns")||suffix(name,".ini")||suffix(name,".theme");
- int pdf=suffix(name,".pdf")||suffix(name,".pdf.tns");
- int app=suffix(name,".tns")&&!image&&!archive&&!config&&!pdf&&!suffix(name,".txt.tns");
- int text=eh17_is_text_name(name);
- uint16_t tone=archive?EH_RGB(64,206,131):
-  image?mix565(p->folder,EH_RGB(60,205,240),55):
-  config?mix565(p->folder,EH_RGB(170,150,230),65):
-  pdf?mix565(p->folder,EH_RGB(245,70,70),65):
-  text?mix565(p->folder,EH_RGB(210,225,245),70):p->accent;
- if(app){eh_box(f,x+2,y+1,12,14,eh_skin(p,EH_RGB(60,200,248)));eh_box(f,x+3,y+2,10,12,p->panel);eh_small_text(f,x+5,y+4,"E",p->ink,1,1);return;}
- box(f,x+2,y+1,12,14,tone);
- box(f,x+4,y+3,8,10,p->panel);
- if(archive){
-  box(f,x+7,y+3,2,9,tone);
-  for(int a=0;a<4;a++)box(f,x+7+(a&1),y+4+a*2,1,1,p->ink);
- }else if(image){
-  box(f,x+5,y+5,6,6,tone);
-  box(f,x+9,y+6,2,2,p->ink);
-  box(f,x+6,y+9,4,2,p->ink);
- }else if(config){
-  box(f,x+5,y+6,6,2,tone);
-  box(f,x+7,y+4,2,6,tone);
-  box(f,x+6,y+10,4,2,p->ink);
- }else if(pdf){
-  box(f,x+4,y+5,8,2,tone);
-  box(f,x+4,y+8,6,2,tone);
-  box(f,x+4,y+11,8,1,tone);
- }else{
-  box(f,x+4,y+5,8,1,tone);
-  box(f,x+4,y+8,8,1,tone);
-  box(f,x+4,y+11,6,1,tone);
- }
-}
 static void size_label(char *out,size_t cap,unsigned long long n){
  const char *units[]={"B","KB","MB","GB","TB"};
  unsigned unit=0;unsigned long long whole=n,rem=0;
@@ -118,7 +64,7 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
    eh_box(f,13,y+12,294,1,eh_skin(&colors,EH_RGB(13,54,84)));
   }
   const Eh13PickEntry *e=p->items+i;
-  file_icon(f,17,y-3,e->name,e->directory,&colors);
+  eh_file_kind_icon(f,17,y-3,eh_file_kind(e->name,e->directory),&colors);
   eh_fit_text(f,39,y,e->name,pale,p->show_all?22:31);
   if(p->show_all){
    char value[24];

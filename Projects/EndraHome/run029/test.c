@@ -118,8 +118,15 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH15_THEME && !r.appearance.theme);
  info.edit_action=0;
  eh7_ui_handle(&info,EH_KEY_ESC);
- r.appearance=(EhAppearance){5,3,2,1,4};
+ r.appearance=(EhAppearance){EH_GREEN,3,2,1,4};
  eh7_ui_handle(&info,EH_KEY_ENTER);
+ for(unsigned n=1;n<=EH_THEME_COUNT;n++){
+  eh7_ui_handle(&info,EH_KEY_LEFT);
+  assert(info.preview.theme==(EH_GREEN+EH_THEME_COUNT-n)%EH_THEME_COUNT);
+  assert(r.appearance.theme==EH_GREEN && !info.edit_action);
+ }
+ eh7_ui_handle(&info,EH_KEY_RIGHT);assert(info.preview.theme==EH_YELLOW);
+ eh7_ui_handle(&info,EH_KEY_LEFT);assert(info.preview.theme==EH_GREEN);
  for(int i=0;i<EH_LOOK_WALLPAPER;i++)eh7_ui_handle(&info,EH_KEY_DOWN);
  assert(info.setting_row==EH_LOOK_WALLPAPER);
  for(unsigned n=1;n<=EH_WALLPAPER_COUNT;n++){
@@ -143,7 +150,7 @@ int main(void){
  assert(info.setting_row==EH_LOOK_THEME && !info.edit_action);
  assert(!info.preview.theme && !info.preview.folder && !info.preview.font &&
         !info.preview.wallpaper && !info.preview.icon);
- assert(r.appearance.theme==5 && r.appearance.font==2 &&
+ assert(r.appearance.theme==EH_GREEN && r.appearance.font==2 &&
         r.appearance.wallpaper==1 && r.appearance.icon==4);
  eh7_ui_handle(&info,EH_KEY_ENTER);
  assert(info.edit_action==EH15_THEME);
