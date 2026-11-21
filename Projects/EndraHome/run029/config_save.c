@@ -71,7 +71,7 @@ int eh14_recover_config(const char *cfg,Eh14SaveError *error){
 static int matches(const char *file,const EhRegistry *expected,int slot,const char *path){
  EhRegistry actual;eh7_registry_init(&actual);
  if(eh7_registry_load(&actual,file)<0||actual.errors||actual.theme!=expected->theme||
-    actual.clock_offset!=expected->clock_offset||!actual.has_appearance)return 0;
+    actual.clock_offset_seconds!=expected->clock_offset_seconds||!actual.has_appearance)return 0;
  const EhAppearance a=actual.appearance,b=expected->appearance;
  if(a.theme!=b.theme||a.folder!=b.folder||a.font!=b.font||
     a.wallpaper!=b.wallpaper||a.icon!=b.icon)return 0;
@@ -105,6 +105,7 @@ static int save_config(EhRegistry *apps,int slot,const char *path,const char *cf
    /* Detect truncated/corrupt source rather than dropping the remainder. */
    if(len==sizeof(line)-1&&line[len-1]!='\n'&&!feof(in)){ok=0;break;}
    const char *key=line+strspn(line," \t");
+   if(!strncmp(key,EH_CLOCK_REMAINDER,sizeof(EH_CLOCK_REMAINDER)-1))continue;
    if(!strncmp(key,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1))continue;
    if(!strncmp(key,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1))continue;
    last=len?(unsigned char)line[len-1]:last;
@@ -129,7 +130,8 @@ static int save_config(EhRegistry *apps,int slot,const char *path,const char *cf
    if(!slot_line(out,i,apps,i==slot?path:apps->slots[i].path))ok=0;
   if(ok&&fprintf(out,"T=%d\n",apps->theme)<0)ok=0;
  }
- if(ok && apps->clock_offset && fprintf(out,EH_CLOCK_LINE "%d\n",apps->clock_offset)<0)ok=0;
+ if(ok && apps->clock_offset_seconds/60 && fprintf(out,EH_CLOCK_LINE "%d\n",apps->clock_offset_seconds/60)<0)ok=0;
+ if(ok && apps->clock_offset_seconds%60 && fprintf(out,EH_CLOCK_REMAINDER "%d\n",apps->clock_offset_seconds%60)<0)ok=0;
  const EhAppearance a=apps->appearance;
  if(ok&&fprintf(out,EH_APPEARANCE_LINE "v4 %u %u %u %u %u\n",
                 a.theme,a.folder,a.font,a.wallpaper,a.icon)<0)ok=0;
@@ -186,11 +188,11 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
 }
 
 int eh_save_clock(EhRegistry *apps,int offset,const char *cfg,Eh14SaveError *error){
- if(!apps||offset<0||offset>=1440){errno=EINVAL;return failure(error,EH14_INVALID);}
- int previous=apps->clock_offset;
- apps->clock_offset=offset;
+ if(!apps||offset<0||offset>=86400){errno=EINVAL;return failure(error,EH14_INVALID);}
+ int previous=apps->clock_offset_seconds;
+ apps->clock_offset_seconds=offset;
  if(save_config(apps,-1,NULL,cfg,error))return 1;
- apps->clock_offset=previous;
+ apps->clock_offset_seconds=previous;
  return 0;
 }
 

@@ -1,6 +1,6 @@
-# EndraHome Run045 Desktop
+# EndraHome Run046 Desktop
 
-Use Menu > Appearance > Set clock. Left/right selects hour or minute. Up/down adjusts it, including AM/PM when the hour crosses noon or midnight. Enter saves the EndraHome time offset in the shortcut configuration. Esc cancels.
+Use Menu > Appearance > Set clock. Left/right selects hour, minute or second. Up/down adjusts it, including AM/PM when the hour crosses noon or midnight. Enter synchronizes the selected time to the current RTC second and saves the EndraHome time offset in the shortcut configuration. Esc cancels.
 
 The desktop clock shows hours, minutes, seconds and AM/PM in pure white with a dark glyph outline. Low-contrast labels use a glyph shadow. Rename Shortcut uses an inline caret. Open Endra Files is the last desktop menu entry.
 
@@ -24,7 +24,7 @@ Interface has eight choices: Blue (default), Red, Green, Yellow, Orange, Purple,
 Black and White. Endra Files uses distinct file-type glyphs based on the suffix.
 An ordinary .tns uses the TI document glyph. Glyphs do not change open or launch behavior.
 
-Keep the executable with `EndraHome_Apps.cfg.tns`. Run045 reads prior appearance
+Keep the executable with `EndraHome_Apps.cfg.tns`. Run046 reads prior appearance
 settings and maps legacy interface colors to their closest retained choice. Save
 stores appearance and app shortcuts in `EndraHome_Apps.cfg.tns`. Older appearance
 files are read as a fallback and are left untouched for older builds. The first
@@ -40,7 +40,7 @@ Native shortcut registration and Ctrl+Home OS standby are pending investigation.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraHome_Run045_Desktop.tns /upload
+push /storage/emulated/0/Download/EndraHome_Run046_Desktop.tns /upload
 ```
 
 Historical source notes follow.

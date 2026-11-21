@@ -52,12 +52,12 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
  uint16_t custom=p.ink;
  head34(f,settings?"SETTINGS":rightpart(app->label,17),appearance,&p);
  if(settings&&s->subview==2){
-  char time[9];eh_clock_label(time,s->clock_draft);
+  char time[12];eh_clock_seconds_label(time,s->clock_draft);
   title34(f,"SET CLOCK",&p);
   eh_small_text(f,62,88,"ENDRAHOME LOCAL TIME",custom,1,20);
-  eh_small_text(f,62,111,time,UINT16_MAX,3,8);
+  eh_small_text(f,62,111,time,UINT16_MAX,3,11);
   box(f,62+s->clock_field*54,136,33,2,eh_skin(&p,SKY));
-  eh_small_text(f,62,155,"LEFT / RIGHT   HOUR OR MINUTE",custom,1,32);
+  eh_small_text(f,62,155,"LEFT / RIGHT   HOUR MIN SEC",custom,1,32);
   eh_small_text(f,62,174,"UP / DOWN      CHANGE VALUE",custom,1,32);
   eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",p.ink,1,32);
   return;

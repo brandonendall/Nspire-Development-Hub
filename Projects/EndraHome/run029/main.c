@@ -26,7 +26,7 @@ static int desktop_second;
 static int read_second(int offset){
  /* nClock stores local wall time in the CX II RTC seconds register. */
  uint32_t seconds=*(const volatile uint32_t *)0x90090000u;
- return seconds<1325376000u || seconds==UINT32_MAX ? -1 : (int)((seconds%86400u+60u*(unsigned)offset)%86400u);
+ return seconds<1325376000u || seconds==UINT32_MAX ? -1 : (int)((seconds%86400u+(unsigned)offset)%86400u);
 }
 static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  uint16_t *fb=eh_framebuffer();
@@ -38,7 +38,7 @@ static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  else{
   if(s->page.page==EH_PAGE_HOME){
    eh7_render(fb,&s->page,s->apps);
-   desktop_second=read_second(s->apps->clock_offset);
+   desktop_second=read_second(s->apps->clock_offset_seconds);
    eh_desktop_clock(fb,desktop_second);
   }
   else eh15_manager_render(fb,s);
@@ -96,7 +96,7 @@ int main(int argc,char **argv){
    if(!built_files.active&&!picker.active&&ui.page.page==EH_PAGE_HOME &&
       now-clock_tick>=EH_TICKS_PER_SECOND/8){
     clock_tick=now;
-    expired|=read_second(apps.clock_offset)!=desktop_second;
+    expired|=read_second(apps.clock_offset_seconds)!=desktop_second;
    }
    if(expired)paint(&ui,&picker);
    int typed=eh16_textkey(); /* read each frame; one fresh QWERTY event */
@@ -171,9 +171,9 @@ int main(int argc,char **argv){
        int raw=read_second(0);
        if(raw<0)eh_toast_set(&ui.notice,"CLOCK SOURCE UNAVAILABLE");
        else if(action==EH_CLOCK_OPEN){
-        ui.clock_draft=(raw/60+apps.clock_offset)%1440;
+        ui.clock_draft=(raw+apps.clock_offset_seconds)%86400;
         ui.clock_field=0;ui.subview=2;
-       }else if(shortcuts_writable && eh_save_clock(&apps,(1440+ui.clock_draft-raw/60)%1440,cfg,&diag)){
+       }else if(shortcuts_writable && eh_save_clock(&apps,(86400+ui.clock_draft-raw)%86400,cfg,&diag)){
         ui.subview=1;
         eh_toast_set(&ui.notice,"Clock saved");
        }else eh_toast_set(&ui.notice,shortcuts_writable?eh14_save_stage_name(diag.stage):"Config path unavailable");

@@ -78,11 +78,6 @@ static void draw_tile(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPa
  }
  eh_icon_caption(f,tx,ty,label,p);
 }
-void eh_clock_label(char label[9],int minute){
- if(minute<0 || minute>=1440){label[0]=0;return;}
- int hour=minute/60;
- snprintf(label,9,"%02d:%02d %s",hour%12?hour%12:12,minute%60,hour<12?"AM":"PM");
-}
 void eh_clock_seconds_label(char label[12],int second){
  if(second<0 || second>=86400){label[0]=0;return;}
  int hour=second/3600;

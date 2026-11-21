@@ -47,14 +47,16 @@ int eh7_config_path(char *dst,size_t cap,const char *app_executable){
 int eh7_registry_parse(EhRegistry *apps,const char *line){
  if(!apps||!line)return 0;
  while(*line==' '||*line=='\t')line++;
- if(!strncmp(line,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1)){
-  const char *value=line+sizeof(EH_CLOCK_LINE)-1;
+ int remainder=!strncmp(line,EH_CLOCK_REMAINDER,sizeof(EH_CLOCK_REMAINDER)-1);
+ if(remainder||!strncmp(line,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1)){
+  const char *value=line+(remainder?sizeof(EH_CLOCK_REMAINDER):sizeof(EH_CLOCK_LINE))-1;
   size_t len=strspn(value,"0123456789");
   if(len==0 || len>4 || value[len+strspn(value+len,"\r\n")])return 0;
-  int minutes=0;
-  for(size_t i=0;i<len;i++)minutes=minutes*10+value[i]-'0';
-  if(minutes>=1440)return 0;
-  apps->clock_offset=minutes;
+  int number=0;
+  for(size_t i=0;i<len;i++)number=number*10+value[i]-'0';
+  if(number>=(remainder?60:1440))return 0;
+  int prior=apps->clock_offset_seconds;
+  apps->clock_offset_seconds=remainder?prior-prior%60+number:number*60+prior%60;
   return 1;
  }
  if(!strncmp(line,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1)){

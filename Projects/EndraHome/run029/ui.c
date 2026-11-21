@@ -115,13 +115,14 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
  if(s->page.page==EH_PAGE_HELP&&s->subview==2){
   if(k==EH_KEY_ESC||k==EH_KEY_MENU){s->subview=1;return 1;}
   if(k==EH_KEY_ENTER){s->edit_action=EH_CLOCK_SAVE;return 1;}
-  if(k==EH_KEY_LEFT||k==EH_KEY_RIGHT){s->clock_field=1-s->clock_field;return 1;}
+  if(k==EH_KEY_LEFT||k==EH_KEY_RIGHT){s->clock_field=(s->clock_field+(k==EH_KEY_RIGHT?1:2))%3;return 1;}
   if(k==EH_KEY_UP||k==EH_KEY_DOWN){
    int delta=k==EH_KEY_UP?1:-1;
-   int hour=s->clock_draft/60,minute=s->clock_draft%60;
-   if(s->clock_field==0)hour=(hour+delta+24)%24;
-   else minute=(minute+delta+60)%60;
-   s->clock_draft=hour*60+minute;
+   const int units[]={3600,60,1};
+   int unit=units[s->clock_field],limit=s->clock_field==0?24:60;
+   int current=s->clock_draft/unit%limit;
+   int next=(current+limit+delta)%limit;
+   s->clock_draft+=(next-current)*unit;
    return 1;
   }
   return 0;

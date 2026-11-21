@@ -13,6 +13,5 @@ void eh_icon_caption(uint16_t *frame,int x,int y,const char *text,const EhPalett
 void eh_theme_glass(uint16_t *frame,int x,int y,int w,int h,unsigned alpha,const EhPalette *p);
 void eh_desktop_clock(uint16_t *frame,int second);
 void eh_clock_seconds_label(char label[12],int second);
-void eh_clock_label(char label[9],int minute);
 void eh7_render(uint16_t *frame,const EhUI7 *ui,const EhRegistry *apps);
 #endif

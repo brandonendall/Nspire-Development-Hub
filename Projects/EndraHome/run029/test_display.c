@@ -168,12 +168,6 @@ int main(void) {
     eh_desktop_clock(frame,43199);assert(color_count(UINT16_MAX)>80 && color_count(0)>80);
     for(int y=0;y<240;y++)for(int x=0;x<320;x++)
         if(x<246||x>312||y<13||y>21)assert(frame[y*320+x]==0x7777);
-    char label[9];
-    eh_clock_label(label,0);assert(!strcmp(label,"12:00 AM"));
-    eh_clock_label(label,719);assert(!strcmp(label,"11:59 AM"));
-    eh_clock_label(label,720);assert(!strcmp(label,"12:00 PM"));
-    eh_clock_label(label,1439);assert(!strcmp(label,"11:59 PM"));
-    eh_clock_label(label,-1);assert(!*label);
     ui.renaming=1;
     for(int n=0;n<=15;n++){
         memset(ui.rename_input,'A',n);ui.rename_input[n]=0;
