@@ -22,7 +22,7 @@ Interface has eight choices: Blue (default), Red, Green, Yellow, Orange, Purple,
 Black and White. Endra Files uses distinct file-type glyphs based on the suffix.
 An ordinary .tns uses the TI document glyph. Glyphs do not change open or launch behavior.
 
-Keep the executable with `EndraHome_Apps.cfg.tns`. Run042 reads prior appearance
+Keep the executable with `EndraHome_Apps.cfg.tns`. Run043 reads prior appearance
 settings and maps legacy interface colors to their closest retained choice. Save
 stores appearance and app shortcuts in `EndraHome_Apps.cfg.tns`. Older appearance
 files are read as a fallback and are left untouched for older builds. The first
@@ -34,12 +34,11 @@ The ten supplied emblems use traced silhouettes and 8-bit transparency.
 Both the theme and wallpaper palette are applied directly in the existing framebuffer.
 See `make_run038_art.py` to repack the supplied handoff artwork.
 
-Menu > TI Settings Shortcut runs the existing read-only compatibility check.
 Native shortcut registration and Ctrl+Home OS standby are pending investigation.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraHome_Run042_Desktop.tns /upload
+push /storage/emulated/0/Download/EndraHome_Run043_Desktop.tns /upload
 ```
 
 Historical source notes follow.
