@@ -4,6 +4,15 @@ Owner: Brandon / Endall (`brandonendall`). Target: TI-Nspire CX II CAS,
 OS 6.4.0.74 / Ndless. Active branch:
 `feature/endragba-run012-loading-nightmode`.
 
+## Verified build
+
+Source `551687aa3cdb062365299582250f1163ee620981`; Actions **44874060224**
+SUCCESS; artifact **14694973380**. Native TNS **480198 bytes**, Zehn v1.
+SHA-256 `ec855a1cd498da024cf07a1705901f2492669d72e7e741cf306a72baf58bf9db`
+verified against the bundled checksum; ZIP digest also matches GitHub. All nine
+CI preview PNGs exactly match locally checked renders. Draft PR #46; physical
+testing remains pending. Full details are in PROJECT_MEMORY.md.
+
 ## Change
 
 Run011's menus and ROM library use the approved black/gray theme, but its

@@ -1,6 +1,39 @@
 # EndraGBA project memory — Run012
 
-## Current work — 2026-11-21 ET
+## Run012 verified delivery — 2026-11-21 ET
+
+- Source commit: `551687aa3cdb062365299582250f1163ee620981`.
+- Draft PR: [#46](https://github.com/brandonendall/Nspire-Development-Hub/pull/46),
+  based on `feature/endragba-run011-nightmode`. No source merge to main.
+- [GitHub Actions 44874060224](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44874060224): **SUCCESS**.
+  Baseline preservation assertions, host ASan/UBSan checks, native pinned-SDK
+  compile and packaging all passed.
+- Artifact **14694973380**, `EndraGBA_Run012_LoadingNightMode`.
+- Executable: **EndraGBA_Run012_LoadingNightMode.tns**, **480198 bytes**, Zehn v1;
+  header size matches file size. SOURCE_COMMIT.txt matches the built commit.
+- SHA-256: `ec855a1cd498da024cf07a1705901f2492669d72e7e741cf306a72baf58bf9db`.
+  Independently computed from extracted TNS and matched to bundled SHA256SUMS.txt.
+- Downloaded ZIP SHA-256:
+  `f8276f3fb498d68fc83dd06b80d841b7a6d0f5f6f996a2316c85e8078f4a724c`,
+  matched to GitHub's artifact digest.
+- All nine CI PNGs exactly match checked local renders. 0/25/100%, state status,
+  failure and stopped screens visually inspected. They are code-derived host
+  previews, not hardware screenshots. Long-name/zero-total bounds also pass.
+- Native build retains warnings in unchanged legacy emulator sources; no errors.
+  CI completed with normal sanitizer settings (local ptrace-only LeakSanitizer
+  limitation did not apply to CI).
+- No known new regression from source/host checks. Actual GBZ loading, game/save/RTC
+  behavior and fast exit on **Run012 hardware remain PENDING** owner verification.
+- Next: owner transfers the exact TNS using `/upload`, tests the normal working
+  GBZ and checks black/gray loading, menus, fast exit, existing save/RTC behavior.
+  Record findings before declaring calculator success.
+- Primary rollback **Run011** remains unchanged: source
+  `f899c4ff9bddb6d5eac70be49570d18b45f89da2`, run **44862054240**,
+  artifact **14690386825**, 480480 bytes,
+  SHA-256 `33ddfd84b70b917540df199a390bf3a68d28b4c6e9d484d004f78bb9cf7883bd`.
+  It was retrieved and checksum verified. Retain Run010 and Run009 too.
+
+## Implementation record — 2026-11-21 ET
 
 Owner: Brandon / Endall. Active branch:
 `feature/endragba-run012-loading-nightmode`, based on Run011 branch head
@@ -12,9 +45,9 @@ to black/gray; the full Run011 patch chain and all non-UI behavior are retained.
 Patch asserts only six loading colors and GUI/build version metadata change.
 Actual C host rendering and sanitizer checks pass locally for nine frames,
 including 0/25/100% progress, status, failure, stopped and long-name cases.
-Native CI/artifact identity will be recorded after the build completes.
-Run012 physical testing is pending. Next: compile, retrieve and verify TNS,
-inspect CI previews, then owner checks GBZ, UI, fast exit, saves and RTC.
+Native CI and artifact verification have passed as recorded above.
+Run012 physical testing is pending; next is the owner check of GBZ, UI, fast
+exit, saves and RTC.
 
 Primary rollback: Run011 (480480 bytes, checksum verified from artifact
 14690386825). Keep Run010/Run009 too. See [Run012 notes](RUN012_NOTES.md)
