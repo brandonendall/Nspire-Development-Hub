@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "display.h"
+#include "render.h"
 #define box eh_box
 static void txt(uint16_t *f,int x,int y,const char *s,uint16_t ink,int n){
  eh_text(f,x,y,s,ink,n,1);
@@ -38,20 +39,35 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   if(v->clip_mode && !v->status.text[0]){box(f,8,200,304,19,p.panel);txt(f,12,205,v->clip_mode==1?"Clipboard: copy":"Clipboard: cut",p.ink,28);}
   if(v->menu_open){
    static const char *menu[8]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES"};
-   /* Compact, readable floating context sheet; selected row has a slim rail.
-    * Preserve all eight working actions and the confirmation logic. */
-   box(f,61,26,198,187,EH_RGB(2,9,20));
-   box(f,64,28,192,181,EH_RGB(50,217,253));
-   box(f,66,30,188,177,EH_RGB(7,24,40));
-   eh_small_text(f,81,38,"FILE ACTIONS",EH_RGB(222,249,255),2,12);
-   box(f,71,59,178,1,EH_RGB(50,217,253));
+   /* Design-selected Run036 neon-glass actions popup. 84% tinted backdrop
+    * preserves readability without filling the screen with solid gray. */
+   eh_glass_panel(f,57,24,206,191,87);
+   box(f,57,24,206,1,EH_RGB(67,220,253));
+   box(f,57,213,206,1,EH_RGB(67,220,253));
+   box(f,57,24,1,190,EH_RGB(67,220,253));
+   box(f,262,24,1,190,EH_RGB(67,220,253));
+   eh_small_text(f,77,36,"FILE ACTIONS",EH_RGB(225,248,255),2,12);
+   box(f,69,59,181,1,EH_RGB(59,198,245));
    for(int i=0;i<8;i++){
-    int y=74+i*16;
+    int y=72+i*17;
     if(i==v->menu_item){
-     box(f,72,y-3,177,16,EH_RGB(12,56,81));
-     box(f,72,y-3,3,16,EH_RGB(109,242,255));
+     eh_glass_panel(f,67,y-3,187,16,57);
+     box(f,67,y-3,3,16,EH_RGB(145,248,255));
+     box(f,70,y+12,180,1,EH_RGB(49,165,224));
     }
-    eh_small_text(f,84,y,menu[i],EH_RGB(238,249,255),1,22);
+    /* Tiny action glyphs match the luminous line icons on the approved
+     * Neon File Browser concept; no extra sprites or unsafe allocations. */
+    uint16_t icon=EH_RGB(111,230,250);
+    int ix=77;
+    if(i==0){box(f,ix,y+2,7,1,icon);box(f,ix+6,y,1,5,icon);box(f,ix+5,y+3,4,1,icon);}
+    else if(i==1){box(f,ix+1,y,7,8,icon);box(f,ix+3,y+2,7,8,EH_RGB(30,116,176));box(f,ix+4,y+3,5,6,icon);}
+    else if(i==2){box(f,ix+1,y+1,2,2,icon);box(f,ix+7,y+1,2,2,icon);box(f,ix+4,y+3,1,8,icon);}
+    else if(i==3){box(f,ix+2,y+2,8,8,icon);box(f,ix+4,y,4,2,icon);}
+    else if(i==4){box(f,ix+1,y+2,9,1,icon);box(f,ix+1,y+8,9,1,icon);box(f,ix+1,y+3,1,5,icon);}
+    else if(i==5){box(f,ix+2,y+1,8,1,icon);box(f,ix+3,y+3,6,7,icon);}
+    else if(i==6){box(f,ix+1,y+3,8,8,icon);box(f,ix+1,y+1,4,2,icon);box(f,ix+9,y+5,4,1,icon);}
+    else {box(f,ix+3,y+1,6,1,icon);box(f,ix+3,y+9,6,1,icon);box(f,ix+3,y+1,1,9,icon);box(f,ix+9,y+1,1,9,icon);}
+    eh_small_text(f,97,y,menu[i],EH_RGB(238,251,255),1,22);
    }
   }
   if(v->confirm_delete){

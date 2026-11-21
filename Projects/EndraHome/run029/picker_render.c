@@ -1,6 +1,7 @@
 /* Run033: EndraZIP-inspired crisp native RGB565 Files layout. */
 #include "picker.h"
 #include "display.h"
+#include "render.h"
 #include "files.h"
 #include <stdio.h>
 #include <string.h>
@@ -76,51 +77,59 @@ static void size_label(char *out,size_t cap,unsigned long long n){
   else snprintf(out,cap,"%lu %s",(unsigned long)whole,units[unit]);
  }
 }
+/* Run036: neon glass File Browser over the Run031 wallpaper.
+ * Native directory enumeration, file icons, navigation and operations stay
+ * unchanged. Dark alpha panels are calculated in the framebuffer only. */
 void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!f||!p||!p->active||!apps)return;
  EhPalette colors=eh_palette(apps->appearance);
- const uint16_t bg=EH_RGB(5,16,30),cyan=EH_RGB(52,218,251);
- const uint16_t white=colors.ink,dim=colors.ink;
- const uint16_t panel=EH_RGB(9,28,46),selected=EH_RGB(11,48,72);
- box(f,0,0,320,240,bg);
- box(f,0,0,320,36,panel);
- box(f,0,34,320,2,cyan);
- eh_small_text(f,12,10,p->show_all?"ENDRA FILES":"ASSIGN APP",EH_RGB(240,251,255),2,12);
- eh_small_text(f,237,24,p->show_all?"FILE BROWSER":"APP PICKER",cyan,1,14);
- box(f,7,40,306,28,cyan);
- box(f,8,41,304,26,EH_RGB(7,24,40));
+ const uint16_t cyan=EH_RGB(52,219,253),pale=EH_RGB(228,249,255);
+ const uint16_t steel=EH_RGB(126,210,247),line=EH_RGB(23,111,169);
+ eh_wallpaper_paint(f);
+ eh_glass_panel(f,0,0,320,37,94);
+ eh_box(f,0,35,320,2,cyan);
+ eh_small_text(f,11,10,p->show_all?"ENDRA FILES":"ASSIGN APP",pale,2,12);
+ eh_small_text(f,255,21,p->show_all?"BROWSER":"PICKER",steel,1,12);
+ eh_glass_panel(f,7,41,306,28,88);
+ eh_box(f,7,41,306,1,cyan);
+ eh_box(f,7,68,306,1,cyan);
  eh_small_text(f,13,51,"PATH",cyan,1,5);
- const char *s=p->dir;
- size_t len=strlen(s);
- if(len>30)s+=len-30;
- label(f,62,49,s,white,30);
- box(f,0,72,320,16,EH_RGB(13,37,55));
- eh_small_text(f,39,77,"NAME",EH_RGB(139,213,247),1,5);
- if(p->show_all)eh_small_text(f,272,77,"SIZE",EH_RGB(139,213,247),1,5);
+ const char *shown=p->dir;
+ size_t len=strlen(shown);
+ if(len>30)shown+=len-30;
+ label(f,54,49,shown,pale,30);
+ eh_glass_panel(f,7,73,306,143,88);
+ eh_box(f,7,73,306,1,line);
+ eh_box(f,7,214,306,1,line);
+ eh_small_text(f,38,77,"NAME",steel,1,5);
+ if(p->show_all)eh_small_text(f,274,77,"SIZE",steel,1,5);
+ eh_box(f,12,89,296,1,line);
  int bottom=p->scroll+EH13_VIEW_ROWS;
  if(bottom>p->count)bottom=p->count;
  for(int i=p->scroll;i<bottom;i++){
   int y=96+(i-p->scroll)*15;
   if(i==p->selected){
-   box(f,7,y-3,306,16,cyan);
-   box(f,9,y-2,302,14,selected);
-   box(f,9,y-2,3,14,EH_RGB(151,248,255));
+   eh_glass_panel(f,10,y-3,299,16,63);
+   eh_box(f,10,y-3,3,16,EH_RGB(139,247,255));
+   eh_box(f,13,y+12,294,1,cyan);
   }else{
-   box(f,10,y+11,300,1,EH_RGB(17,42,60));
+   eh_box(f,13,y+12,294,1,EH_RGB(13,54,84));
   }
   const Eh13PickEntry *e=p->items+i;
   file_icon(f,17,y-3,e->name,e->directory,&colors);
-  eh_fit_text(f,39,y,e->name,white,p->show_all?23:32);
+  eh_fit_text(f,39,y,e->name,pale,p->show_all?22:31);
   if(p->show_all){
-   char sz[24];
-   if(e->directory)snprintf(sz,sizeof(sz),"--");
-   else size_label(sz,sizeof(sz),e->bytes);
-   int n=(int)strlen(sz);
-   label(f,312-n*8,y,sz,i==p->selected?white:dim,n);
+   char value[24];
+   if(e->directory)snprintf(value,sizeof(value),"--");
+   else size_label(value,sizeof(value),e->bytes);
+   int n=(int)strlen(value);
+   label(f,312-n*8,y,value,pale,n);
   }
  }
- if(!p->count)label(f,19,109,p->show_all?"EMPTY FOLDER":"NO APPS IN THIS FOLDER",dim,30);
- box(f,0,218,320,22,panel);
- box(f,0,217,320,1,cyan);
- eh_small_text(f,10,226,p->show_all?"ENTER  OPEN / INFO      ESC  BACK":"ENTER  SELECT APP      ESC  BACK",EH_RGB(238,249,255),1,49);
+ if(!p->count)eh_small_text(f,18,103,p->show_all?"EMPTY FOLDER":"NO APPS HERE",pale,1,30);
+ /* Files actions remain discoverable; the desktop alone hides its footer.
+  * This narrow glass strip follows the selected Neon File Browser concept. */
+ eh_glass_panel(f,0,219,320,21,91);
+ eh_box(f,0,218,320,1,cyan);
+ eh_small_text(f,9,227,p->show_all?"ENTER OPEN / INFO   ESC BACK   MENU ACTIONS":"ENTER SELECT APP   ESC BACK",pale,1,50);
 }

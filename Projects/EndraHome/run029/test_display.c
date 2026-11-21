@@ -8,6 +8,7 @@
 #include <string.h>
 
 static uint16_t guarded[320*240+2], *frame=guarded+1;
+static uint16_t raw_wallpaper[320*240];
 static int color_count(uint16_t color) {
     int n=0;
     for(int i=0;i<320*240;i++) n+=frame[i]==color;
@@ -25,7 +26,12 @@ int main(void) {
     assert(frame[0]!=0);
     guarded[0]=0x1881;guarded[320*240+1]=0x8118;
     EhUniversalUI ui;eh7_ui_init(&ui,&r);
+    eh_wallpaper_paint(raw_wallpaper);
     eh7_render(frame,&ui.page,&r);
+    /* Hero launcher: original artwork is untouched outside the icon and
+       name, unlike the opaque 66x63 card used by Run035. */
+    assert(frame[124*320+121]==raw_wallpaper[124*320+121]);
+    assert(frame[124*320+160]!=raw_wallpaper[124*320+160]);
     /* Run035: original artwork header remains, fake Run031/96% readout is scrubbed. */
     assert(frame[15*320+265] == frame[15*320+211]);
     assert(color_count(EH_RGB(53,219,252))>20);
