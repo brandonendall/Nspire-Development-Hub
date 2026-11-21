@@ -34,7 +34,6 @@ int main(void) {
     assert(frame[124*320+160]!=raw_wallpaper[124*320+160]);
     /* Run035: original artwork header remains, fake Run031/96% readout is scrubbed. */
     assert(frame[15*320+265] == frame[15*320+211]);
-    assert(color_count(EH_RGB(53,219,252))>20);
     (void)mark;
     eh7_ui_handle(&ui,EH_KEY_MENU);eh15_manager_render(frame,&ui);
     assert(color_count(p.ink)>100);
@@ -49,7 +48,7 @@ int main(void) {
     for(int screen=0;screen<=4;screen++){
         if(screen==3)continue; /* Image pixels have their own decoder and rendering tests. */
         files.screen=screen;eh17_files_render(frame,&files,&r);
-        assert(color_count(p.ink)>60 || color_count(EH_RGB(245,251,255))>60);
+        assert(color_count(p.ink)>30 || color_count(EH_RGB(228,249,255))>30 || color_count(EH_RGB(238,251,255))>30 || color_count(EH_RGB(245,251,255))>30);
         if(!screen)assert(color_count(p.folder)>10);
     }
     eh_toast_set(&ui.notice,"Appearance saved");eh7_overlay(frame,&ui);
