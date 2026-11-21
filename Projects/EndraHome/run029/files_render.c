@@ -30,9 +30,48 @@ static void show_lines(uint16_t *f,const Eh17Files *v,uint16_t white){
   ++line;
  }
 }
+static void render_editor(uint16_t *f,const Eh17Files *v,const EhPalette *p){
+ const uint16_t bg=eh_skin(p,EH_RGB(5,17,31)),panel=eh_skin(p,EH_RGB(9,28,47));
+ const uint16_t cyan=eh_skin(p,EH_RGB(53,217,254));
+ box(f,0,0,320,240,bg);
+ box(f,0,0,320,40,panel);
+ box(f,0,39,320,1,cyan);
+ eh_small_text(f,12,8,"TEXT EDITOR",p->ink,2,20);
+ const char *name=strrchr(v->path,'/');
+ eh_small_text(f,12,27,tail(name?name+1:v->path,40),cyan,1,40);
+ if(v->text_edit.dirty)eh_small_text(f,255,11,"UNSAVED",cyan,1,7);
+ unsigned start=0,focus=eh_text_cursor_row(v->content,v->text_len,v->text_edit.cursor);
+ for(unsigned index=0;;++index){
+  EhTextRow row=eh_text_row(v->content,v->text_len,start);
+  if(index>=v->text_edit.top){
+   unsigned visible=index-v->text_edit.top;
+   if(visible>=EH_TEXT_ROWS)break;
+   char line[EH_TEXT_COLUMNS+1];
+   unsigned size=row.end-row.start;
+   for(unsigned i=0;i<size;++i)line[i]=v->content[row.start+i]=='\t'?' ':v->content[row.start+i];
+   line[size]=0;
+   int y=47+(int)visible*12;
+   txt(f,13,y,line,p->ink,EH_TEXT_COLUMNS);
+   if(index==focus)box(f,12+(int)(v->text_edit.cursor-start)*8,y-1,1,10,cyan);
+  }
+  if(!row.more)break;
+  start=row.next;
+ }
+ box(f,0,217,320,23,panel);
+ box(f,0,217,320,1,cyan);
+ eh_small_text(f,9,226,"MENU SAVE    ENTER NEW LINE    ESC BACK",p->ink,1,48);
+ if(v->status.text[0])eh_small_text(f,10,202,v->status.text,cyan,1,49);
+ if(v->text_edit.confirm_discard){
+  box(f,25,82,270,70,cyan);box(f,27,84,266,66,panel);
+  eh_small_text(f,40,98,"DISCARD UNSAVED EDITS?",p->ink,1,36);
+  eh_small_text(f,40,128,"ENTER DISCARD    ESC KEEP EDITING",p->ink,1,40);
+ }
+}
+
 void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
  if(!f||!v||!v->active||!apps)return;
  EhPalette p=eh_palette(apps->appearance);
+ if(v->screen==EH_FILES_TEXT_EDIT){render_editor(f,v,&p);return;}
  if(!v->screen){
   eh13_picker_render(f,&v->nav,apps);
   if(v->status.text[0]){box(f,8,200,304,19,p.panel);eh_fit_text(f,12,205,v->status.text,p.ink,37);}
@@ -130,6 +169,8 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   else show_lines(f,v,white);
   if(v->preview_truncated)txt(f,14,202,"FIRST 4096 BYTES ONLY",cyan,27);
   box(f,0,218,320,22,eh_skin(&p,EH_RGB(9,28,47)));box(f,0,217,320,1,cyan);
-  txt(f,5,227,"UP/DOWN SCROLL ESC INFO MENU FILES",cyan,39);
+  if(v->preview_ok&&!v->preview_truncated&&eh_text_editable(v->path,v->content,v->text_len))
+   eh_small_text(f,8,226,"UP/DOWN SCROLL   ENTER EDIT   ESC INFO",cyan,1,48);
+  else txt(f,5,227,"UP/DOWN SCROLL ESC INFO MENU FILES",cyan,39);
  }
 }

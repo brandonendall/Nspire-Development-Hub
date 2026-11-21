@@ -19,7 +19,7 @@ int eh17_is_text_name(const char *p){
  if(!p)return 0;
  static const char *ext[]={".txt",".cfg",".csv",".md",".log",".ini",
   ".json",".xml",".py",".c",".h",".sh",".yaml",".yml",".txt.tns",
-  ".cfg.tns",".py.tns"};
+  ".cfg.tns",".py.tns",".md.tns",".csv.tns"};
  for(unsigned i=0;i<sizeof(ext)/sizeof(ext[0]);i++)
   if(suffix(p,ext[i]))return 1;
  return 0;
@@ -47,9 +47,9 @@ static void preview(Eh17Files *v){
  if(!eh17_is_text_name(v->path))return;
  FILE *f=fopen(v->path,"rb");if(!f)return;
  size_t n=fread(v->content,1,EH17_TEXT_CAP,f);
- int failed=ferror(f);
  if(n==EH17_TEXT_CAP && fgetc(f)!=EOF)v->preview_truncated=1;
- fclose(f);
+ int failed=ferror(f);
+ if(fclose(f)!=0)failed=1;
  if(failed)return;
  for(size_t i=0;i<n;i++){
   unsigned char c=(unsigned char)v->content[i];
@@ -194,7 +194,35 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   }
   return eh18_image_key(&v->image,key);
  }
+ if(v->screen==EH_FILES_TEXT_EDIT){
+  if(v->text_edit.confirm_discard){
+   if(key==EH_KEY_ENTER){
+    preview(v);v->screen=2;v->status.text[0]=0;return 1;
+   }
+   if(key==EH_KEY_ESC){v->text_edit.confirm_discard=0;return 1;}
+   return 0;
+  }
+  if(key==EH_KEY_ESC){
+   if(v->text_edit.dirty)v->text_edit.confirm_discard=1;
+   else {preview(v);v->screen=2;v->status.text[0]=0;}
+   return 1;
+  }
+  if(key==EH_KEY_MENU){
+   const char *error=eh_text_save(&v->text_edit,v->path,v->content,v->text_len);
+   if(!v->text_edit.dirty)v->file_size=v->text_len;
+   eh_toast_set(&v->status,error?error:"TEXT SAVED");
+   return 1;
+  }
+  if(key==EH_KEY_ENTER)return eh21_files_text(v,'\n');
+  eh_text_move(&v->text_edit,v->content,v->text_len,key);
+  return 1;
+ }
  if(v->screen==2){
+  if(key==EH_KEY_ENTER&&v->preview_ok&&!v->preview_truncated&&
+     eh_text_editable(v->path,v->content,v->text_len)){
+   eh_text_begin(&v->text_edit,v->content,v->text_len);
+   v->status.text[0]=0;v->screen=EH_FILES_TEXT_EDIT;return 1;
+  }
   if(key==EH_KEY_ESC||key==EH_KEY_LEFT){v->screen=1;return 1;}
   if(key==EH_KEY_MENU){v->screen=0;return 1;}
   if(key==EH_KEY_UP){if(v->scroll>0)--v->scroll;return 1;}
@@ -237,7 +265,18 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
 }
 
 int eh21_files_text(Eh17Files *v,int ch){
- if(!v||!v->active||v->screen!=4||!ch)return 0;
+ if(!v||!v->active||!ch)return 0;
+ if(v->screen==EH_FILES_TEXT_EDIT){
+  if(v->text_edit.confirm_discard)return 0;
+  if(eh_text_type(&v->text_edit,v->content,&v->text_len,ch)){
+   v->status.text[0]=0;return 1;
+  }
+  if(v->text_len==EH_TEXT_CAP||ch=='\n'){
+   eh_toast_set(&v->status,"TEXT LIMIT: 4096 BYTES");return 1;
+  }
+  return 0;
+ }
+ if(v->screen!=4)return 0;
  size_t n=strlen(v->edit_name);
  if(ch==8){if(n)v->edit_name[n-1]=0;v->edit_error=0;return 1;}
  if(ch<32||ch>126||ch=='/'||ch=='\\'||ch=='|'||n>=EH13_NAME_MAX-1)return 0;

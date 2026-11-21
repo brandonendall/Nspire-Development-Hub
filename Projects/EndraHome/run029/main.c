@@ -80,7 +80,13 @@ int main(int argc,char **argv){
   paint(&ui,&picker);
   while(!ui.page.should_exit&&!ui.request){
    EhKey key=eh_platform_readkey();
-   if(eh_platform_exit_chord()){ui.page.should_exit=1;break;}
+   if(eh_platform_exit_chord()){
+    if(built_files.screen!=EH_FILES_TEXT_EDIT||!built_files.text_edit.dirty){
+     ui.page.should_exit=1;break;
+    }
+    key=EH_KEY_NONE;
+    if(!built_files.text_edit.confirm_discard)key=EH_KEY_ESC;
+   }
    uint32_t now=eh_platform_ticks();
    int expired=eh_toast_tick(&ui.notice,now);
    expired|=eh_toast_tick(&built_files.status,now);

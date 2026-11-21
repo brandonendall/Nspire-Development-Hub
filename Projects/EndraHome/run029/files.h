@@ -4,13 +4,16 @@
 #include "toast.h"
 #include "registry.h"
 #include "image_viewer.h"
+#include "text_edit.h"
 #include <stdint.h>
-#define EH17_TEXT_CAP 4096
+#define EH17_TEXT_CAP EH_TEXT_CAP
+#define EH_FILES_TEXT_EDIT 5
 typedef struct {
  Eh13Picker nav;
  int active,screen,preview_ok,preview_truncated,line_count,scroll;
  unsigned long file_size;
  Eh18Image image;
+ EhTextEdit text_edit;
  char path[EH7_PATH_CAP];
  char content[EH17_TEXT_CAP+1];
  unsigned text_len;

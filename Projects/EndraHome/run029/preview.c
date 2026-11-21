@@ -137,6 +137,17 @@ int main(void){
  Eh17Files popup={0};popup.active=1;popup.nav=p;popup.menu_open=1;popup.menu_item=3;
  eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu.ppm"))return 1;
+ Eh17Files editor={0};
+ editor.active=1;editor.screen=EH_FILES_TEXT_EDIT;
+ strcpy(editor.path,"/documents/Notes.txt.tns");
+ strcpy(editor.content,"EndraHome Run042\n\nCheck the JPEG viewer and zoom.\nKeep notes here while testing.");
+ editor.text_len=(unsigned)strlen(editor.content);
+ eh_text_begin(&editor.text_edit,editor.content,editor.text_len);
+ editor.text_edit.cursor=editor.text_len;
+ eh21_files_text(&editor,'.');
+ eh17_files_render(fb,&editor,&reg);if(save("build/text_editor.ppm"))return 1;
+ eh17_files_handle(&editor,EH_KEY_ESC);
+ eh17_files_render(fb,&editor,&reg);if(save("build/text_discard.ppm"))return 1;
  reg.appearance.theme=EH_RED;reg.appearance.wallpaper=2;eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu_red.ppm"))return 1;
  eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
