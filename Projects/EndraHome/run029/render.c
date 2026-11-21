@@ -83,10 +83,22 @@ void eh_clock_label(char label[9],int minute){
  int hour=minute/60;
  snprintf(label,9,"%02d:%02d %s",hour%12?hour%12:12,minute%60,hour<12?"AM":"PM");
 }
-void eh_desktop_clock(uint16_t *frame,EhAppearance appearance,int minute){
- char label[9];
- eh_clock_label(label,minute);
- eh_small_text(frame,265,14,label,eh_palette(appearance).ink,1,8);
+void eh_clock_seconds_label(char label[12],int second){
+ if(second<0 || second>=86400){label[0]=0;return;}
+ int hour=second/3600;
+ snprintf(label,12,"%02d:%02d:%02d %s",hour%12?hour%12:12,
+          second/60%60,second%60,hour<12?"AM":"PM");
+}
+void eh_desktop_clock(uint16_t *frame,int second){
+ char label[12];
+ eh_clock_seconds_label(label,second);
+ /* One-pixel contour follows only the glyphs on bright wallpaper. */
+ const int x=247,y=14;
+ eh_small_text_plain(frame,x-1,y,label,0,1,11);
+ eh_small_text_plain(frame,x+1,y,label,0,1,11);
+ eh_small_text_plain(frame,x,y-1,label,0,1,11);
+ eh_small_text_plain(frame,x,y+1,label,0,1,11);
+ eh_small_text_plain(frame,x,y,label,UINT16_MAX,1,11);
 }
 void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
  if(!f||!s||!r)return;

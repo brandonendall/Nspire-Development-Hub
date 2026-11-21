@@ -153,7 +153,9 @@ int main(void){
  eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
  eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;
  eh7_render(fb,&only.page,&empty);
- eh_desktop_clock(fb,empty.appearance,783);
+ empty.appearance.theme=EH_GREEN;empty.appearance.wallpaper=0;
+ eh7_render(fb,&only.page,&empty);
+ eh_desktop_clock(fb,11*3600+58*60+37);
  if(save("build/clock.ppm"))return 1;
  s.page.page=EH_PAGE_HELP;s.subview=2;s.clock_draft=11*60+47;s.clock_field=1;
  eh15_manager_render(fb,&s);

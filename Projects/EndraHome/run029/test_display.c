@@ -158,6 +158,16 @@ int main(void) {
     r.appearance.theme=0;eh17_files_render(frame,&files,&r);
     assert(frame[24*320+57]!=red);
     r.appearance.theme=EH_RED;
+    char seconds[12];
+    eh_clock_seconds_label(seconds,43199);assert(!strcmp(seconds,"11:59:59 AM"));
+    eh_clock_seconds_label(seconds,43200);assert(!strcmp(seconds,"12:00:00 PM"));
+    eh_clock_seconds_label(seconds,86399);assert(!strcmp(seconds,"11:59:59 PM"));
+    eh_clock_seconds_label(seconds,0);assert(!strcmp(seconds,"12:00:00 AM"));
+    eh_clock_seconds_label(seconds,-1);assert(!*seconds);
+    eh_box(frame,0,0,320,240,0x7777);
+    eh_desktop_clock(frame,43199);assert(color_count(UINT16_MAX)>80 && color_count(0)>80);
+    for(int y=0;y<240;y++)for(int x=0;x<320;x++)
+        if(x<246||x>312||y<13||y>21)assert(frame[y*320+x]==0x7777);
     char label[9];
     eh_clock_label(label,0);assert(!strcmp(label,"12:00 AM"));
     eh_clock_label(label,719);assert(!strcmp(label,"11:59 AM"));
