@@ -1,0 +1,47 @@
+name: EndraGBA Run012 - Loading NightMode
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/endragba-run012-loading-nightmode]
+    paths:
+      - '.github/workflows/endragba-run012-loading-nightmode.yml'
+      - 'Projects/EndraGBA/run012_loading_nightmode.py'
+      - 'Projects/EndraGBA/verify_run012_loading.py'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Run011 baseline and loading palette only
+        run: |
+          set -euxo pipefail
+          cp -a vendor/upstream-gpsp upstream-gpsp
+          python3 -m py_compile Projects/EndraGBA/run012_loading_nightmode.py Projects/EndraGBA/verify_run012_loading.py
+          python3 Projects/EndraGBA/run012_loading_nightmode.py
+      - name: Check actual loading renderer and generate 320x240 host previews
+        run: python3 Projects/EndraGBA/verify_run012_loading.py
+      - name: Compile native Ndless
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh upstream-gpsp
+      - name: Package executable and verified source identity
+        run: |
+          set -euxo pipefail
+          test -s upstream-gpsp/gpsp_libretro.tns
+          mkdir -p dist
+          cp upstream-gpsp/gpsp_libretro.tns dist/EndraGBA_Run012_LoadingNightMode.tns
+          cp Projects/EndraGBA/RUN012_NOTES.md dist/README.md
+          cp -a validation/run012 dist/host-previews
+          printf '%s\n' "$GITHUB_SHA" > dist/SOURCE_COMMIT.txt
+          (cd dist && sha256sum *.tns > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraGBA_Run012_LoadingNightMode
+          path: dist/
+          if-no-files-found: error
