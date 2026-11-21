@@ -13,6 +13,8 @@
 #include "text_input.h"
 #include "files.h"
 #include "session.h"
+#include "app_target.h"
+#include <unistd.h>
 #include <libndls.h>
 #include <stdint.h>
 #include <string.h>
@@ -23,7 +25,10 @@ static Eh17Files built_files;
 static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  uint16_t *fb=eh_framebuffer();
  if(built_files.active)eh17_files_render(fb,&built_files,s->apps);
- else if(picker->active)eh13_picker_render(fb,picker,s->apps);
+ else if(picker->active){
+  eh13_picker_render(fb,picker,s->apps);
+  eh7_overlay(fb,s);
+ }
  else{
   if(s->page.page==EH_PAGE_HOME)eh7_render(fb,&s->page,s->apps);
   else eh15_manager_render(fb,s);
@@ -31,19 +36,10 @@ static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  }
  eh_platform_flip();
 }
-static void open_builtin(EhUniversalUI *ui,int fallback){
+static void open_builtin(EhUniversalUI *ui){
  ui->open_files=0;
  if(!eh17_files_open(&built_files,"/documents"))
   eh_toast_set(&ui->notice,"Cannot open built-in Files");
- else if(fallback)
-  eh_toast_set(&built_files.status,"Opened built-in Files instead");
-}
-static int launch_selected(const EhUniversalUI *ui,int argc,char **argv){
- int slot=ui->request-1;
- if(slot<0||slot>=EH7_SLOT_COUNT)return -1;
- const char *path=ui->apps->slots[slot].path;
- if(!eh7_valid_path(path)||(argc>0&&argv&&argv[0]&&!strcmp(path,argv[0])))return -1;
- return nl_exec(path,0,NULL);
 }
 /* Read-only probe for CX II CAS 6.4.0.74, using nTheme's OS49
  * fingerprint and Settings literal address. No foreign pointer dereference,
@@ -55,13 +51,25 @@ static int native_settings_probe(void){
 }
 int main(int argc,char **argv){
  EhRegistry apps;eh7_registry_init(&apps);
- char cfg[512]={0};
+ char cfg[512]={0}, self[EH7_PATH_CAP]={0};
+ if(argc>0&&argv&&argv[0]){
+  if(argv[0][0]=='/'){
+   if(eh7_valid_path(argv[0]))strcpy(self,argv[0]);
+  }else{
+   char cwd[EH7_PATH_CAP];
+   if(getcwd(cwd,sizeof(cwd))){
+    int n=snprintf(self,sizeof(self),"%s/%s",cwd,argv[0]);
+    if(n<0||(size_t)n>=sizeof(self)||!eh7_valid_path(self))self[0]=0;
+   }
+  }
+ }
  Eh14SaveError recovery={EH14_OK,0};
- if(argc>0&&argv&&eh7_config_path(cfg,sizeof(cfg),argv[0])){
+ int shortcuts_writable=0;
+ if(eh7_config_path(cfg,sizeof(cfg),self)){
   /* Recover the prior known-good config if an interrupted swap left only
    * EHOld.cfg.tns; recovery never destroys or overwrites existing cfg. */
-  if(eh14_recover_config(cfg,&recovery))
-   eh7_registry_load(&apps,cfg);
+  shortcuts_writable=eh14_recover_config(cfg,&recovery);
+  if(shortcuts_writable)eh7_registry_load(&apps,cfg);
  }
  eh_prefs_load(cfg,&apps.appearance);
  EhUniversalUI ui;eh7_ui_init(&ui,&apps);
@@ -69,7 +77,6 @@ int main(int argc,char **argv){
  Eh13Picker picker;memset(&picker,0,sizeof(picker));
  for(;;){
   if(!eh_platform_start())return 1;
-  if(ui.open_files)open_builtin(&ui,1);
   paint(&ui,&picker);
   while(!ui.page.should_exit&&!ui.request){
    EhKey key=eh_platform_readkey();
@@ -101,40 +108,45 @@ int main(int argc,char **argv){
     int action=eh13_picker_handle(&picker,key,chosen,sizeof(chosen));
     if(action==2){
      int slot=picker.slot;
-     if(argc>0&&argv&&argv[0]&&!strcmp(chosen,argv[0])){
-      eh_toast_set(&ui.notice,"CANNOT ASSIGN ENDRAHOME ITSELF");
+     EhAppStatus status=eh_app_target(chosen,self);
+     if(status!=EH_APP_READY){
+      eh_toast_set(&ui.notice,eh_app_status(status));
      }else{
       Eh14SaveError diagnostic={EH14_OK,0};
-      if(eh14_assign_save(&apps,slot,chosen,cfg,&diagnostic)){
-       if(diagnostic.stage==EH14_BACKUP_RETAINED)
-        eh_toast_set(&ui.notice,"SAVED - BACKUP RETAINED");
-       else
-        eh_toast_set(&ui.notice,"SHORTCUT SAVED - ENTER LAUNCH");
-       ui.page.page=EH_PAGE_HOME;
+      if(eh_assign_app(&apps,slot,chosen,picker.adding_app,cfg,&diagnostic)){
+       eh_assignment_complete(&ui,slot);
+       eh13_picker_close(&picker);
+       eh_toast_set(&ui.notice,diagnostic.stage==EH14_BACKUP_RETAINED
+         ?"SAVED - BACKUP RETAINED":"SHORTCUT SAVED - ENTER LAUNCH");
       }else{
-       eh_toast_set(&ui.notice,eh14_save_stage_name(diagnostic.stage));
-       ui.page.page=EH_PAGE_DETAIL;
+       char message[sizeof(ui.notice.text)];
+       snprintf(message,sizeof(message),"%s (%d)",eh14_save_stage_name(diagnostic.stage),diagnostic.os_error);
+       eh_toast_set(&ui.notice,message);
       }
      }
-     eh13_picker_close(&picker);
      paint(&ui,&picker);
     }else if(action==-1){
+     ui.notice.text[0]=0;
      eh13_picker_close(&picker);
      paint(&ui,&picker);
-    }else if(action==1)paint(&ui,&picker);
+    }else if(action==1){ui.notice.text[0]=0;paint(&ui,&picker);}
    }else{
     int redraw=eh7_ui_handle(&ui,key);
     /* Physical typing remains in our own dark UI, no OS text popup.
      * Calling after the key handler permits Enter-to-save immediately. */
     if(ui.renaming&&typed)redraw|=eh16_ui_type(&ui,typed);
     if(redraw){
-     if(ui.open_files)open_builtin(&ui,0);
+     if(ui.open_files)open_builtin(&ui);
      if(ui.assign_slot){
-      int slot=ui.assign_slot-1;ui.assign_slot=0;
-      if(!cfg[0]){
+      int slot=ui.assign_slot-1,adding=ui.adding_app;
+      ui.assign_slot=ui.adding_app=0;
+      if(!shortcuts_writable){
        eh_toast_set(&ui.notice,"CONFIG PATH UNAVAILABLE");
       }else if(!eh13_picker_open(&picker,slot,"/documents")){
        eh_toast_set(&ui.notice,"CANNOT OPEN DOCUMENTS FOLDER");
+      }else{
+       picker.adding_app=adding;
+       ui.notice.text[0]=0;
       }
      }
      if(ui.edit_action){
@@ -151,9 +163,9 @@ int main(int argc,char **argv){
         ui.page.selected=eh_desktop_select(&apps,slot,EH_KEY_NONE);
        }else eh_toast_set(&ui.notice,"Could not save appearance");
       }else{
-       if(cfg[0] && action==EH15_RENAME)
+       if(shortcuts_writable && action==EH15_RENAME)
         ok=eh15_update_shortcut(&apps,slot,ui.rename_input,NULL,cfg,&diag);
-       else if(cfg[0] && action==EH15_REMOVE)
+       else if(shortcuts_writable && action==EH15_REMOVE)
         ok=eh15_update_shortcut(&apps,slot,NULL,"",cfg,&diag);
        if(ok){
         const char *message=action==EH15_RENAME?"Shortcut renamed":
@@ -161,7 +173,14 @@ int main(int argc,char **argv){
         eh_toast_set(&ui.notice,message);
         ui.page.selected=eh_desktop_select(&apps,slot,EH_KEY_NONE);
         ui.page.page=EH_PAGE_HOME;
-       }else eh_toast_set(&ui.notice,cfg[0]?eh14_save_stage_name(diag.stage):"Config path unavailable");
+       }else eh_toast_set(&ui.notice,shortcuts_writable?eh14_save_stage_name(diag.stage):"Config path unavailable");
+      }
+     }
+     if(ui.request){
+      EhAppStatus status=eh_app_target(apps.slots[ui.request-1].path,self);
+      if(status!=EH_APP_READY){
+       ui.request=0;
+       eh_toast_set(&ui.notice,eh_app_status(status));
       }
      }
      if(!ui.request&&!ui.page.should_exit)paint(&ui,&picker);
@@ -173,7 +192,7 @@ int main(int argc,char **argv){
   eh17_files_close(&built_files);
   eh_platform_stop(); /* preserve fast no-refresh LCD/timer restore */
   if(ui.page.should_exit||!ui.request)return 0;
-  int result=launch_selected(&ui,argc,argv);
+  int result=nl_exec(apps.slots[ui.request-1].path,0,NULL);
   eh_return_from_launch(&ui,result);
  }
 }

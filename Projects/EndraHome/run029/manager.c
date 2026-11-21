@@ -66,7 +66,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   return;
  }
  if(s->confirm_remove){
-  title34(f,s->page.selected==3?"USE BUILT-IN FILES?":"REMOVE SHORTCUT?",&p);
+  title34(f,s->page.selected==3?"CLEAR OLD FILES LINK?":"REMOVE SHORTCUT?",&p);
   txt(f,20,105,rightpart(app->label,30),custom,30);
   eh_small_text(f,20,143,"THIS DOES NOT DELETE FILES",eh_skin(&p,MUTED),1,46);
   eh_small_text(f,20,165,"ONLY THE SHORTCUT CHANGES",eh_skin(&p,MUTED),1,46);
@@ -74,14 +74,19 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   return;
  }
  if(s->page.page==EH_PAGE_DETAIL){
-  static const char *items[]={"ASSIGN / CHANGE APP","RENAME SHORTCUT",
+  static const char *items[]={"ADD APP","REASSIGN SELECTED","RENAME SHORTCUT",
     "REMOVE SHORTCUT","APP INFORMATION","APPEARANCE","OPEN ENDRA FILES","TI SETTINGS SHORTCUT"};
   title34(f,"MANAGE APPLICATIONS",&p);
   for(int i=0;i<EH15_MENU_COUNT;i++){
-   int y=77+i*18;
+   int y=75+i*17;
    row34(f,y,s->manager_item==i,&p);
    eh_small_text(f,25,y,">",eh_skin(&p,SKY),1,1);
-   txt(f,40,y,(i==2&&s->page.selected==3)?"USE BUILT-IN FILES":items[i],custom,32);
+   const char *item=items[i];
+   if(s->page.selected==EH_FILES_SLOT){
+    if(i==EH_MANAGER_RENAME)item="FILES NAME IS FIXED";
+    if(i==EH_MANAGER_REMOVE)item="CLEAR OLD FILES LINK";
+   }
+   txt(f,40,y,item,custom,32);
   }
   eh_small_text(f,15,225,"ARROWS SELECT   ENTER OPEN   ESC BACK",p.ink,1,48);
  }else if(s->page.page==EH_PAGE_HELP&&s->subview==2){
@@ -100,6 +105,12 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   title34(f,"APPLICATION INFO",&p);
   txt(f,20,85,"SHORTCUT:",eh_skin(&p,MUTED),16);
   txt(f,108,85,rightpart(app->label,22),custom,22);
+  if(s->page.selected==EH_FILES_SLOT){
+   txt(f,20,113,"BUILT-IN BROWSER",eh_skin(&p,SKY),24);
+   txt(f,20,132,"/documents",custom,22);
+   eh_small_text(f,15,225,"ESC BACK TO APP MANAGER",p.ink,1,48);
+   return;
+  }
   txt(f,20,113,app->path[0]?"LINKED FILE:":"NOT CONFIGURED",eh_skin(&p,SKY),23);
   if(app->path[0]){
    txt(f,20,132,app->path,custom,34);

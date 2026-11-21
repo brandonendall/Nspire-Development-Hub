@@ -24,3 +24,17 @@ int eh15_update_shortcut(EhRegistry *apps,int slot,const char *label,const char 
  if(!eh14_assign_save(&next,slot,value,cfg,err))return 0;
  *apps=next;return 1;
 }
+
+int eh_assign_app(EhRegistry *apps,int slot,const char *path,int adding,
+                  const char *cfg,Eh14SaveError *err){
+ if(!apps||slot<0||slot>=EH7_SLOT_COUNT||slot==EH_FILES_SLOT||!eh7_valid_path(path))
+  return reject(err);
+ if(!adding)return eh15_update_shortcut(apps,slot,NULL,path,cfg,err);
+ if(apps->slots[slot].path[0])return reject(err);
+ const char *name=strrchr(path,'/')+1;
+ size_t length=strlen(name)-4;
+ if(length>=EH7_LABEL_CAP)length=EH7_LABEL_CAP-1;
+ char label[EH7_LABEL_CAP];
+ memcpy(label,name,length);label[length]=0;
+ return eh15_update_shortcut(apps,slot,label,path,cfg,err);
+}

@@ -52,10 +52,10 @@ int main(void){
  eh7_ui_handle(&s,EH_KEY_MENU);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
  if(save("build/manager.ppm"))return 1;
- s.manager_item=3;eh7_ui_handle(&s,EH_KEY_ENTER);
+ s.manager_item=EH_MANAGER_INFO;eh7_ui_handle(&s,EH_KEY_ENTER);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
  if(save("build/info.ppm"))return 1;
- eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=4;eh7_ui_handle(&s,EH_KEY_ENTER);
+ eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=EH_MANAGER_APPEARANCE;eh7_ui_handle(&s,EH_KEY_ENTER);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
  if(save("build/settings.ppm"))return 1;
  for(unsigned i=0;i<EH_THEME_COUNT;i++){
@@ -80,7 +80,7 @@ int main(void){
   if(save(name))return 1;
  }
 
- eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=1;eh7_ui_handle(&s,EH_KEY_ENTER);
+ eh7_ui_handle(&s,EH_KEY_ESC);s.manager_item=EH_MANAGER_RENAME;eh7_ui_handle(&s,EH_KEY_ENTER);
  eh16_ui_type(&s,'E');eh16_ui_type(&s,'n');eh16_ui_type(&s,'d');
  eh16_ui_type(&s,'r');eh16_ui_type(&s,'a');
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
@@ -98,6 +98,9 @@ int main(void){
  p.items=entries;p.count=(int)(sizeof(entries)/sizeof(entries[0]));p.selected=1;
  eh13_picker_render(fb,&p,&reg);
  if(save("build/picker.ppm"))return 1;
+ p.adding_app=1;eh13_picker_render(fb,&p,&reg);
+ if(save("build/picker_add.ppm"))return 1;
+ p.adding_app=0;
  p.show_all=1;entries[1].bytes=111282;
  eh13_picker_render(fb,&p,&reg);
  if(save("build/files.ppm"))return 1;
@@ -124,7 +127,7 @@ int main(void){
  if(save("build/files_menu_red.ppm"))return 1;
  eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
  eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;
- s.manager_item=6;eh7_ui_handle(&s,EH_KEY_ENTER);s.native_status=1;
+ s.manager_item=EH_MANAGER_TI;eh7_ui_handle(&s,EH_KEY_ENTER);s.native_status=1;
  eh15_manager_render(fb,&s);
  return save("build/native_shortcut.ppm");
 }

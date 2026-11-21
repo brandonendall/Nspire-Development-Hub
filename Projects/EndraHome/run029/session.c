@@ -1,6 +1,12 @@
 /* Stateless child-return reset. No hooks or hardware I/O. */
 #include "session.h"
 #include "desktop.h"
+void eh_assignment_complete(EhUniversalUI *ui,int slot){
+ ui->page.page=EH_PAGE_HOME;
+ ui->page.selected=eh_desktop_select(ui->apps,slot,EH_KEY_NONE);
+ ui->assign_slot=ui->adding_app=0;
+}
+
 void eh11_resume_home(EhUniversalUI *ui) {
  if(!ui)return;
  int tile=ui->page.selected;
@@ -17,9 +23,7 @@ int eh_launch_failed(int result){
 }
 
 void eh_return_from_launch(EhUniversalUI *ui,int result){
- int slot=ui->request-1;
  eh11_resume_home(ui);
  if(!eh_launch_failed(result))return;
- if(slot==EH_FILES_SLOT)ui->open_files=1;
- else eh_toast_set(&ui->notice,"Could not open the assigned app");
+ eh_toast_set(&ui->notice,result==0xBEEF?"NDLESS REJECTED APP FORMAT":"NDLESS COULD NOT START APP");
 }

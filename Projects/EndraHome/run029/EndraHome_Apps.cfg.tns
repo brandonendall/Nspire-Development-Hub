@@ -1,7 +1,7 @@
 # EndraHome app shortcuts -- stable config for Run010 and newer.
 # Place this file beside your EndraHome .tns executable in Documents.
 # Format: slot=Label|/documents/folder/Program.tns
-# An empty path hides that app. Slot 3 always opens Files and defaults to built-in Files.
+# An empty path hides that app. Slot 3 is reserved for the built-in Files browser.
 # If upgrading, KEEP your existing configured paths by copying your older
 # Apps007/Apps009 file and renaming that copy to this permanent filename.
 0=EndraGBA|

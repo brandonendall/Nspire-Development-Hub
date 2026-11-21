@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "display.h"
 #define EH7_SLOT_COUNT 7
+#define EH_FILES_SLOT 3
 #define EH7_LABEL_CAP 16
 #define EH7_PATH_CAP 256
 #define EH7_CONFIG_FILE "EndraHome_Apps.cfg.tns"

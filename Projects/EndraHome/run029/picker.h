@@ -16,7 +16,7 @@ typedef struct {
  char dir[EH7_PATH_CAP];
  char root[EH7_PATH_CAP];
  Eh13PickEntry *items;
- int count,selected,scroll,slot,active,overflow,show_all;
+ int count,selected,scroll,slot,active,overflow,show_all,adding_app;
 } Eh13Picker;
 /* root is /documents on hardware; injectable tmp path for host tests. */
 int eh13_picker_open(Eh13Picker *p,int slot,const char *root);

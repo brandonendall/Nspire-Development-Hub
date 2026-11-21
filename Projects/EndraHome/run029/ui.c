@@ -6,7 +6,7 @@ void eh7_ui_init(EhUniversalUI *s,const EhRegistry *apps){
  if(!s)return;
  eh7_init(&s->page);s->apps=apps;
  s->page.selected=eh_desktop_select(apps,-1,EH_KEY_NONE);
- s->missing=s->request=s->assign_slot=s->edit_action=s->open_files=0;
+ s->missing=s->request=s->assign_slot=s->adding_app=s->edit_action=s->open_files=0;
  s->manager_item=s->subview=s->renaming=s->confirm_remove=0;
  s->preview=apps?apps->appearance:(EhAppearance){0};
  s->setting_row=0;s->native_status=0;
@@ -65,9 +65,9 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
   if(k==EH_KEY_ESC){s->page.should_exit=1;return 1;}
   if(k==EH_KEY_ENTER){
    int i=s->page.selected;
-   if(s->apps&&s->apps->slots[i].path[0])s->request=i+1;
-   else if(i==EH_FILES_SLOT)s->open_files=1;
-   else { s->assign_slot=i+1; }
+   if(i==EH_FILES_SLOT)s->open_files=1;
+   else if(s->apps&&s->apps->slots[i].path[0])s->request=i+1;
+   else s->page.selected=eh_desktop_select(s->apps,i,EH_KEY_NONE);
    return 1;
   }
   if(k==EH_KEY_LEFT||k==EH_KEY_UP||k==EH_KEY_RIGHT||k==EH_KEY_DOWN){
@@ -86,13 +86,29 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
   if(k==EH_KEY_DOWN){if(s->manager_item<EH15_MENU_COUNT-1)s->manager_item++;return 1;}
   if(k==EH_KEY_ENTER){
    switch(s->manager_item){
-    case 0:s->assign_slot=s->page.selected+1;break;
-    case 1:s->renaming=1;s->rename_input[0]=0;break;
-    case 2:s->confirm_remove=1;break;
-    case 3:s->subview=0;s->page.page=EH_PAGE_HELP;break;
-    case 4:s->subview=1;s->preview=s->apps?s->apps->appearance:(EhAppearance){0};s->setting_row=EH_LOOK_THEME;s->page.page=EH_PAGE_HELP;break;
-    case 5:s->open_files=1;break;
-    case 6:s->subview=2;s->native_status=0;s->page.page=EH_PAGE_HELP;break;
+    case EH_MANAGER_ADD:
+     if(s->apps){
+      for(int i=0;i<EH7_SLOT_COUNT;i++){
+       if(i!=EH_FILES_SLOT&&!s->apps->slots[i].path[0]){
+        s->assign_slot=i+1;s->adding_app=1;break;
+       }
+      }
+     }
+     if(!s->assign_slot)eh_toast_set(&s->notice,"APP SLOTS FULL - FREE A SLOT FIRST");
+     break;
+    case EH_MANAGER_REASSIGN:
+     if(s->page.selected!=EH_FILES_SLOT&&s->apps&&s->apps->slots[s->page.selected].path[0]){
+      s->assign_slot=s->page.selected+1;s->adding_app=0;
+     }else eh_toast_set(&s->notice,"USE ADD APP OR SELECT A LINKED APP");
+     break;
+    case EH_MANAGER_RENAME:
+     if(s->page.selected!=EH_FILES_SLOT){s->renaming=1;s->rename_input[0]=0;}
+     break;
+    case EH_MANAGER_REMOVE:s->confirm_remove=1;break;
+    case EH_MANAGER_INFO:s->subview=0;s->page.page=EH_PAGE_HELP;break;
+    case EH_MANAGER_APPEARANCE:s->subview=1;s->preview=s->apps?s->apps->appearance:(EhAppearance){0};s->setting_row=EH_LOOK_THEME;s->page.page=EH_PAGE_HELP;break;
+    case EH_MANAGER_FILES:s->open_files=1;break;
+    case EH_MANAGER_TI:s->subview=2;s->native_status=0;s->page.page=EH_PAGE_HELP;break;
    }
    return 1;
   }

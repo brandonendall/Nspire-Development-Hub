@@ -114,7 +114,7 @@ int main(void) {
     }
     eh7_ui_handle(&ui,EH_KEY_MENU);eh15_manager_render(frame,&ui);
     assert(color_count(p.ink)>100);
-    ui.manager_item=4;eh7_ui_handle(&ui,EH_KEY_ENTER);
+    ui.manager_item=EH_MANAGER_APPEARANCE;eh7_ui_handle(&ui,EH_KEY_ENTER);
     eh7_ui_handle(&ui,EH_KEY_DOWN);eh7_ui_handle(&ui,EH_KEY_DOWN);
     eh7_ui_handle(&ui,EH_KEY_RIGHT);
     EhPalette preview=eh_palette(ui.preview);eh15_manager_render(frame,&ui);
@@ -134,7 +134,7 @@ int main(void) {
     r.appearance.theme=0;eh17_files_render(frame,&files,&r);
     assert(frame[24*320+57]!=red);
     r.appearance.theme=EH_RED;
-    ui.page.page=EH_PAGE_DETAIL;ui.subview=0;ui.manager_item=6;
+    ui.page.page=EH_PAGE_DETAIL;ui.subview=0;ui.manager_item=EH_MANAGER_TI;
     eh7_ui_handle(&ui,EH_KEY_ENTER);assert(ui.subview==2);
     eh7_ui_handle(&ui,EH_KEY_ENTER);assert(ui.edit_action==EH15_NATIVE_CHECK);
     ui.edit_action=0;ui.native_status=2;eh15_manager_render(frame,&ui);

@@ -1,4 +1,10 @@
-# EndraHome Run039 Desktop
+# EndraHome Run040 Desktop
+
+Use **Menu > Add App** from any desktop tile. Select an Ndless executable and
+the new shortcut appears selected on the desktop. To change a shortcut, select
+it and use **Menu > Reassign Selected**. Files stays built-in and opens at
+`/documents`. Old Files links remain in the configuration for rollback.
+A missing or non-app target is reported before leaving the desktop.
 
 Open **Menu > Appearance**. Use Up/Down to choose a setting and Left/Right to preview.
 Wallpaper, App Icon, Interface, Folders and Text are independent. The preview shows
@@ -9,7 +15,7 @@ Interface has eight choices: Blue (default), Red, Green, Yellow, Orange, Purple,
 Black and White. Endra Files uses distinct file-type glyphs based on the suffix.
 An ordinary .tns uses the TI document glyph. Glyphs do not change open or launch behavior.
 
-Keep the executable with `EndraHome_Apps.cfg.tns`. Run039 reads prior appearance
+Keep the executable with `EndraHome_Apps.cfg.tns`. Run040 reads prior appearance
 settings and maps legacy interface colors to their closest retained choice. Save
 writes `EndraHome_Appearance4.cfg.tns` and leaves the Run038 configuration available
 to the rollback executable. Folder, text, wallpaper and icon choices keep their IDs.
@@ -24,7 +30,7 @@ Native shortcut registration and Ctrl+Home OS standby are pending investigation.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraHome_Run039_Desktop.tns /upload
+push /storage/emulated/0/Download/EndraHome_Run040_Desktop.tns /upload
 ```
 
 Historical source notes follow.

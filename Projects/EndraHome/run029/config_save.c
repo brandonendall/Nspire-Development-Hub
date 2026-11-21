@@ -21,11 +21,11 @@ static int sibling_paths(const char *cfg,char *temp,char *old,size_t cap){
  const char *slash=strrchr(cfg,'/');
  if(!slash||strcmp(slash+1,EH7_CONFIG_FILE))return 0;
  size_t prefix=(size_t)(slash-cfg)+1;
- if(prefix+20>=cap)return 0;
+ if(prefix+sizeof("EH40New.cfg.tns")>cap)return 0;
  memcpy(temp,cfg,prefix);
- strcpy(temp+prefix,"EHNew.cfg.tns");
+ strcpy(temp+prefix,"EH40New.cfg.tns");
  memcpy(old,cfg,prefix);
- strcpy(old+prefix,"EHOld.cfg.tns");
+ strcpy(old+prefix,"EH40Old.cfg.tns");
  return 1;
 }
 static int slot_line(FILE *out,int slot,const EhRegistry *apps,const char *path){
@@ -54,10 +54,29 @@ int eh14_recover_config(const char *cfg,Eh14SaveError *error){
  if(error){error->stage=EH14_OK;error->os_error=0;}
  if(!sibling_paths(cfg,temp,old,sizeof(temp)))return failure(error,EH14_PATHS);
  if(exists(cfg))return 1;
- if(!exists(old))return 1; /* No interrupted swap. */
+ if(!exists(old)){
+  const char *slash=strrchr(old,'/');
+  strcpy(old+(slash-old)+1,"EHOld.cfg.tns");
+  if(!exists(old))return 1;
+ }
+ EhRegistry check;eh7_registry_init(&check);
+ if(eh7_registry_load(&check,old)<0||check.errors){
+  errno=EINVAL;
+  return failure(error,EH14_ROLLBACK);
+ }
  if(rename(old,cfg)!=0)return failure(error,EH14_ROLLBACK);
  return 1;
 }
+static int matches(const char *file,const EhRegistry *expected,int slot,const char *path){
+ EhRegistry actual;eh7_registry_init(&actual);
+ if(eh7_registry_load(&actual,file)<0||actual.errors||actual.theme!=expected->theme)return 0;
+ for(int i=0;i<EH7_SLOT_COUNT;i++){
+  if(strcmp(actual.slots[i].label,expected->slots[i].label)||
+     strcmp(actual.slots[i].path,i==slot?path:expected->slots[i].path))return 0;
+ }
+ return 1;
+}
+
 int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,Eh14SaveError *error){
  char temp[512],old[512];
  if(error){error->stage=EH14_OK;error->os_error=0;}
@@ -81,9 +100,10 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
    /* Detect truncated/corrupt source rather than dropping the remainder. */
    if(len==sizeof(line)-1&&line[len-1]!='\n'&&!feof(in)){ok=0;break;}
    last=len?(unsigned char)line[len-1]:last;
-   if(line[0]=='T'&&line[1]=='='){
+   const char *key=line+strspn(line," \t");
+   if(key[0]=='T'&&key[1]=='='){
     if(!theme_found){if(fprintf(out,"T=%d\n",apps->theme)<0)ok=0;theme_found=1;}
-   }else if(line[0]==(char)('0'+slot)&&line[1]=='='){
+   }else if(key[0]==(char)('0'+slot)&&key[1]=='='){
     if(!found){if(!slot_line(out,slot,apps,path))ok=0;found=1;}
    }else if(fputs(line,out)==EOF)ok=0;
    if(!ok)break;
@@ -105,16 +125,9 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
  if(!ok){int err=errno;remove(temp);errno=err;return failure(error,EH14_TEMP_WRITE);}
 
  /* Read staged config back BEFORE replacing original; verify all slots. */
- EhRegistry trial;eh7_registry_init(&trial);
- if(eh7_registry_load(&trial,temp)<0 || trial.errors ||
-    (strcmp(trial.slots[slot].path,path)||trial.theme!=apps->theme)){
-  remove(temp);return failure(error,EH14_TEMP_VERIFY);
- }
- for(int i=0;i<EH7_SLOT_COUNT;i++){
-  if(strcmp(trial.slots[i].label,apps->slots[i].label)||
-     (i!=slot&&strcmp(trial.slots[i].path,apps->slots[i].path))){
-   remove(temp);return failure(error,EH14_TEMP_VERIFY);
-  }
+ if(!matches(temp,apps,slot,path)){
+  remove(temp);
+  return failure(error,EH14_TEMP_VERIFY);
  }
 
  /* Two explicit moves instead of a replace-existing rename() call. */
@@ -123,7 +136,7 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
  }
  if(rename(temp,cfg)!=0){
   int err=errno;
-  /* Original still exists under EHOld.cfg.tns until safely restored. */
+  /* Original still exists under EH40Old.cfg.tns until safely restored. */
   if(had_original && rename(old,cfg)!=0){
    return failure(error,EH14_ROLLBACK); /* Preserve both files for rescue. */
   }
@@ -132,9 +145,7 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
   return failure(error,EH14_INSTALL_MOVE);
  }
 
- EhRegistry after;eh7_registry_init(&after);
- if(eh7_registry_load(&after,cfg)<0||after.errors||
-    (strcmp(after.slots[slot].path,path)||after.theme!=apps->theme)){
+ if(!matches(cfg,apps,slot,path)){
   /* New content is in cfg; leave old backup in place for recovery. */
   return failure(error,EH14_INSTALL_VERIFY);
  }

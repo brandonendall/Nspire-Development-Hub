@@ -1,5 +1,7 @@
 /* EndraHome Run010: strict, read-only configuration of 7 app shortcuts. */
 #include "registry.h"
+#include "app_target.h"
+#include <strings.h>
 #include <stdio.h>
 #include <string.h>
 static const char *defaults[EH7_SLOT_COUNT]={
@@ -20,13 +22,13 @@ void eh7_registry_init(EhRegistry *apps){
   strcpy(apps->slots[i].label,defaults[i]);
 }
 int eh7_valid_path(const char *path){
- if(!path||strncmp(path,"/documents/",11))return 0;
+ if(!path||strncasecmp(path,"/documents/",11))return 0;
  size_t len=strlen(path);
  if(len<=15||len>=EH7_PATH_CAP)return 0;
- if(strcmp(path+len-4,".tns"))return 0;
+ if(!eh_tns_suffix(path))return 0;
  if(strstr(path,"..")||strstr(path,"//")||strstr(path,"/./"))return 0;
  for(size_t i=0;i<len;i++)
-  if((unsigned char)path[i]<32||(unsigned char)path[i]>126||path[i]=='|')return 0;
+  if((unsigned char)path[i]<32||(unsigned char)path[i]>126||path[i]=='|'||path[i]=='\\')return 0;
  return 1;
 }
 int eh7_config_path(char *dst,size_t cap,const char *app_executable){

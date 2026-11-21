@@ -12,11 +12,14 @@ int main(void){
  assert(s.request==1); /* Home Enter still instant launch */
  EhUniversalUI m;eh7_ui_init(&m,&r);
  eh7_ui_handle(&m,EH_KEY_MENU);
- assert(m.page.page==EH_PAGE_DETAIL&&m.manager_item==0);
- eh7_ui_handle(&m,EH_KEY_ENTER);assert(m.assign_slot==1);
+ assert(m.page.page==EH_PAGE_DETAIL&&m.manager_item==EH_MANAGER_ADD);
+ eh7_ui_handle(&m,EH_KEY_ENTER);assert(m.assign_slot==2&&m.adding_app);
+ m.assign_slot=0;
+ eh7_ui_handle(&m,EH_KEY_DOWN);
+ eh7_ui_handle(&m,EH_KEY_ENTER);assert(m.assign_slot==1&&!m.adding_app);
  EhUniversalUI n;eh7_ui_init(&n,&r);
  eh7_ui_handle(&n,EH_KEY_MENU);
- eh7_ui_handle(&n,EH_KEY_DOWN);
+ n.manager_item=EH_MANAGER_RENAME;
  eh7_ui_handle(&n,EH_KEY_ENTER);
  assert(n.renaming);
  assert(!eh16_ui_type(NULL,'A'));
@@ -36,7 +39,7 @@ int main(void){
  assert(!eh16_ui_type(&n,'Z'));
  EhUniversalUI empty;eh7_ui_init(&empty,&r);
  eh7_ui_handle(&empty,EH_KEY_MENU);
- eh7_ui_handle(&empty,EH_KEY_DOWN);
+ empty.manager_item=EH_MANAGER_RENAME;
  eh7_ui_handle(&empty,EH_KEY_ENTER);
  assert(empty.renaming);
  eh7_ui_handle(&empty,EH_KEY_ENTER);
@@ -46,7 +49,7 @@ int main(void){
  assert(!empty.renaming);
  EhUniversalUI max;eh7_ui_init(&max,&r);
  eh7_ui_handle(&max,EH_KEY_MENU);
- eh7_ui_handle(&max,EH_KEY_DOWN);
+ max.manager_item=EH_MANAGER_RENAME;
  eh7_ui_handle(&max,EH_KEY_ENTER);
  for(int i=0;i<EH7_LABEL_CAP-1;i++)assert(eh16_ui_type(&max,'a'));
  assert(!strcmp(max.rename_input,"aaaaaaaaaaaaaaa"));
@@ -56,8 +59,7 @@ int main(void){
  assert(strlen(max.rename_input)==EH7_LABEL_CAP-2);
  EhUniversalUI rm;eh7_ui_init(&rm,&r);
  eh7_ui_handle(&rm,EH_KEY_MENU);
- eh7_ui_handle(&rm,EH_KEY_DOWN);
- eh7_ui_handle(&rm,EH_KEY_DOWN);
+ rm.manager_item=EH_MANAGER_REMOVE;
  eh7_ui_handle(&rm,EH_KEY_ENTER);
  assert(rm.confirm_remove);
  eh7_ui_handle(&rm,EH_KEY_ESC);
@@ -67,23 +69,34 @@ int main(void){
  assert(rm.edit_action==EH15_REMOVE);
  EhUniversalUI info;eh7_ui_init(&info,&r);
  eh7_ui_handle(&info,EH_KEY_MENU);
- for(int i=0;i<3;i++)eh7_ui_handle(&info,EH_KEY_DOWN);
+ info.manager_item=EH_MANAGER_INFO;
  eh7_ui_handle(&info,EH_KEY_ENTER);
  assert(info.page.page==EH_PAGE_HELP&&!info.subview);
  eh7_ui_handle(&info,EH_KEY_ESC);
  eh7_ui_handle(&info,EH_KEY_DOWN);
  eh7_ui_handle(&info,EH_KEY_ENTER);
  assert(info.page.page==EH_PAGE_HELP&&info.subview);
- /* A permanent Files tile shares its location with its external override. */
+ /* Files never launches its obsolete external override. */
  EhUniversalUI fm;eh7_ui_init(&fm,&r);
  eh7_ui_handle(&fm,EH_KEY_RIGHT);eh7_ui_handle(&fm,EH_KEY_RIGHT);assert(fm.page.selected==EH_FILES_SLOT);
  eh7_ui_handle(&fm,EH_KEY_ENTER);assert(fm.open_files && !fm.request);
  fm.open_files=0;eh7_ui_handle(&fm,EH_KEY_MENU);
- for(int i=0;i<5;i++)eh7_ui_handle(&fm,EH_KEY_DOWN);
+ fm.manager_item=EH_MANAGER_FILES;
  eh7_ui_handle(&fm,EH_KEY_ENTER);assert(fm.open_files && !fm.request);
  EhRegistry bare;eh7_registry_init(&bare);EhUniversalUI only;eh7_ui_init(&only,&bare);
  assert(only.page.selected==EH_FILES_SLOT);
  eh7_ui_handle(&only,EH_KEY_ENTER);assert(only.open_files && !only.assign_slot && !only.request);
+ only.open_files=0;eh7_ui_handle(&only,EH_KEY_MENU);
+ assert(only.manager_item==EH_MANAGER_ADD);
+ eh7_ui_handle(&only,EH_KEY_ENTER);
+ assert(only.assign_slot==1&&only.adding_app&&only.page.selected==EH_FILES_SLOT);
+ only.assign_slot=0;
+ only.manager_item=EH_MANAGER_REASSIGN;
+ eh7_ui_handle(&only,EH_KEY_ENTER);
+ assert(!only.assign_slot&&only.notice.text[0]);
+ for(int i=0;i<EH7_SLOT_COUNT;i++)strcpy(bare.slots[i].path,"/documents/A.tns");
+ only.manager_item=EH_MANAGER_ADD;eh7_ui_handle(&only,EH_KEY_ENTER);
+ assert(!only.assign_slot&&strstr(only.notice.text,"FULL"));
  /* Every possible subset of shortcuts. Render and input use identical geometry. */
  for(unsigned mask=0;mask<128;mask++){
   EhRegistry grid;eh7_registry_init(&grid);
@@ -156,8 +169,8 @@ int main(void){
  assert(info.edit_action==EH15_THEME);
  EhUniversalUI shortcut;eh7_ui_init(&shortcut,&r);
  eh7_ui_handle(&shortcut,EH_KEY_MENU);
- for(int i=0;i<6;i++)eh7_ui_handle(&shortcut,EH_KEY_DOWN);
- assert(shortcut.manager_item==6);
+ for(int i=0;i<EH_MANAGER_TI;i++)eh7_ui_handle(&shortcut,EH_KEY_DOWN);
+ assert(shortcut.manager_item==EH_MANAGER_TI);
  eh7_ui_handle(&shortcut,EH_KEY_ENTER);assert(shortcut.subview==2);
  eh7_ui_handle(&shortcut,EH_KEY_ENTER);assert(shortcut.edit_action==EH15_NATIVE_CHECK);
  shortcut.edit_action=0;eh7_ui_handle(&shortcut,EH_KEY_ESC);

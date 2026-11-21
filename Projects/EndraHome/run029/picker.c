@@ -1,6 +1,7 @@
 /* Bounded, read-only Documents .tns browser. No SDL, hooks, or file edits. */
 #include "picker.h"
 #include "preferences.h"
+#include "app_target.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -21,10 +22,6 @@ static int join(char *out,size_t cap,const char *dir,const char *name){
  int n=snprintf(out,cap,"%s/%s",dir,name);
  return n>0&&(size_t)n<cap;
 }
-static int is_tns(const char *n){
- size_t l=strlen(n);
- return l>4&&!strcmp(n+l-4,".tns");
-}
 static int compare_entries(const void *a,const void *b){
  const Eh13PickEntry *x=(const Eh13PickEntry*)a,*y=(const Eh13PickEntry*)b;
  if(x->directory!=y->directory)return y->directory-x->directory;
@@ -44,8 +41,9 @@ static int scan(Eh13Picker *p){
   if(stat(full,&st)!=0)continue;
   int directory=S_ISDIR(st.st_mode);
   if(!directory&&(!S_ISREG(st.st_mode)||
-        (!p->show_all&&(!is_tns(de->d_name)||
-        (!strcmp(de->d_name,EH7_CONFIG_FILE)||!strcmp(de->d_name,EH_PREFS_FILE))))))continue;
+        (!p->show_all&&(!eh_tns_suffix(de->d_name)||
+        (eh_same_path(de->d_name,EH7_CONFIG_FILE)||eh_same_path(de->d_name,EH_PREFS_FILE)||
+         eh_same_path(de->d_name,EH_RUN038_PREFS_FILE)||eh_same_path(de->d_name,EH_LEGACY_PREFS_FILE))))))continue;
   if(n==EH13_PICKER_MAX){overflow=1;continue;}
   strcpy(list[n].name,de->d_name);
   list[n].directory=(unsigned char)directory;
