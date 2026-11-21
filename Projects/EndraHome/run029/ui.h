@@ -3,14 +3,14 @@
 #include "../run005/logic7.h"
 #include "registry.h"
 #include "toast.h"
-#define EH15_MENU_COUNT 6
-enum {EH15_NONE=0, EH15_RENAME=1, EH15_REMOVE=2, EH15_THEME=3};
+#define EH15_MENU_COUNT 7
+enum {EH15_NONE=0, EH15_RENAME=1, EH15_REMOVE=2, EH15_THEME=3, EH15_NATIVE_CHECK=4};
 typedef struct {
  EhUI7 page;
  const EhRegistry *apps;
  int missing,request,assign_slot,edit_action,open_files;
  int manager_item,subview,renaming,confirm_remove;
- int setting_row;
+ int setting_row, native_status;
  EhAppearance preview;
  EhToast notice;
  char rename_input[EH7_LABEL_CAP];

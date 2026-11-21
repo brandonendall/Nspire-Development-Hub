@@ -14,6 +14,7 @@
 #include "files.h"
 #include "session.h"
 #include <libndls.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 void __attribute__((weak)) _fini(void){}
@@ -43,6 +44,14 @@ static int launch_selected(const EhUniversalUI *ui,int argc,char **argv){
  const char *path=ui->apps->slots[slot].path;
  if(!eh7_valid_path(path)||(argc>0&&argv&&argv[0]&&!strcmp(path,argv[0])))return -1;
  return nl_exec(path,0,NULL);
+}
+/* Read-only probe for CX II CAS 6.4.0.74, using nTheme's OS49
+ * fingerprint and Settings literal address. No foreign pointer dereference,
+ * OS write, callback, hook or startup modification. */
+static int native_settings_probe(void){
+ if(nl_ndless_rev()<2022||nl_osid()!=49||nl_hwsubtype()!=2)return 3;
+ if(*(const volatile uint32_t *)0x10000020u!=0x1042aee0u)return 3;
+ return *(const volatile uint32_t *)0x10a41a0cu==0x10c44fc4u?1:2;
 }
 int main(int argc,char **argv){
  EhRegistry apps;eh7_registry_init(&apps);
@@ -132,7 +141,9 @@ int main(int argc,char **argv){
       int action=ui.edit_action;ui.edit_action=EH15_NONE;
       Eh14SaveError diag={EH14_OK,0};
       int slot=ui.page.selected,ok=0;
-      if(action==EH15_THEME){
+      if(action==EH15_NATIVE_CHECK){
+       ui.native_status=native_settings_probe();
+      }else if(action==EH15_THEME){
        if(eh_prefs_save(cfg,ui.preview)){
         apps.appearance=ui.preview;
         eh_toast_set(&ui.notice,"Appearance saved");

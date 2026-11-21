@@ -1,3 +1,10 @@
+# EndraHome Run037 Desktop
+Keep existing EndraHome_Apps.cfg.tns and EndraHome_Appearance.cfg.tns. New clean themed wallpaper, original-art metallic E, consistent saved caption colour, theme-aware browser/menu/manager/settings. Menu > TI Settings Shortcut > Enter only reads matching OS49 fingerprint and menu pointer; NOT an installer. No OS hooks or firmware writes. Ctrl+On true standby remains unresolved.
+
+Transfer: `clear` then `push /storage/emulated/0/Download/EndraHome_Run037_Desktop.tns /upload`.
+
+Historical Run029 documentation below; newer build state takes precedence.
+
 # EndraHome Run029 Desktop
 
 Run029 builds on the installed Run028 Dynamic Launcher for TI-Nspire CX II CAS with Ndless. Its executable is `EndraHome_Run029_Desktop.tns`. Keep the executable alongside the existing `EndraHome_Apps.cfg.tns` to retain app assignments. Starting Run029 with no configuration shows Files.

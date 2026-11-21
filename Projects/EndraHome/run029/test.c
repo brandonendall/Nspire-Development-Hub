@@ -116,6 +116,14 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_ESC);assert(!info.preview.font && !info.preview.folder);
  eh7_ui_handle(&info,EH_KEY_ENTER);eh7_ui_handle(&info,EH_KEY_RIGHT);
  eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH15_THEME && !r.appearance.theme);
+ EhUniversalUI shortcut;eh7_ui_init(&shortcut,&r);
+ eh7_ui_handle(&shortcut,EH_KEY_MENU);
+ for(int i=0;i<6;i++)eh7_ui_handle(&shortcut,EH_KEY_DOWN);
+ assert(shortcut.manager_item==6);
+ eh7_ui_handle(&shortcut,EH_KEY_ENTER);assert(shortcut.subview==2);
+ eh7_ui_handle(&shortcut,EH_KEY_ENTER);assert(shortcut.edit_action==EH15_NATIVE_CHECK);
+ shortcut.edit_action=0;eh7_ui_handle(&shortcut,EH_KEY_ESC);
+ assert(shortcut.page.page==EH_PAGE_DETAIL);
  EhToast toast={0};
  eh_toast_set(&toast,"Opened");uint32_t start=UINT32_MAX-100;
  assert(!eh_toast_tick(&toast,start));assert(!eh_toast_tick(&toast,start+3u*EH_TICKS_PER_SECOND-1));

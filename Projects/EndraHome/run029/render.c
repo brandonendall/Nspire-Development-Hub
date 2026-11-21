@@ -84,77 +84,62 @@ void eh_glass_panel(uint16_t *f,int x,int y,int w,int h,unsigned opacity) {
  if(opacity>100)opacity=100;
  glass34(f,x,y,w,h,DEEP,opacity);
 }
-static void icon_pixel36(uint16_t *f,int x,int y,uint16_t color) {
- if((unsigned)x<320u && (unsigned)y<240u)f[(size_t)y*320+(unsigned)x]=color;
+/* Run037: palette-aware glass and clean wallpaper under the original title. */
+void eh_theme_glass(uint16_t *f,int x,int y,int w,int h,unsigned alpha,const EhPalette *p){
+ if(f&&p)glass34(f,x,y,w,h,eh_skin(p,DEEP),alpha>100?100:alpha);
 }
-static void icon_line36(uint16_t *f,int ax,int ay,int bx,int by,uint16_t c) {
- int dx=bx>ax?bx-ax:ax-bx,dy=by>ay?by-ay:ay-by;
- int sx=ax<bx?1:-1,sy=ay<by?1:-1,err=dx-dy;
- for(;;) {
-  icon_pixel36(f,ax,ay,c);
-  if(ax==bx&&ay==by)break;
-  int two=2*err;
-  if(two>-dy){err-=dy;ax+=sx;}
-  if(two<dx){err+=dx;ay+=sy;}
+void eh_desktop_wallpaper(uint16_t *f,const EhPalette *p){
+ eh_wallpaper_paint(f);eh_skin_frame(f,p);
+ uint16_t soft[32];
+ for(int i=0;i<32;i++)soft[i]=eh_skin(p,EH_RGB(3+i/4,9+i*3,22+i*6));
+ for(int x=0;x<320;x++){
+  int dx=x-160,curve=195-dx*dx/410,curve2=218-(x-260)*(x-260)/850,upper=52+x/6;
+  for(int y=47;y<240;y++){
+   int d=y-curve;if(d<0)d=-d;
+   int e=y-curve2;if(e<0)e=-e;
+   int q=y-upper;if(q<0)q=-q;
+   int level=2+(y-47)/46;
+   if(d<18)level+=(18-d)/2;
+   if(d<3)level+=10;
+   if(e<10)level+=(10-e)/2;
+   if(q<14)level+=(14-q)/4;
+   if((x<38||x>282)&&((x+y/2)%11==0||y%13==0))level+=2;
+   if(level>31)level=31;
+   f[y*320+x]=soft[level];
+  }
  }
 }
-static void hero_e36(uint16_t *f,int cx,int y){
- const int x=cx-18;
- const uint16_t ice=EH_RGB(147,241,255),edge=EH_RGB(25,168,231);
- const uint16_t silver=EH_RGB(230,250,255),steel=EH_RGB(71,177,236);
- /* Draw a miniature 3D E cube with no opaque background square. The side
-  * and top are faintly tinted GLASS; original wallpaper is visible through
-  * the front face and interior of the E. All pixels bounded in the frame. */
- eh_glass_panel(f,x+7,y+7,27,25,27);
- eh_glass_panel(f,x+1,y+5,6,25,32);
- icon_line36(f,x+1,y+5,x+8,y,ice);
- icon_line36(f,x+8,y,x+34,y+1,EH_RGB(74,190,255));
- icon_line36(f,x+34,y+1,x+34,y+28,ice);
- icon_line36(f,x+34,y+28,x+28,y+33,edge);
- icon_line36(f,x+28,y+33,x+7,y+33,ice);
- icon_line36(f,x+7,y+33,x+1,y+28,edge);
- icon_line36(f,x+1,y+28,x+1,y+5,edge);
- /* 3D ridge: front face begins where the sloping left side ends. */
- icon_line36(f,x+7,y+8,x+7,y+32,EH_RGB(62,205,253));
- icon_line36(f,x+7,y+8,x+34,y+1,EH_RGB(64,170,229));
- icon_line36(f,x+7,y+8,x+28,y+8,EH_RGB(38,126,192));
- icon_line36(f,x+2,y+6,x+6,y+9,EH_RGB(140,236,255));
- /* Beveled icy E (not a filled 32x32 flat tile). */
- eh_box(f,x+13,y+12,4,17,steel);
- eh_box(f,x+14,y+12,16,3,silver);
- eh_box(f,x+14,y+18,13,3,EH_RGB(143,225,255));
- eh_box(f,x+14,y+26,16,3,silver);
- icon_line36(f,x+17,y+15,x+28,y+15,EH_RGB(20,131,223));
- icon_line36(f,x+17,y+21,x+25,y+21,EH_RGB(23,122,213));
- icon_line36(f,x+17,y+29,x+29,y+29,EH_RGB(28,145,234));
- icon_pixel36(f,x+32,y+3,EH_RGB(244,252,255));
+/* The actual shaded E cube, sampled from the original title at icon scale.
+ * Mask its polygon; never fill the card or outline a wireframe. */
+static void hero37(uint16_t *f,int cx,int y){
+ for(int dy=0;dy<40;dy++)for(int dx=0;dx<40;dx++){
+  int sx=11+dx*37/40,sy=3+dy*38/40;
+  int top=sx<=33?13-(sx-11)*9/22:4+(sx-33)*6/14;
+  int bottom=sx<=25?30+(sx-11)*10/14:40-(sx-25)*7/22;
+  if(sy<top||sy>bottom||sx>47)continue;
+  int px=cx-20+dx,py=y+dy;
+  if((unsigned)px<320u&&(unsigned)py<240u)f[py*320+px]=f[sy*320+sx];
+ }
 }
-static void draw_tile36(uint16_t *f,const EhTile *tile,const EhRegistry *apps,
-                        const EhPalette *p,int selected){
- int y=tile->top,cx=tile->center;
- hero_e36(f,cx,y);
- const char *name=tile->slot==EH_FILES_SLOT?"Files":apps->slots[tile->slot].label;
- int width=(int)strlen(name);
- if(width>10)width=10;
- const int text_x=cx-width*3, text_y=y+43;
- /* Only the LABEL reacts to navigation; the E never gets a tile highlight. */
+static void draw_tile37(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPalette *p,int selected){
+ int cx=t->center,y=t->top;hero37(f,cx,y);
+ const char *name=t->slot==EH_FILES_SLOT?"Files":r->slots[t->slot].label;
+ char label[13];size_t n=strlen(name);
+ if(n>12){memcpy(label,name,9);memcpy(label+9,"...",4);n=12;}
+ else {memcpy(label,name,n);label[n]=0;}
+ int tx=cx-(int)n*3,ty=y+46;
+ if(selected)eh_theme_glass(f,tx-4,ty-3,(int)n*6+8,15,55,p);
+ eh_small_text(f,tx+1,ty+1,label,EH_RGB(2,5,10),1,12);
+ /* Both states use the configured font colour; only decoration changes. */
+ eh_small_text(f,tx,ty,label,p->ink,1,12);
  if(selected){
-  eh_glass_panel(f,text_x-5,text_y-3,width*6+10,14,38);
-  eh_small_text(f,text_x+1,text_y+1,name,EH_RGB(19,90,139),1,10);
-  eh_small_text(f,text_x,text_y,name,EH_RGB(203,255,255),1,10);
-  eh_box(f,text_x-2,text_y+10,width*6+4,1,EH_RGB(109,243,255));
-  eh_box(f,text_x+2,text_y+12,width*6-4,1,EH_RGB(23,128,206));
- } else {
-  eh_small_text(f,text_x+1,text_y+1,name,EH_RGB(5,22,45),1,10);
-  eh_small_text(f,text_x,text_y,name,p->ink,1,10);
+  eh_box(f,tx-2,ty+10,(int)n*6+4,1,eh_skin(p,EH_RGB(110,243,255)));
+  eh_box(f,tx+2,ty+12,(int)n*6-4,1,eh_skin(p,EH_RGB(23,128,206)));
  }
 }
-void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r) {
+void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
  if(!f||!s||!r)return;
- EhPalette p=eh_palette(r->appearance);
- eh_wallpaper_paint(f);
- EhTile tiles[EH7_SLOT_COUNT];
- int count=eh_desktop_layout(r,tiles);
- for(int i=0;i<count;i++)
-  draw_tile36(f,&tiles[i],r,&p,tiles[i].slot==s->selected);
+ EhPalette p=eh_palette(r->appearance);eh_desktop_wallpaper(f,&p);
+ EhTile tiles[EH7_SLOT_COUNT];int count=eh_desktop_layout(r,tiles);
+ for(int i=0;i<count;i++)draw_tile37(f,&tiles[i],r,&p,tiles[i].slot==s->selected);
 }

@@ -35,6 +35,9 @@ int main(void){
  EhUniversalUI s;eh7_ui_init(&s,&reg);
  eh7_render(fb,&s.page,&reg);
  if(save("build/home.ppm"))return 1;
+ reg.appearance.theme=14;
+ eh7_render(fb,&s.page,&reg);if(save("build/home_red.ppm"))return 1;
+ reg.appearance.theme=0;
  eh7_ui_handle(&s,EH_KEY_MENU);
  eh7_render(fb,&s.page,&reg);eh15_manager_render(fb,&s);
  if(save("build/manager.ppm"))return 1;
@@ -64,5 +67,12 @@ int main(void){
  if(save("build/files.ppm"))return 1;
  Eh17Files popup={0};popup.active=1;popup.nav=p;popup.menu_open=1;popup.menu_item=3;
  eh17_files_render(fb,&popup,&reg);
- return save("build/files_menu.ppm");
+ if(save("build/files_menu.ppm"))return 1;
+ reg.appearance.theme=14;eh17_files_render(fb,&popup,&reg);
+ if(save("build/files_menu_red.ppm"))return 1;
+ eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
+ eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;
+ s.manager_item=6;eh7_ui_handle(&s,EH_KEY_ENTER);s.native_status=2;
+ eh15_manager_render(fb,&s);
+ return save("build/native_shortcut.ppm");
 }

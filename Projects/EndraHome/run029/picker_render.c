@@ -41,7 +41,7 @@ static void file_icon(uint16_t *f,int x,int y,const char *name,int dir,const EhP
   config?mix565(p->folder,EH_RGB(170,150,230),65):
   pdf?mix565(p->folder,EH_RGB(245,70,70),65):
   text?mix565(p->folder,EH_RGB(210,225,245),70):p->accent;
- if(app){eh_app_icon(f,x,y,1);return;}
+ if(app){eh_box(f,x+2,y+1,12,14,eh_skin(p,EH_RGB(60,200,248)));eh_box(f,x+3,y+2,10,12,p->panel);eh_small_text(f,x+5,y+4,"E",p->ink,1,1);return;}
  box(f,x+2,y+1,12,14,tone);
  box(f,x+4,y+3,8,10,p->panel);
  if(archive){
@@ -83,16 +83,16 @@ static void size_label(char *out,size_t cap,unsigned long long n){
 void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!f||!p||!p->active||!apps)return;
  EhPalette colors=eh_palette(apps->appearance);
- const uint16_t cyan=EH_RGB(52,219,253),pale=EH_RGB(228,249,255);
- const uint16_t steel=EH_RGB(126,210,247),line=EH_RGB(23,111,169);
- eh_wallpaper_paint(f);
+ const uint16_t cyan=eh_skin(&colors,EH_RGB(52,219,253)),pale=colors.ink;
+ const uint16_t steel=eh_skin(&colors,EH_RGB(126,210,247)),line=eh_skin(&colors,EH_RGB(23,111,169));
+ eh_wallpaper_paint(f);eh_skin_frame(f,&colors);
  /* Opaque brand strip prevents ghosting the wallpaper's old EndraHome
   * wordmark behind the Files title. */
- eh_box(f,0,0,320,37,EH_RGB(5,16,31));
+ eh_box(f,0,0,320,37,eh_skin(&colors,EH_RGB(5,16,31)));
  eh_box(f,0,35,320,2,cyan);
  eh_small_text(f,11,10,p->show_all?"ENDRA FILES":"ASSIGN APP",pale,2,12);
  eh_small_text(f,255,21,p->show_all?"BROWSER":"PICKER",steel,1,12);
- eh_glass_panel(f,7,41,306,28,88);
+ eh_theme_glass(f,7,41,306,28,88,&colors);
  eh_box(f,7,41,306,1,cyan);
  eh_box(f,7,68,306,1,cyan);
  eh_small_text(f,13,51,"PATH",cyan,1,5);
@@ -100,7 +100,7 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  size_t len=strlen(shown);
  if(len>30)shown+=len-30;
  label(f,54,49,shown,pale,30);
- eh_glass_panel(f,7,73,306,143,92);
+ eh_theme_glass(f,7,73,306,143,92,&colors);
  eh_box(f,7,73,306,1,line);
  eh_box(f,7,214,306,1,line);
  eh_small_text(f,38,77,"NAME",steel,1,5);
@@ -111,11 +111,11 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  for(int i=p->scroll;i<bottom;i++){
   int y=96+(i-p->scroll)*15;
   if(i==p->selected){
-   eh_glass_panel(f,10,y-3,299,16,63);
-   eh_box(f,10,y-3,3,16,EH_RGB(139,247,255));
+   eh_theme_glass(f,10,y-3,299,16,63,&colors);
+   eh_box(f,10,y-3,3,16,eh_skin(&colors,EH_RGB(139,247,255)));
    eh_box(f,13,y+12,294,1,cyan);
   }else{
-   eh_box(f,13,y+12,294,1,EH_RGB(13,54,84));
+   eh_box(f,13,y+12,294,1,eh_skin(&colors,EH_RGB(13,54,84)));
   }
   const Eh13PickEntry *e=p->items+i;
   file_icon(f,17,y-3,e->name,e->directory,&colors);
@@ -131,7 +131,7 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  if(!p->count)eh_small_text(f,18,103,p->show_all?"EMPTY FOLDER":"NO APPS HERE",pale,1,30);
  /* Files actions remain discoverable; the desktop alone hides its footer.
   * This narrow glass strip follows the selected Neon File Browser concept. */
- eh_glass_panel(f,0,219,320,21,91);
+ eh_theme_glass(f,0,219,320,21,91,&colors);
  eh_box(f,0,218,320,1,cyan);
  eh_small_text(f,9,227,p->show_all?"ENTER OPEN / INFO   ESC BACK   MENU ACTIONS":"ENTER SELECT APP   ESC BACK",pale,1,50);
 }

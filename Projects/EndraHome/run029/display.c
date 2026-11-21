@@ -186,3 +186,28 @@ void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scal
      eh_box(f,x+(i*6+col)*scale,y+row*scale,scale,scale,color);
  }
 }
+
+/* Run037: shared palette for artwork and chrome, preserving neutral whites. */
+uint16_t eh_skin(const EhPalette *p,uint16_t c){
+ if(p->accent==EH_RGB(61,205,214))return c;
+ unsigned r=c>>11,g=((c>>5)&63)>>1,b=c&31;
+ unsigned hi=r>g?r:g;if(b>hi)hi=b;
+ unsigned lo=r<g?r:g;if(b<lo)lo=b;
+ unsigned ar=p->accent>>11,ag=((p->accent>>5)&63)>>1,ab=p->accent&31;
+ unsigned peak=ar>ag?ar:ag;if(ab>peak)peak=ab;
+ if(!peak){ar=ag=ab=31;peak=31;}
+ unsigned d=hi-lo,rr=lo+d*ar/peak,gg=lo+d*ag/peak,bb=lo+d*ab/peak;
+ return (uint16_t)((rr<<11)|((gg*2+(gg>>4))<<5)|bb);
+}
+void eh_skin_frame(uint16_t *f,const EhPalette *p){
+ if(!f||p->accent==EH_RGB(61,205,214))return;
+ uint16_t table[32][32];
+ for(unsigned hi=0;hi<32;hi++)for(unsigned lo=0;lo<=hi;lo++)
+  table[hi][lo]=eh_skin(p,(uint16_t)((hi<<11)|((lo*2+(lo>>4))<<5)|lo));
+ for(unsigned i=0;i<320u*240u;i++){
+  uint16_t c=f[i];unsigned r=c>>11,g=((c>>5)&63)>>1,b=c&31;
+  unsigned hi=r>g?r:g;if(b>hi)hi=b;
+  unsigned lo=r<g?r:g;if(b<lo)lo=b;
+  if(hi!=lo)f[i]=table[hi][lo];
+ }
+}

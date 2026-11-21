@@ -19,6 +19,8 @@ extern const char *const eh_folder_names[EH_COLOR_COUNT];
 extern const char *const eh_font_names[EH_COLOR_COUNT];
 
 EhPalette eh_palette(EhAppearance appearance);
+uint16_t eh_skin(const EhPalette *p,uint16_t color);
+void eh_skin_frame(uint16_t *f,const EhPalette *p);
 void eh_box(uint16_t *frame, int x, int y, int w, int h, uint16_t color);
 void eh_text(uint16_t *frame, int x, int y, const char *text, uint16_t ink, int limit, int scale);
 void eh_small_text(uint16_t *frame,int x,int y,const char *s,uint16_t ink,int scale,int max_chars);
