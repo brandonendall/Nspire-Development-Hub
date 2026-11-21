@@ -1,3 +1,5 @@
+> **Later Run039 hardware report (2026-11-21 ET).** The owner supplied desktop and Assign App picker photos, reported that selecting a .tns did not produce an icon, reassignments appeared to flash without opening, and assigning Files showed unexpected path navigation. No precise save error or native loader result was photographed. See [Run040 notes](RUN040_NOTES.md) for the corrective build.
+
 # EndraHome Run039
 
 ## Verified build
