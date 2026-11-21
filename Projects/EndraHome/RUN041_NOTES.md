@@ -1,0 +1,15 @@
+# EndraHome Run041 preview build
+
+> **EndraHome Run041 preview build — 2026-11-21 ET.** Source `bc366cab90e0cb0cd7af3525be3df87917bb4c74` on `feature/endrahome-run001`. [Actions 44878619190](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/44878619190) passed host and native builds. Artifact **14697087980**, `EndraHome_Run041_Desktop.tns`, **442,502 bytes**, Zehn, SHA-256 `cb352abafc67cf58e2551b5683fc9ff5c4dace1c0e9e5e580eec8ad05ef3ff50`. Preview artifact **14696134016** has 58 verified frames. Desktop names use their configured color on the wallpaper and only the selected name gets a ring. Run041 stores shortcuts and appearance in the existing `EndraHome_Apps.cfg.tns`, imports legacy appearance on first save, and preserves old files for rollback. Calculator testing pending. Run040 remains the rollback. Native Home > 5 > EndraHome registration is required for the completed shortcut release and remains blocked on exact-OS validation. Transfer preview only with `clear` then `push /storage/emulated/0/Download/EndraHome_Run041_Desktop.tns /upload`.
+
+## Verification and rollback
+
+The host suite passed settings migration, interrupted backup recovery, preservation of shortcuts, glyph-only captions, and selection pixel bounds for all eight themes. All 58 320×240 preview frames matched the local renders byte for byte. Both CI archive digests and the embedded binary checksum matched. Run040 rollback was rechecked against its manifest, SHA-256 `0bef0ebf5c2eac88eb86b2ab4c9ab827bb1132c621d83219718f7d4413203043`.
+
+## Settings storage
+
+The existing shortcut format is retained. Appearance uses one comment record so old builds ignore it and continue reading shortcuts. Legacy appearance files (including Appearance3/4) remain untouched. They are fallback sources until a successful explicit save. The existing transaction may temporarily create a stage or backup during a write, and interrupted-write recovery remains available. A successful save normally leaves only the live settings file created or maintained by this build.
+
+## Native shortcut release gate
+
+The requested native path is Home > 5 > EndraHome at 9 when available, otherwise at the next supported free visible position. The owner's photos show a stock pointer and an uninstalled status. The native diagnostic remains read-only. No supported registration API was identified. nTheme demonstrates a resident table replacement on the matching OS model, which supplies neither verified 9/10 routing nor a verified removal and coexistence path for EndraHome. Firebird supports CX II CAS, but no matching bootable image is available in this workspace. Validate key routing, callback lifetime and safe removal before installing anything on hardware.
