@@ -1,4 +1,4 @@
-# EndraHome Run040 Desktop
+# EndraHome Run041 Desktop
 
 Use **Menu > Add App** from any desktop tile. Select an Ndless executable and
 the new shortcut appears selected on the desktop. To change a shortcut, select
@@ -15,10 +15,12 @@ Interface has eight choices: Blue (default), Red, Green, Yellow, Orange, Purple,
 Black and White. Endra Files uses distinct file-type glyphs based on the suffix.
 An ordinary .tns uses the TI document glyph. Glyphs do not change open or launch behavior.
 
-Keep the executable with `EndraHome_Apps.cfg.tns`. Run040 reads prior appearance
+Keep the executable with `EndraHome_Apps.cfg.tns`. Run041 reads prior appearance
 settings and maps legacy interface colors to their closest retained choice. Save
-writes `EndraHome_Appearance4.cfg.tns` and leaves the Run038 configuration available
-to the rollback executable. Folder, text, wallpaper and icon choices keep their IDs.
+stores appearance and app shortcuts in `EndraHome_Apps.cfg.tns`. Older appearance
+files are read as a fallback and are left untouched for older builds. The first
+successful save writes the imported settings alongside the shortcuts. Desktop
+names retain their configured color, with a thin ring marking the selected name.
 
 The five supplied 320×240 wallpapers use 8-bit indices into RGB565 palettes.
 The ten supplied emblems use traced silhouettes and 8-bit transparency.
@@ -30,7 +32,7 @@ Native shortcut registration and Ctrl+Home OS standby are pending investigation.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraHome_Run040_Desktop.tns /upload
+push /storage/emulated/0/Download/EndraHome_Run041_Desktop.tns /upload
 ```
 
 Historical source notes follow.

@@ -17,6 +17,7 @@ typedef struct {
  int valid_lines;
  int errors;
  int enabled;
+ int has_appearance;
  int theme; /* Run028 shortcut file theme, used until separate preferences exist. */
  EhAppearance appearance;
 } EhRegistry;

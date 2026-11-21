@@ -32,6 +32,7 @@ uint16_t eh_tint(uint16_t color,uint16_t accent);
 uint16_t eh_skin(const EhPalette *p,uint16_t color);
 void eh_box(uint16_t *frame, int x, int y, int w, int h, uint16_t color);
 void eh_text(uint16_t *frame, int x, int y, const char *text, uint16_t ink, int limit, int scale);
+void eh_small_text_plain(uint16_t *frame,int x,int y,const char *s,uint16_t ink,int scale,int max_chars);
 void eh_small_text(uint16_t *frame,int x,int y,const char *s,uint16_t ink,int scale,int max_chars);
 void eh_fit_text(uint16_t *frame, int x, int y, const char *text, uint16_t ink, int columns);
 void eh_folder_icon(uint16_t *frame, int x, int y, int scale, const EhPalette *colors);

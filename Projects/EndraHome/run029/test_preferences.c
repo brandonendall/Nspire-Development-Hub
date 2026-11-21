@@ -1,5 +1,6 @@
 #include "preferences.h"
 #include "registry.h"
+#include "config_save.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,8 +15,8 @@ int main(void) {
     assert(mkdtemp(dir));
     snprintf(cfg,sizeof(cfg),"%s/%s",dir,EH7_CONFIG_FILE);
     snprintf(live,sizeof(live),"%s/%s",dir,EH_PREFS_FILE);
-    snprintf(bak,sizeof(bak),"%s/EHLook4Old.cfg.tns",dir);
-    snprintf(stage,sizeof(stage),"%s/EHLook4New.cfg.tns",dir);
+    snprintf(bak,sizeof(bak),"%s/EH40Old.cfg.tns",dir);
+    snprintf(stage,sizeof(stage),"%s/EH40New.cfg.tns",dir);
     snprintf(legacy,sizeof(legacy),"%s/%s",dir,EH_LEGACY_PREFS_FILE);
     snprintf(run038,sizeof(run038),"%s/%s",dir,EH_RUN038_PREFS_FILE);
     const char *original="# My shortcuts\n3=Files|/documents/Manager.tns\nT=4";
@@ -50,24 +51,39 @@ int main(void) {
     assert(eh_prefs_load(cfg,&out) && out.theme==EH_ORANGE && out.icon==9);
     unlink(live);
 
-    assert(eh_prefs_save(cfg,new)); assert(eh_prefs_load(cfg,&out));
+    write_text(live,"v4 3 6 7 2 8\n");
+    assert(eh_prefs_load(cfg,&r.appearance) && r.appearance.theme==EH_YELLOW);
+    assert(eh14_assign_save(&r,0,"/documents/EndraGBA.tns",cfg,NULL));
+    EhRegistry saved;eh7_registry_init(&saved);
+    assert(eh7_registry_load(&saved,cfg)==2 && saved.has_appearance);
+    assert(saved.appearance.theme==EH_YELLOW && saved.appearance.icon==8);
+    assert(!strcmp(saved.slots[3].path,"/documents/Manager.tns"));
+    assert(eh_save_appearance(&r,new,cfg,NULL));
+    assert(!eh_save_appearance(&r,(EhAppearance){.font=EH_COLOR_COUNT},cfg,NULL));
+    assert(!eh_save_appearance(&r,(EhAppearance){.theme=EH_THEME_COUNT},cfg,NULL));
+    assert(!access(live,F_OK) && access(stage,F_OK)!=0 && access(bak,F_OK)!=0);
+    eh7_registry_init(&saved);
+    assert(eh7_registry_load(&saved,cfg)==2 && saved.errors==0 && saved.has_appearance);
+    out=saved.appearance;
     assert(out.theme==EH_RED && out.folder==2 && out.font==3 && out.wallpaper==4 && out.icon==9);
-    assert(!eh_prefs_save(cfg,(EhAppearance){.font=EH_COLOR_COUNT}));
-    assert(!eh_prefs_save(cfg,(EhAppearance){.theme=EH_THEME_COUNT}));
-    assert(eh_prefs_save(cfg,(EhAppearance){EH_WHITE,18,17,3,8}));
-    assert(eh_prefs_load(cfg,&out) && out.theme==EH_WHITE && out.folder==18 && out.font==17 && out.wallpaper==3 && out.icon==8);
-    assert(eh_prefs_save(cfg,new));
-    write_text(stage,"incomplete"); assert(rename(live,bak)==0);
-    assert(eh_prefs_load(cfg,&out) && out.font==3);
-    new.font=5; assert(eh_prefs_save(cfg,new));
-    assert(eh_prefs_load(cfg,&out) && out.font==5);
-    assert(rename(live,bak)==0); write_text(live,"invalid");
-    assert(eh_prefs_load(cfg,&out) && out.font==5);
-    assert(eh_prefs_save(cfg,(EhAppearance){0}));
-    assert(eh_prefs_load(cfg,&out) && !out.theme && !out.folder && !out.font && !out.wallpaper && !out.icon);
-    char buffer[128]={0}; FILE *f=fopen(cfg,"rb"); assert(f);
-    assert(fread(buffer,1,sizeof(buffer)-1,f)==strlen(original)); assert(!fclose(f));
-    assert(!strcmp(original,buffer)); assert(!eh_prefs_save("/missing",(EhAppearance){0}));
+    assert(!strcmp(saved.slots[0].path,"/documents/EndraGBA.tns"));
+    assert(!strcmp(saved.slots[3].path,"/documents/Manager.tns"));
+    assert(!rename(cfg,bak));
+    assert(eh14_recover_config(cfg,NULL));
+    assert(access(bak,F_OK)!=0);
+    assert(eh_save_appearance(&r,(EhAppearance){0},cfg,NULL));
+    eh7_registry_init(&saved);
+    assert(eh7_registry_load(&saved,cfg)==2 && saved.has_appearance);
+    out=saved.appearance;
+    assert(!out.theme && !out.folder && !out.font && !out.wallpaper && !out.icon);
+    char buffer[256]={0}; FILE *f=fopen(cfg,"rb"); assert(f);
+    assert(fread(buffer,1,sizeof(buffer)-1,f)>0); assert(!fclose(f));
+    char *appearance=strstr(buffer,EH_APPEARANCE_LINE);
+    assert(strstr(buffer,"# My shortcuts") && appearance &&
+           !strstr(appearance+sizeof(EH_APPEARANCE_LINE)-1,EH_APPEARANCE_LINE));
+    f=fopen(live,"rb"); assert(f);
+    assert(fgets(buffer,sizeof(buffer),f) && !strcmp(buffer,"v4 3 6 7 2 8\n"));
+    assert(!fclose(f));
     memset(buffer,0,sizeof(buffer)); f=fopen(legacy,"rb"); assert(f);
     assert(fread(buffer,1,sizeof(buffer)-1,f)==strlen("v2 14 19 17\n")); assert(!fclose(f));
     assert(!strcmp(buffer,"v2 14 19 17\n"));
@@ -75,6 +91,6 @@ int main(void) {
     memset(buffer,0,sizeof(buffer)); assert(fgets(buffer,sizeof(buffer),prior));
     assert(!fclose(prior) && !strcmp(buffer,sample));
     unlink(run038); unlink(legacy); unlink(live); unlink(cfg); assert(rmdir(dir)==0);
-    puts("PASS appearance persistence, legacy config, interrupted saves, defaults");
+    puts("PASS unified settings, legacy import, shortcut preservation, backup recovery and defaults");
     return 0;
 }

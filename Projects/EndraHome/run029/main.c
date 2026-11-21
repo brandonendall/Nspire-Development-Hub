@@ -71,7 +71,7 @@ int main(int argc,char **argv){
   shortcuts_writable=eh14_recover_config(cfg,&recovery);
   if(shortcuts_writable)eh7_registry_load(&apps,cfg);
  }
- eh_prefs_load(cfg,&apps.appearance);
+ if(!apps.has_appearance)eh_prefs_load(cfg,&apps.appearance);
  EhUniversalUI ui;eh7_ui_init(&ui,&apps);
  if(recovery.stage!=EH14_OK)eh_toast_set(&ui.notice,eh14_save_stage_name(recovery.stage));
  Eh13Picker picker;memset(&picker,0,sizeof(picker));
@@ -156,12 +156,11 @@ int main(int argc,char **argv){
       if(action==EH15_NATIVE_CHECK){
        ui.native_status=native_settings_probe();
       }else if(action==EH15_THEME){
-       if(eh_prefs_save(cfg,ui.preview)){
-        apps.appearance=ui.preview;
+       if(shortcuts_writable&&eh_save_appearance(&apps,ui.preview,cfg,&diag)){
         eh_toast_set(&ui.notice,"Appearance saved");
         ui.page.page=EH_PAGE_HOME;
         ui.page.selected=eh_desktop_select(&apps,slot,EH_KEY_NONE);
-       }else eh_toast_set(&ui.notice,"Could not save appearance");
+       }else eh_toast_set(&ui.notice,shortcuts_writable?eh14_save_stage_name(diag.stage):"Config path unavailable");
       }else{
        if(shortcuts_writable && action==EH15_RENAME)
         ok=eh15_update_shortcut(&apps,slot,ui.rename_input,NULL,cfg,&diag);

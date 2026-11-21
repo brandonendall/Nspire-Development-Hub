@@ -212,9 +212,8 @@ static const EhMiniGlyph mini34[]={
  {' ',{0,0,0,0,0,0,0}}, {'?',{14,17,1,2,4,0,4}},
  {'&',{12,18,20,8,21,18,13}}, {'=',{0,31,0,31,0,0,0}},
 };
-void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
+void eh_small_text_plain(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
  if(!f||!s||scale<1||scale>3||max_chars<1)return;
- text_backing(f,x,y,s,max_chars,6*scale,5*scale,7*scale,color);
  for(int i=0;i<max_chars&&s[i];i++){
   unsigned char ch=(unsigned char)s[i];
   if(ch>='a'&&ch<='z')ch=(unsigned char)(ch-'a'+'A');
@@ -224,6 +223,12 @@ void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scal
   if(!rows)rows=mini34[sizeof(mini34)/sizeof(mini34[0])-4].bits;
   glyph(f,x+i*6*scale,y,rows,5,7,scale,color,1);
  }
+}
+
+void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
+ if(!f||!s||scale<1||scale>3||max_chars<1)return;
+ text_backing(f,x,y,s,max_chars,6*scale,5*scale,7*scale,color);
+ eh_small_text_plain(f,x,y,s,color,scale,max_chars);
 }
 
 /* Weighted luminance expanded from the RGB565 channels. */

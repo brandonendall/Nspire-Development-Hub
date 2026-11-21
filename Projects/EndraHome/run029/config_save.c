@@ -6,6 +6,7 @@
  * Crash recovery is available at next startup when cfg is absent.
  */
 #include "config_save.h"
+#include "preferences.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -69,7 +70,11 @@ int eh14_recover_config(const char *cfg,Eh14SaveError *error){
 }
 static int matches(const char *file,const EhRegistry *expected,int slot,const char *path){
  EhRegistry actual;eh7_registry_init(&actual);
- if(eh7_registry_load(&actual,file)<0||actual.errors||actual.theme!=expected->theme)return 0;
+ if(eh7_registry_load(&actual,file)<0||actual.errors||actual.theme!=expected->theme||
+    !actual.has_appearance)return 0;
+ const EhAppearance a=actual.appearance,b=expected->appearance;
+ if(a.theme!=b.theme||a.folder!=b.folder||a.font!=b.font||
+    a.wallpaper!=b.wallpaper||a.icon!=b.icon)return 0;
  for(int i=0;i<EH7_SLOT_COUNT;i++){
   if(strcmp(actual.slots[i].label,expected->slots[i].label)||
      strcmp(actual.slots[i].path,i==slot?path:expected->slots[i].path))return 0;
@@ -77,10 +82,10 @@ static int matches(const char *file,const EhRegistry *expected,int slot,const ch
  return 1;
 }
 
-int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,Eh14SaveError *error){
+static int save_config(EhRegistry *apps,int slot,const char *path,const char *cfg,Eh14SaveError *error){
  char temp[512],old[512];
  if(error){error->stage=EH14_OK;error->os_error=0;}
- if(!path||!apps||slot<0||slot>=EH7_SLOT_COUNT||(path[0]&&!eh7_valid_path(path))||!cfg||!cfg[0])
+ if(!apps||!eh_prefs_valid(apps->appearance)||!cfg||!cfg[0])
   return failure(error,EH14_INVALID);
  if(!sibling_paths(cfg,temp,old,sizeof(temp)))return failure(error,EH14_PATHS);
  /* Never reuse or clobber a leftover backup/staged file. */
@@ -99,8 +104,9 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
    size_t len=strlen(line);
    /* Detect truncated/corrupt source rather than dropping the remainder. */
    if(len==sizeof(line)-1&&line[len-1]!='\n'&&!feof(in)){ok=0;break;}
-   last=len?(unsigned char)line[len-1]:last;
    const char *key=line+strspn(line," \t");
+   if(!strncmp(key,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1))continue;
+   last=len?(unsigned char)line[len-1]:last;
    if(key[0]=='T'&&key[1]=='='){
     if(!theme_found){if(fprintf(out,"T=%d\n",apps->theme)<0)ok=0;theme_found=1;}
    }else if(key[0]==(char)('0'+slot)&&key[1]=='='){
@@ -111,15 +117,20 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
   if(ferror(in))ok=0;
   if(fclose(in)!=0)ok=0;
   if(!theme_found&&ok){if(last!='\n'&&fputc('\n',out)==EOF)ok=0;last='\n';if(fprintf(out,"T=%d\n",apps->theme)<0)ok=0;}
-  if(!found&&ok) {
+  if(slot>=0&&!found&&ok) {
    if(last!='\n'&&fputc('\n',out)==EOF)ok=0;
    if(ok&&!slot_line(out,slot,apps,path))ok=0;
+   last='\n';
   }
+  if(ok&&last!='\n'&&fputc('\n',out)==EOF)ok=0;
  }else{
   for(int i=0;i<EH7_SLOT_COUNT&&ok;i++)
    if(!slot_line(out,i,apps,i==slot?path:apps->slots[i].path))ok=0;
   if(ok&&fprintf(out,"T=%d\n",apps->theme)<0)ok=0;
  }
+ const EhAppearance a=apps->appearance;
+ if(ok&&fprintf(out,EH_APPEARANCE_LINE "v4 %u %u %u %u %u\n",
+                a.theme,a.folder,a.font,a.wallpaper,a.icon)<0)ok=0;
  if(fflush(out)!=0)ok=0;
  if(fclose(out)!=0)ok=0;
  if(!ok){int err=errno;remove(temp);errno=err;return failure(error,EH14_TEMP_WRITE);}
@@ -154,10 +165,31 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
  if(had_original&&remove(old)!=0){
   if(error){error->stage=EH14_BACKUP_RETAINED;error->os_error=errno;}
  }
- int was_set=apps->slots[slot].path[0]!=0;
- strcpy(apps->slots[slot].path,path);
- if(!was_set&&path[0])apps->enabled++;
- if(was_set&&!path[0])apps->enabled--;
+ if(slot>=0){
+  int was_set=apps->slots[slot].path[0]!=0;
+  if(apps->slots[slot].path!=path)strcpy(apps->slots[slot].path,path);
+  if(!was_set&&path[0])apps->enabled++;
+  if(was_set&&!path[0])apps->enabled--;
+ }
  apps->file_loaded=1;
+ apps->has_appearance=1;
  return 1;
+}
+
+int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,Eh14SaveError *error){
+ if(!path||slot<0||slot>=EH7_SLOT_COUNT||(path[0]&&!eh7_valid_path(path))){
+  errno=EINVAL;return failure(error,EH14_INVALID);
+ }
+ return save_config(apps,slot,path,cfg,error);
+}
+
+int eh_save_appearance(EhRegistry *apps,EhAppearance appearance,const char *cfg,Eh14SaveError *error){
+ if(!apps||!eh_prefs_valid(appearance)){
+  errno=EINVAL;return failure(error,EH14_INVALID);
+ }
+ EhAppearance previous=apps->appearance;
+ apps->appearance=appearance;
+ if(save_config(apps,-1,NULL,cfg,error))return 1;
+ apps->appearance=previous;
+ return 0;
 }

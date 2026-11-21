@@ -1,6 +1,7 @@
 /* EndraHome Run010: strict, read-only configuration of 7 app shortcuts. */
 #include "registry.h"
 #include "app_target.h"
+#include "preferences.h"
 #include <strings.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,10 +47,19 @@ int eh7_config_path(char *dst,size_t cap,const char *app_executable){
 int eh7_registry_parse(EhRegistry *apps,const char *line){
  if(!apps||!line)return 0;
  while(*line==' '||*line=='\t')line++;
+ if(!strncmp(line,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1)){
+  EhAppearance parsed;
+  if(eh_prefs_parse(line+sizeof(EH_APPEARANCE_LINE)-1,&parsed,4)){
+   apps->appearance=parsed;apps->has_appearance=1;return 1;
+  }
+  /* A damaged comment still allows shortcuts and the legacy look to load. */
+  return 0;
+ }
  if(!*line||*line=='#'||*line=='\n'||*line=='\r')return 0;
  if(line[0]=='T'&&line[1]=='='&&line[2]>='0'&&line[2]<='6'&&(line[3]=='\n'||line[3]=='\r'||line[3]==0)){
   apps->theme=line[2]-'0';
-  apps->appearance.theme=eh_legacy_theme((unsigned)apps->theme);return 1;
+  if(!apps->has_appearance)apps->appearance.theme=eh_legacy_theme((unsigned)apps->theme);
+  return 1;
  }
  if(line[0]<'0'||line[0]>'6'||line[1]!='='){apps->errors++;return -1;}
  int slot=line[0]-'0';

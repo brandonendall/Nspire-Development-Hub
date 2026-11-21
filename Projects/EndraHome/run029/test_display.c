@@ -48,6 +48,29 @@ int main(void) {
     eh_desktop_wallpaper(frame,(EhAppearance){.folder=2,.font=1});
     assert(frame[200*320+160]!=raw_wallpaper[200*320+160]);
     (void)mark;
+    /* Low contrast used to paint a solid white rectangle behind Files. */
+    EhAppearance caption_look={.theme=EH_BLACK,.font=7,.wallpaper=4,.icon=8};
+    EhPalette caption_palette=eh_palette(caption_look);
+    eh_box(frame,0,0,320,240,caption_palette.ink);
+    eh_icon_caption(frame,30,30,"Files",&caption_palette);
+    assert(color_count(caption_palette.ink)==320*240);
+    for(unsigned theme=0;theme<EH_THEME_COUNT;theme++){
+        caption_look.theme=theme;
+        r.appearance=caption_look;
+        ui.page.selected=-1;
+        eh7_render(raw_wallpaper,&ui.page,&r);
+        ui.page.selected=EH_FILES_SLOT;
+        eh7_render(frame,&ui.page,&r);
+        int changed=0;
+        for(int y=0;y<240;y++)for(int x=0;x<320;x++){
+            if(frame[y*320+x]==raw_wallpaper[y*320+x])continue;
+            assert(x>=center-20 && x<=center+20 && y>=top+49 && y<=top+62);
+            assert(x<center-15 || x>=center+14 || y<top+52 || y>=top+59);
+            changed++;
+        }
+        assert(changed>20);
+    }
+    r.appearance=(EhAppearance){EH_RED,2,1,0,0};
     uint32_t theme_hash[EH_THEME_COUNT];
     for(unsigned i=0;i<EH_THEME_COUNT;i++){
         eh_wallpaper_paint(frame,(EhAppearance){.theme=i});

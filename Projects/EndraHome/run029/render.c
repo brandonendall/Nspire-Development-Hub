@@ -39,7 +39,25 @@ void eh_desktop_wallpaper(uint16_t *f,EhAppearance appearance){
 }
 
 void eh_icon_caption(uint16_t *f,int x,int y,const char *text,const EhPalette *p){
- eh_small_text(f,x,y,text,p->ink,1,12);
+ eh_small_text_plain(f,x,y,text,p->ink,1,12);
+}
+
+/* A shallow capsule follows the label while leaving its interior transparent. */
+static void caption_ring(uint16_t *f,int x,int y,int width,uint16_t ink){
+ static const unsigned char inset[]={4,2,1,1,0,0,0,0,0,1,1,2,4};
+ const int last=(int)sizeof(inset)-1;
+ for(int row=0;row<=last;++row){
+  int start=inset[row],span=width-2*start;
+  if(row==0||row==last){
+   eh_box(f,x+start,y+row,span,1,ink);
+  }else{
+   int shoulder=row<=last/2?inset[row-1]:inset[row+1];
+   int stroke=shoulder-start;
+   if(stroke<1)stroke=1;
+   eh_box(f,x+start,y+row,stroke,1,ink);
+   eh_box(f,x+width-start-stroke,y+row,stroke,1,ink);
+  }
+ }
 }
 
 static void draw_tile(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPalette *p,int selected){
@@ -49,12 +67,15 @@ static void draw_tile(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPa
  if(n>12){memcpy(label,name,9);memcpy(label+9,"...",4);n=12;}
  else {memcpy(label,name,n);label[n]=0;}
  int tx=cx-(int)n*3,ty=y+52;
- if(selected)eh_theme_glass(f,tx-4,ty-3,(int)n*6+8,15,55,p);
- eh_icon_caption(f,tx,ty,label,p);
  if(selected){
-  eh_box(f,tx-2,ty+10,(int)n*6+4,1,eh_skin(p,EH_RGB(110,243,255)));
-  eh_box(f,tx+2,ty+12,(int)n*6-4,1,eh_skin(p,EH_RGB(23,128,206)));
+  int pad=n==12?3:5;
+  int width=(int)n*6-1+2*pad;
+  uint16_t ring=eh_skin(p,EH_RGB(131,240,255));
+  uint16_t edge=eh_luma(ring)>125?EH_RGB(6,12,23):EH_RGB(225,239,246);
+  caption_ring(f,tx-pad,ty-2,width,edge);
+  caption_ring(f,tx-pad,ty-3,width,ring);
  }
+ eh_icon_caption(f,tx,ty,label,p);
 }
 void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
  if(!f||!s||!r)return;

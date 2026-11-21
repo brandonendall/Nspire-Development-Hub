@@ -36,6 +36,20 @@ int main(void){
  EhUniversalUI s;eh7_ui_init(&s,&reg);
  eh7_render(fb,&s.page,&reg);
  if(save("build/home.ppm"))return 1;
+ EhRegistry photo;eh7_registry_init(&photo);
+ eh7_registry_parse(&photo,"0=GBA|/documents/GBA/EndraGBA.tns");
+ photo.appearance.wallpaper=4;
+ photo.appearance.icon=8;
+ EhUniversalUI selected;eh7_ui_init(&selected,&photo);
+ for(int scene=0;scene<2;scene++){
+  photo.appearance.theme=scene?EH_BLACK:EH_BLUE;
+  selected.page.selected=0;
+  eh7_render(fb,&selected.page,&photo);
+  if(save(scene?"build/ring_black_gba.ppm":"build/ring_blue_gba.ppm"))return 1;
+  eh7_ui_handle(&selected,EH_KEY_RIGHT);
+  eh7_render(fb,&selected.page,&photo);
+  if(save(scene?"build/ring_black_files.ppm":"build/ring_blue_files.ppm"))return 1;
+ }
  reg.appearance.theme=EH_RED;
  eh7_render(fb,&s.page,&reg);if(save("build/home_red.ppm"))return 1;
  for(unsigned i=0;i<EH_WALLPAPER_COUNT;i++){
