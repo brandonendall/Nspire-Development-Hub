@@ -50,16 +50,16 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
  EhAppearance appearance=settings?s->preview:s->apps->appearance;
  EhPalette p=eh_palette(appearance);
  uint16_t custom=p.ink;
- head34(f,settings?"SETTINGS":s->subview==2&&s->page.page==EH_PAGE_HELP?"TI SETTINGS":rightpart(app->label,17),appearance,&p);
+ head34(f,settings?"SETTINGS":rightpart(app->label,17),appearance,&p);
  if(s->renaming){
   title34(f,"RENAME SHORTCUT",&p);
   txt(f,20,86,"CURRENT NAME:",eh_skin(&p,MUTED),20);
   txt(f,144,86,rightpart(app->label,17),custom,17);
   box(f,18,116,284,36,eh_skin(&p,DEEP));
   box(f,18,116,284,2,eh_skin(&p,SKY));
-  txt(f,24,130,s->rename_input[0]?s->rename_input:"TYPE A NAME",s->rename_input[0]?custom:eh_skin(&p,MUTED),17);
+  txt(f,s->rename_input[0]?24:30,130,s->rename_input[0]?s->rename_input:"TYPE A NAME",s->rename_input[0]?custom:eh_skin(&p,MUTED),17);
   int n=(int)strlen(s->rename_input);
-  if(n<16)box(f,24+n*8,140,2,12,eh_skin(&p,SKY));
+  if(n<16)box(f,24+n*8,129,1,10,eh_skin(&p,SKY));
   eh_small_text(f,20,176,"USE THE PHYSICAL KEYBOARD",eh_skin(&p,MUTED),1,40);
   eh_small_text(f,20,192,"15 CHARACTERS MAXIMUM",eh_skin(&p,MUTED),1,40);
   eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",p.ink,1,48);
@@ -75,7 +75,7 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
  }
  if(s->page.page==EH_PAGE_DETAIL){
   static const char *items[]={"ADD APP","REASSIGN SELECTED","RENAME SHORTCUT",
-    "REMOVE SHORTCUT","APP INFORMATION","APPEARANCE","OPEN ENDRA FILES","TI SETTINGS SHORTCUT"};
+    "REMOVE SHORTCUT","APP INFORMATION","APPEARANCE","OPEN ENDRA FILES"};
   title34(f,"MANAGE APPLICATIONS",&p);
   for(int i=0;i<EH15_MENU_COUNT;i++){
    int y=75+i*17;
@@ -89,18 +89,6 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
    txt(f,40,y,item,custom,32);
   }
   eh_small_text(f,15,225,"ARROWS SELECT   ENTER OPEN   ESC BACK",p.ink,1,48);
- }else if(s->page.page==EH_PAGE_HELP&&s->subview==2){
-  title34(f,"NATIVE SHORTCUT",&p);
-  txt(f,19,79,"HOME > 5 > ENDRAHOME",custom,34);
-  txt(f,19,98,"STATUS: NOT INSTALLED",custom,34);
-  eh_small_text(f,19,120,"READ-ONLY COMPATIBILITY CHECK",eh_skin(&p,SKY),1,45);
-  const char *result=s->native_status==1?"STOCK MENU POINTER DETECTED":
-    s->native_status==2?"MENU POINTER ALREADY MODIFIED":
-    s->native_status==3?"UNSUPPORTED OS / NDLESS":"PRESS ENTER TO CHECK";
-  eh_small_text(f,19,138,result,custom,1,46);
-  eh_small_text(f,19,158,"PRESERVE EXISTING THEME EDITOR",eh_skin(&p,MUTED),1,45);
-  eh_small_text(f,19,178,"NO OS WRITES OR HOOKS INSTALLED",custom,1,45);
-  eh_small_text(f,15,225,"ENTER CHECK       ESC BACK",p.ink,1,48);
  }else if(s->page.page==EH_PAGE_HELP&&!s->subview){
   title34(f,"APPLICATION INFO",&p);
   txt(f,20,85,"SHORTCUT:",eh_skin(&p,MUTED),16);

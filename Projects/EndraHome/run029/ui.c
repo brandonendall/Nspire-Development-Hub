@@ -9,7 +9,7 @@ void eh7_ui_init(EhUniversalUI *s,const EhRegistry *apps){
  s->missing=s->request=s->assign_slot=s->adding_app=s->edit_action=s->open_files=0;
  s->manager_item=s->subview=s->renaming=s->confirm_remove=0;
  s->preview=apps?apps->appearance:(EhAppearance){0};
- s->setting_row=0;s->native_status=0;
+ s->setting_row=0;
  s->notice=(EhToast){0};
  s->rename_input[0]=0;
 }
@@ -108,15 +108,9 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
     case EH_MANAGER_INFO:s->subview=0;s->page.page=EH_PAGE_HELP;break;
     case EH_MANAGER_APPEARANCE:s->subview=1;s->preview=s->apps?s->apps->appearance:(EhAppearance){0};s->setting_row=EH_LOOK_THEME;s->page.page=EH_PAGE_HELP;break;
     case EH_MANAGER_FILES:s->open_files=1;break;
-    case EH_MANAGER_TI:s->subview=2;s->native_status=0;s->page.page=EH_PAGE_HELP;break;
    }
    return 1;
   }
- }
- if(s->page.page==EH_PAGE_HELP&&s->subview==2){
-  if(k==EH_KEY_ENTER){s->edit_action=EH15_NATIVE_CHECK;return 1;}
-  if(k==EH_KEY_ESC||k==EH_KEY_MENU){s->subview=0;s->page.page=EH_PAGE_DETAIL;return 1;}
-  return 0;
  }
  if(s->page.page==EH_PAGE_HELP&&s->subview==1){
   if(k==EH_KEY_UP || k==EH_KEY_DOWN){

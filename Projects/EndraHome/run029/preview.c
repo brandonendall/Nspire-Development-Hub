@@ -140,7 +140,7 @@ int main(void){
  Eh17Files editor={0};
  editor.active=1;editor.screen=EH_FILES_TEXT_EDIT;
  strcpy(editor.path,"/documents/Notes.txt.tns");
- strcpy(editor.content,"EndraHome Run042\n\nCheck the JPEG viewer and zoom.\nKeep notes here while testing.");
+ strcpy(editor.content,"EndraHome Run043\n\nCheck the JPEG viewer and zoom.\nKeep notes here while testing.");
  editor.text_len=(unsigned)strlen(editor.content);
  eh_text_begin(&editor.text_edit,editor.content,editor.text_len);
  editor.text_edit.cursor=editor.text_len;
@@ -152,7 +152,7 @@ int main(void){
  if(save("build/files_menu_red.ppm"))return 1;
  eh7_ui_init(&s,&reg);eh7_ui_handle(&s,EH_KEY_MENU);
  eh15_manager_render(fb,&s);if(save("build/manager_red.ppm"))return 1;
- s.manager_item=EH_MANAGER_TI;eh7_ui_handle(&s,EH_KEY_ENTER);s.native_status=1;
- eh15_manager_render(fb,&s);
- return save("build/native_shortcut.ppm");
+ eh7_render(fb,&only.page,&empty);
+ eh_desktop_clock(fb,empty.appearance,783);
+ return save("build/clock.ppm");
 }

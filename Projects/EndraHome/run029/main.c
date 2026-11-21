@@ -22,6 +22,12 @@
 void __attribute__((weak)) _fini(void){}
 /* BSS, not stack: 4KiB bounded text preview */
 static Eh17Files built_files;
+static int desktop_minute;
+static int read_minute(void){
+ /* nClock stores local wall time in the CX II RTC seconds register. */
+ uint32_t seconds=*(const volatile uint32_t *)0x90090000u;
+ return seconds<1325376000u || seconds==UINT32_MAX ? -1 : (int)((seconds/60u)%1440u);
+}
 static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  uint16_t *fb=eh_framebuffer();
  if(built_files.active)eh17_files_render(fb,&built_files,s->apps);
@@ -30,7 +36,10 @@ static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
   eh7_overlay(fb,s);
  }
  else{
-  if(s->page.page==EH_PAGE_HOME)eh7_render(fb,&s->page,s->apps);
+  if(s->page.page==EH_PAGE_HOME){
+   eh7_render(fb,&s->page,s->apps);
+   eh_desktop_clock(fb,s->apps->appearance,desktop_minute);
+  }
   else eh15_manager_render(fb,s);
   eh7_overlay(fb,s);
  }
@@ -40,14 +49,6 @@ static void open_builtin(EhUniversalUI *ui){
  ui->open_files=0;
  if(!eh17_files_open(&built_files,"/documents"))
   eh_toast_set(&ui->notice,"Cannot open built-in Files");
-}
-/* Read-only probe for CX II CAS 6.4.0.74, using nTheme's OS49
- * fingerprint and Settings literal address. No foreign pointer dereference,
- * OS write, callback, hook or startup modification. */
-static int native_settings_probe(void){
- if(nl_ndless_rev()<2022||nl_osid()!=49||nl_hwsubtype()!=2)return 3;
- if(*(const volatile uint32_t *)0x10000020u!=0x1042aee0u)return 3;
- return *(const volatile uint32_t *)0x10a41a0cu==0x10c44fc4u?1:2;
 }
 int main(int argc,char **argv){
  EhRegistry apps;eh7_registry_init(&apps);
@@ -77,6 +78,8 @@ int main(int argc,char **argv){
  Eh13Picker picker;memset(&picker,0,sizeof(picker));
  for(;;){
   if(!eh_platform_start())return 1;
+  desktop_minute=read_minute();
+  uint32_t clock_tick=eh_platform_ticks();
   paint(&ui,&picker);
   while(!ui.page.should_exit&&!ui.request){
    EhKey key=eh_platform_readkey();
@@ -90,6 +93,13 @@ int main(int argc,char **argv){
    uint32_t now=eh_platform_ticks();
    int expired=eh_toast_tick(&ui.notice,now);
    expired|=eh_toast_tick(&built_files.status,now);
+   if(!built_files.active&&!picker.active&&ui.page.page==EH_PAGE_HOME &&
+      now-clock_tick>=EH_TICKS_PER_SECOND){
+    clock_tick=now;
+    int minute=read_minute();
+    expired|=minute!=desktop_minute;
+    desktop_minute=minute;
+   }
    if(expired)paint(&ui,&picker);
    int typed=eh16_textkey(); /* read each frame; one fresh QWERTY event */
    if(built_files.active){
@@ -159,9 +169,7 @@ int main(int argc,char **argv){
       int action=ui.edit_action;ui.edit_action=EH15_NONE;
       Eh14SaveError diag={EH14_OK,0};
       int slot=ui.page.selected,ok=0;
-      if(action==EH15_NATIVE_CHECK){
-       ui.native_status=native_settings_probe();
-      }else if(action==EH15_THEME){
+      if(action==EH15_THEME){
        if(shortcuts_writable&&eh_save_appearance(&apps,ui.preview,cfg,&diag)){
         eh_toast_set(&ui.notice,"Appearance saved");
         ui.page.page=EH_PAGE_HOME;

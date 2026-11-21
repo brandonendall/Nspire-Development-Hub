@@ -3,6 +3,7 @@
 #include "display.h"
 #include "art.h"
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #define DEEP EH_RGB(4,13,29)
@@ -76,6 +77,16 @@ static void draw_tile(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPa
   caption_ring(f,tx-pad,ty-3,width,ring);
  }
  eh_icon_caption(f,tx,ty,label,p);
+}
+void eh_clock_label(char label[9],int minute){
+ if(minute<0 || minute>=1440){label[0]=0;return;}
+ int hour=minute/60;
+ snprintf(label,9,"%02d:%02d %s",hour%12?hour%12:12,minute%60,hour<12?"AM":"PM");
+}
+void eh_desktop_clock(uint16_t *frame,EhAppearance appearance,int minute){
+ char label[9];
+ eh_clock_label(label,minute);
+ eh_small_text(frame,265,14,label,eh_palette(appearance).ink,1,8);
 }
 void eh7_render(uint16_t *f,const EhUI7 *s,const EhRegistry *r){
  if(!f||!s||!r)return;

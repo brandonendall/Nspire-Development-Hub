@@ -60,20 +60,11 @@ static int contrast_edge(const uint16_t *f,int x,int y,uint16_t c,uint16_t *edge
     return fg-bg<66 && bg-fg<66;
 }
 
-static void text_backing(uint16_t *f,int x,int y,const char *s,int count,
-                         int pitch,int width,int height,uint16_t ink){
-    int length=0;
-    while(length<count&&s[length])++length;
-    if(!length)return;
-    int span=(length-1)*pitch+width;
-    uint16_t edge;
-    if(contrast_edge(f,x+span/4,y+height/2,ink,&edge) ||
-       contrast_edge(f,x+span*3/4,y+height/2,ink,&edge))
-        eh_box(f,x-1,y-1,span+2,height+2,edge);
-}
-
 static void glyph(uint16_t *f,int x,int y,const uint8_t *rows,unsigned w,unsigned h,
-                  int scale,uint16_t ink,int reverse){
+                  int scale,uint16_t ink,int reverse,int shadow){
+    uint16_t edge;
+    if(shadow && contrast_edge(f,x+(int)w*scale/2,y+(int)h*scale/2,ink,&edge))
+        glyph(f,x+1,y+1,rows,w,h,scale,edge,reverse,0);
     for(unsigned row=0;row<h;++row)
         for(unsigned col=0;col<w;++col)
             if(rows[row]&(1u<<(reverse?w-1-col:col)))
@@ -81,11 +72,10 @@ static void glyph(uint16_t *f,int x,int y,const uint8_t *rows,unsigned w,unsigne
 }
 
 void eh_text(uint16_t *f, int x, int y, const char *s, uint16_t ink, int limit, int scale) {
-    text_backing(f,x,y,s,limit,8*scale,7*scale,8*scale,ink);
     for (int i = 0; i < limit && s[i]; ++i) {
         unsigned ch = (unsigned char)s[i];
         if (ch < 32 || ch >= 127) ch = '?';
-        glyph(f,x+i*8*scale,y,(const uint8_t *)font8x8_basic[ch],8,8,scale,ink,0);
+        glyph(f,x+i*8*scale,y,(const uint8_t *)font8x8_basic[ch],8,8,scale,ink,0,1);
     }
 }
 
@@ -212,7 +202,7 @@ static const EhMiniGlyph mini34[]={
  {' ',{0,0,0,0,0,0,0}}, {'?',{14,17,1,2,4,0,4}},
  {'&',{12,18,20,8,21,18,13}}, {'=',{0,31,0,31,0,0,0}},
 };
-void eh_small_text_plain(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
+static void small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars,int shadow){
  if(!f||!s||scale<1||scale>3||max_chars<1)return;
  for(int i=0;i<max_chars&&s[i];i++){
   unsigned char ch=(unsigned char)s[i];
@@ -221,14 +211,17 @@ void eh_small_text_plain(uint16_t *f,int x,int y,const char *s,uint16_t color,in
   for(size_t g=0;g<sizeof(mini34)/sizeof(mini34[0]);g++)
    if(mini34[g].ch==(char)ch){rows=mini34[g].bits;break;}
   if(!rows)rows=mini34[sizeof(mini34)/sizeof(mini34[0])-4].bits;
-  glyph(f,x+i*6*scale,y,rows,5,7,scale,color,1);
+  glyph(f,x+i*6*scale,y,rows,5,7,scale,color,1,shadow);
  }
+}
+
+void eh_small_text_plain(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
+ small_text(f,x,y,s,color,scale,max_chars,0);
 }
 
 void eh_small_text(uint16_t *f,int x,int y,const char *s,uint16_t color,int scale,int max_chars){
  if(!f||!s||scale<1||scale>3||max_chars<1)return;
- text_backing(f,x,y,s,max_chars,6*scale,5*scale,7*scale,color);
- eh_small_text_plain(f,x,y,s,color,scale,max_chars);
+ small_text(f,x,y,s,color,scale,max_chars,1);
 }
 
 /* Weighted luminance expanded from the RGB565 channels. */

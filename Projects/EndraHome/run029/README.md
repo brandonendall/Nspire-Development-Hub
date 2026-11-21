@@ -1,4 +1,6 @@
-# EndraHome Run042 Desktop
+# EndraHome Run043 Desktop
+
+The desktop shows the calculator RTC in the upper right. Low-contrast labels use a glyph shadow. Rename Shortcut uses an inline caret. Open Endra Files is the last desktop menu entry.
 
 In Files, open a plain-text TXT, Markdown or CSV file up to 4 KiB. From its
 text preview press Enter to edit. Use the arrows and QWERTY keys to edit,

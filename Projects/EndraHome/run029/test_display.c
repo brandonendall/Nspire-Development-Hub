@@ -83,6 +83,7 @@ int main(void) {
     eh_box(frame,0,0,320,240,black.panel);
     eh_small_text(frame,10,10,"Dark text",black.ink,1,9);
     assert(color_count(black.ink)>15 && color_count(EH_RGB(244,248,252))>15);
+    assert(frame[9*320+9]==black.panel && frame[13*320+36]==black.panel);
     eh_box(frame,0,0,320,240,white.panel);
     eh_text(frame,10,10,"White",white.ink,5,1);
     assert(color_count(white.ink)>15 && color_count(EH_RGB(4,8,15))>15);
@@ -157,11 +158,18 @@ int main(void) {
     r.appearance.theme=0;eh17_files_render(frame,&files,&r);
     assert(frame[24*320+57]!=red);
     r.appearance.theme=EH_RED;
-    ui.page.page=EH_PAGE_DETAIL;ui.subview=0;ui.manager_item=EH_MANAGER_TI;
-    eh7_ui_handle(&ui,EH_KEY_ENTER);assert(ui.subview==2);
-    eh7_ui_handle(&ui,EH_KEY_ENTER);assert(ui.edit_action==EH15_NATIVE_CHECK);
-    ui.edit_action=0;ui.native_status=2;eh15_manager_render(frame,&ui);
-    assert(color_count(eh_palette(r.appearance).ink)>50);
+    char label[9];
+    eh_clock_label(label,0);assert(!strcmp(label,"12:00 AM"));
+    eh_clock_label(label,719);assert(!strcmp(label,"11:59 AM"));
+    eh_clock_label(label,720);assert(!strcmp(label,"12:00 PM"));
+    eh_clock_label(label,1439);assert(!strcmp(label,"11:59 PM"));
+    eh_clock_label(label,-1);assert(!*label);
+    ui.renaming=1;
+    for(int n=0;n<=15;n++){
+        memset(ui.rename_input,'A',n);ui.rename_input[n]=0;
+        eh15_manager_render(frame,&ui);
+        assert(frame[129*320+24+n*8]==eh_skin(&p,EH_RGB(55,219,252)));
+    }
     eh_toast_set(&ui.notice,"Appearance saved");eh7_overlay(frame,&ui);
     eh_text(frame,317,237,"wide",p.ink,4,2);
     eh_small_text(frame,316,232,"ENDRA",EH_RGB(53,219,252),1,6);
