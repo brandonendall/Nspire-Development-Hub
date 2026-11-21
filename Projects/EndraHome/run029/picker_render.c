@@ -86,7 +86,9 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  const uint16_t cyan=EH_RGB(52,219,253),pale=EH_RGB(228,249,255);
  const uint16_t steel=EH_RGB(126,210,247),line=EH_RGB(23,111,169);
  eh_wallpaper_paint(f);
- eh_glass_panel(f,0,0,320,37,94);
+ /* Opaque brand strip prevents ghosting the wallpaper's old EndraHome
+  * wordmark behind the Files title. */
+ eh_box(f,0,0,320,37,EH_RGB(5,16,31));
  eh_box(f,0,35,320,2,cyan);
  eh_small_text(f,11,10,p->show_all?"ENDRA FILES":"ASSIGN APP",pale,2,12);
  eh_small_text(f,255,21,p->show_all?"BROWSER":"PICKER",steel,1,12);
@@ -98,7 +100,7 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  size_t len=strlen(shown);
  if(len>30)shown+=len-30;
  label(f,54,49,shown,pale,30);
- eh_glass_panel(f,7,73,306,143,88);
+ eh_glass_panel(f,7,73,306,143,92);
  eh_box(f,7,73,306,1,line);
  eh_box(f,7,214,306,1,line);
  eh_small_text(f,38,77,"NAME",steel,1,5);

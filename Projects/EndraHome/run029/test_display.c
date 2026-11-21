@@ -31,7 +31,9 @@ int main(void) {
     /* Hero launcher: original artwork is untouched outside the icon and
        name, unlike the opaque 66x63 card used by Run035. */
     assert(frame[124*320+121]==raw_wallpaper[124*320+121]);
-    assert(frame[124*320+160]!=raw_wallpaper[124*320+160]);
+    /* Files-only icon sits below wallpaper's large central E logo. */
+    assert(frame[124*320+160]==raw_wallpaper[124*320+160]);
+    assert(frame[166*320+160]!=raw_wallpaper[166*320+160]);
     /* Run035: original artwork header remains, fake Run031/96% readout is scrubbed. */
     assert(frame[15*320+265] == frame[15*320+211]);
     (void)mark;

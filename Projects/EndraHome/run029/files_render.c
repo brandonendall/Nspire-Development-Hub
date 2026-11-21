@@ -41,7 +41,7 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
    static const char *menu[8]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES"};
    /* Design-selected Run036 neon-glass actions popup. 84% tinted backdrop
     * preserves readability without filling the screen with solid gray. */
-   eh_glass_panel(f,57,24,206,191,87);
+   eh_glass_panel(f,57,24,206,191,93);
    box(f,57,24,206,1,EH_RGB(67,220,253));
    box(f,57,213,206,1,EH_RGB(67,220,253));
    box(f,57,24,1,190,EH_RGB(67,220,253));
@@ -67,7 +67,7 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
     else if(i==5){box(f,ix+2,y+1,8,1,icon);box(f,ix+3,y+3,6,7,icon);}
     else if(i==6){box(f,ix+1,y+3,8,8,icon);box(f,ix+1,y+1,4,2,icon);box(f,ix+9,y+5,4,1,icon);}
     else {box(f,ix+3,y+1,6,1,icon);box(f,ix+3,y+9,6,1,icon);box(f,ix+3,y+1,1,9,icon);box(f,ix+9,y+1,1,9,icon);}
-    eh_small_text(f,97,y,menu[i],EH_RGB(238,251,255),1,22);
+    eh_text(f,97,y,menu[i],EH_RGB(238,251,255),18,1);
    }
   }
   if(v->confirm_delete){
