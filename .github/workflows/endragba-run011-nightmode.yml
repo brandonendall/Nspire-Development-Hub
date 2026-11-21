@@ -1,0 +1,42 @@
+name: EndraGBA Run011 - NightMode
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/endragba-run011-nightmode]
+    paths:
+      - '.github/workflows/endragba-run011-nightmode.yml'
+      - 'Projects/EndraGBA/run011_nightmode.py'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply verified baseline and approved NightMode
+        run: |
+          set -euxo pipefail
+          cp -a vendor/upstream-gpsp upstream-gpsp
+          python3 -m py_compile Projects/EndraGBA/run011_nightmode.py
+          python3 Projects/EndraGBA/run011_nightmode.py
+      - name: Compile native Ndless
+        run: |
+          set -euxo pipefail
+          docker pull "$NSPIRE_BUILD_IMAGE"
+          bash toolchain/build.sh upstream-gpsp
+      - name: Package executable and checksum
+        run: |
+          set -euxo pipefail
+          test -s upstream-gpsp/gpsp_libretro.tns
+          mkdir -p dist
+          cp upstream-gpsp/gpsp_libretro.tns dist/EndraGBA_Run011_NightMode.tns
+          (cd dist && sha256sum *.tns > SHA256SUMS.txt)
+          printf '%s\n' 'Run011: black and silver native UI; both menus and game browser.' 'Run010 folder-left browser and Run009 FastExit retained.' 'Physical test pending. Keep Run010 alongside this executable; retain UltraGBA_Data and ROM-local saves.' > dist/README.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraGBA_Run011_NightMode
+          path: dist/
+          if-no-files-found: error
