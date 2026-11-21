@@ -24,7 +24,7 @@ static int color_count(uint16_t color) {
 }
 int main(void) {
     EhRegistry r;eh7_registry_init(&r);
-    r.appearance=(EhAppearance){EH_RED,2,1,0,0};
+    r.appearance=(EhAppearance){EH_RED,2,1,0,0,0};
     EhPalette p=eh_palette(r.appearance);
     assert(p.folder!=p.ink && p.accent!=p.ink);
     /* Run030 theme-dependent icon and shaded badge. */
@@ -70,7 +70,7 @@ int main(void) {
         }
         assert(changed>20);
     }
-    r.appearance=(EhAppearance){EH_RED,2,1,0,0};
+    r.appearance=(EhAppearance){EH_RED,2,1,0,0,0};
     uint32_t theme_hash[EH_THEME_COUNT];
     for(unsigned i=0;i<EH_THEME_COUNT;i++){
         eh_wallpaper_paint(frame,(EhAppearance){.theme=i});
@@ -111,6 +111,14 @@ int main(void) {
                 if(yy<20||yy>=35||xx<(i==EH_FILE_FOLDER?19:20)||xx>=(i==EH_FILE_FOLDER?37:36))assert(frame[yy*320+xx]==white.panel);
         eh_file_kind_icon(frame,-3,-2,(EhFileKind)i,&black);
         eh_file_kind_icon(frame,319,239,(EhFileKind)i,&black);
+    }
+    for(unsigned color=0;color<EH_THEME_COUNT;color++){
+        EhAppearance fixed={.theme=EH_ORANGE,.icon_color=color+1,.icon=5};
+        eh_box(frame,0,0,320,240,0);eh_icon_paint(frame,fixed,20,20);
+        uint32_t expected=fingerprint();
+        fixed.theme=color;fixed.icon_color=0;
+        eh_box(frame,0,0,320,240,0);eh_icon_paint(frame,fixed,20,20);
+        assert(fingerprint()==expected);
     }
     uint32_t wallpaper_hash[EH_WALLPAPER_COUNT], icon_hash[EH_ICON_COUNT];
     for(unsigned i=0;i<EH_WALLPAPER_COUNT;i++){

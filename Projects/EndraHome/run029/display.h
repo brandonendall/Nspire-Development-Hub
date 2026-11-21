@@ -16,7 +16,7 @@ enum { EH_BLUE, EH_RED, EH_GREEN, EH_YELLOW, EH_ORANGE, EH_PURPLE,
 #define EH_ICON_COUNT 10
 #define EH_RGB(r,g,b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 
-typedef struct { unsigned theme, folder, font, wallpaper, icon; } EhAppearance;
+typedef struct { unsigned theme, folder, font, wallpaper, icon, icon_color; /* 0 follows theme, 1..8 select a palette. */ } EhAppearance;
 typedef struct {
     uint16_t background, panel, raised, selected, accent, folder, ink;
     unsigned theme;

@@ -159,5 +159,10 @@ int main(void){
  if(save("build/clock.ppm"))return 1;
  s.page.page=EH_PAGE_HELP;s.subview=2;s.clock_draft=(11*60+47)*60+26;s.clock_field=2;
  eh15_manager_render(fb,&s);
- return save("build/set_clock.ppm");
+ if(save("build/set_clock.ppm"))return 1;
+ photo.appearance.theme=EH_ORANGE;photo.appearance.icon_color=EH_GREEN+1;
+ eh7_render(fb,&selected.page,&photo);eh_desktop_clock(fb,12*3600+206);
+ if(save("build/orange_green_icons.ppm"))return 1;
+ s.subview=1;s.preview=photo.appearance;s.setting_row=EH_LOOK_ICON_COLOR;
+ eh15_manager_render(fb,&s);return save("build/icon_color_setting.ppm");
 }

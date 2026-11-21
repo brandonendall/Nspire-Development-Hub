@@ -1,5 +1,7 @@
 # EndraHome Run046 Desktop
 
+Menu > Appearance > Icon color previews eight independent icon colors for any app icon shape. Match theme follows the interface color. Enter saves the choice.
+
 Use Menu > Appearance > Set clock. Left/right selects hour, minute or second. Up/down adjusts it, including AM/PM when the hour crosses noon or midnight. Enter synchronizes the selected time to the current RTC second and saves the EndraHome time offset in the shortcut configuration. Esc cancels.
 
 The desktop clock shows hours, minutes, seconds and AM/PM in pure white with a dark glyph outline. Low-contrast labels use a glyph shadow. Rename Shortcut uses an inline caret. Open Endra Files is the last desktop menu entry.

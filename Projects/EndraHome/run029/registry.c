@@ -59,10 +59,16 @@ int eh7_registry_parse(EhRegistry *apps,const char *line){
   apps->clock_offset_seconds=remainder?prior-prior%60+number:number*60+prior%60;
   return 1;
  }
+ if(!strncmp(line,EH_ICON_COLOR_LINE,sizeof(EH_ICON_COLOR_LINE)-1)){
+  const char *value=line+sizeof(EH_ICON_COLOR_LINE)-1;
+  if(value[0]<'0'||value[0]>'0'+EH_THEME_COUNT||value[1+strspn(value+1,"\r\n")])return 0;
+  apps->appearance.icon_color=(unsigned)(value[0]-'0');
+  return 1;
+ }
  if(!strncmp(line,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1)){
   EhAppearance parsed;
   if(eh_prefs_parse(line+sizeof(EH_APPEARANCE_LINE)-1,&parsed,4)){
-   apps->appearance=parsed;apps->has_appearance=1;return 1;
+   parsed.icon_color=apps->appearance.icon_color;apps->appearance=parsed;apps->has_appearance=1;return 1;
   }
   /* A damaged comment still allows shortcuts and the legacy look to load. */
   return 0;

@@ -23,7 +23,7 @@ jobs:
         run: |
           make -C Projects/EndraHome/run029 test
           make -C Projects/EndraHome/run029 preview
-          for p in home home_default home_red manager manager_red rename settings picker picker_add files files_menu files_menu_red clock set_clock ring_blue_gba ring_blue_files ring_black_gba ring_black_files text_editor text_discard; do test -s "Projects/EndraHome/run029/build/$p.ppm"; done
+          for p in home home_default home_red manager manager_red rename settings picker picker_add files files_menu files_menu_red clock set_clock orange_green_icons icon_color_setting ring_blue_gba ring_blue_files ring_black_gba ring_black_files text_editor text_discard; do test -s "Projects/EndraHome/run029/build/$p.ppm"; done
           for theme in blue green; do
             for n in {1..5}; do test -s "Projects/EndraHome/run029/build/wallpaper_${n}_${theme}.ppm"; done
           done

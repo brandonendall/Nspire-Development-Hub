@@ -131,7 +131,7 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH15_THEME && !r.appearance.theme);
  info.edit_action=0;
  eh7_ui_handle(&info,EH_KEY_ESC);
- r.appearance=(EhAppearance){EH_GREEN,3,2,1,4};
+ r.appearance=(EhAppearance){EH_GREEN,3,2,1,4,0};
  eh7_ui_handle(&info,EH_KEY_ENTER);
  for(unsigned n=1;n<=EH_THEME_COUNT;n++){
   eh7_ui_handle(&info,EH_KEY_LEFT);

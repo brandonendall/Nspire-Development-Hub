@@ -24,7 +24,7 @@ int main(void) {
     EhRegistry r; eh7_registry_init(&r);
     assert(eh7_registry_load(&r,cfg)==1 && r.appearance.theme==EH_RED);
     assert(!eh_prefs_load(cfg,&r.appearance) && r.appearance.theme==EH_RED);
-    EhAppearance new={1,2,3,4,9},out={0};
+    EhAppearance new={1,2,3,4,9,EH_GREEN+1},out={0};
     write_text(legacy,"v1 4 2 3\n");
     assert(eh_prefs_load(cfg,&out) && out.theme==EH_RED && out.folder==2 && out.font==3);
     assert(out.wallpaper==0 && out.icon==0);
@@ -70,7 +70,7 @@ int main(void) {
     assert(eh7_registry_load(&saved,cfg)==2 && saved.errors==0 && saved.has_appearance);
     assert(saved.clock_offset_seconds==68426);
     out=saved.appearance;
-    assert(out.theme==EH_RED && out.folder==2 && out.font==3 && out.wallpaper==4 && out.icon==9);
+    assert(out.icon_color==EH_GREEN+1 && out.theme==EH_RED && out.folder==2 && out.font==3 && out.wallpaper==4 && out.icon==9);
     assert(!strcmp(saved.slots[0].path,"/documents/EndraGBA.tns"));
     assert(!strcmp(saved.slots[3].path,"/documents/Manager.tns"));
     assert(!rename(cfg,bak));

@@ -74,7 +74,7 @@ static int matches(const char *file,const EhRegistry *expected,int slot,const ch
     actual.clock_offset_seconds!=expected->clock_offset_seconds||!actual.has_appearance)return 0;
  const EhAppearance a=actual.appearance,b=expected->appearance;
  if(a.theme!=b.theme||a.folder!=b.folder||a.font!=b.font||
-    a.wallpaper!=b.wallpaper||a.icon!=b.icon)return 0;
+    a.wallpaper!=b.wallpaper||a.icon!=b.icon||a.icon_color!=b.icon_color)return 0;
  for(int i=0;i<EH7_SLOT_COUNT;i++){
   if(strcmp(actual.slots[i].label,expected->slots[i].label)||
      strcmp(actual.slots[i].path,i==slot?path:expected->slots[i].path))return 0;
@@ -105,6 +105,7 @@ static int save_config(EhRegistry *apps,int slot,const char *path,const char *cf
    /* Detect truncated/corrupt source rather than dropping the remainder. */
    if(len==sizeof(line)-1&&line[len-1]!='\n'&&!feof(in)){ok=0;break;}
    const char *key=line+strspn(line," \t");
+   if(!strncmp(key,EH_ICON_COLOR_LINE,sizeof(EH_ICON_COLOR_LINE)-1))continue;
    if(!strncmp(key,EH_CLOCK_REMAINDER,sizeof(EH_CLOCK_REMAINDER)-1))continue;
    if(!strncmp(key,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1))continue;
    if(!strncmp(key,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1))continue;
@@ -135,6 +136,7 @@ static int save_config(EhRegistry *apps,int slot,const char *path,const char *cf
  const EhAppearance a=apps->appearance;
  if(ok&&fprintf(out,EH_APPEARANCE_LINE "v4 %u %u %u %u %u\n",
                 a.theme,a.folder,a.font,a.wallpaper,a.icon)<0)ok=0;
+ if(ok && a.icon_color && fprintf(out,EH_ICON_COLOR_LINE "%u\n",a.icon_color)<0)ok=0;
  if(fflush(out)!=0)ok=0;
  if(fclose(out)!=0)ok=0;
  if(!ok){int err=errno;remove(temp);errno=err;return failure(error,EH14_TEMP_WRITE);}

@@ -119,22 +119,22 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   eh_small_text(f,15,225,"ESC BACK TO APP MANAGER",p.ink,1,48);
  }else{
   static const char *const choices[]={"Interface","Folders","Text","Wallpaper","App Icon",
-                                      "Set clock","Restore defaults"};
+                                      "Icon color","Set clock","Restore defaults"};
   char wall[19], icon[19];
   snprintf(wall,sizeof(wall),"%u %s",appearance.wallpaper+1,
            eh_wallpaper_names[appearance.wallpaper]);
   snprintf(icon,sizeof(icon),"%u %s",appearance.icon+1,eh_icon_names[appearance.icon]);
   const char *values[]={eh_theme_names[p.theme],eh_folder_names[appearance.folder],
-                        eh_font_names[appearance.font],wall,icon,"",""};
+                        eh_font_names[appearance.font],wall,icon,appearance.icon_color?eh_theme_names[appearance.icon_color-1]:"Match theme","",""};
   title34(f,"APPEARANCE",&p);
   for(int i=0;i<=EH_LOOK_DEFAULTS;i++){
-   int y=79+i*20;
+   int y=78+i*18;
    if(s->setting_row==i){
     eh_theme_glass(f,16,y-4,162,16,55,&p);
     box(f,16,y-4,2,16,eh_skin(&p,SKY));
    }
    eh_small_text(f,22,y,choices[i],custom,1,16);
-   eh_small_text(f,83,y,values[i],eh_skin(&p,MUTED),1,15);
+   eh_small_text(f,86,y,values[i],eh_skin(&p,MUTED),1,15);
   }
 
   box(f,187,77,114,86,eh_skin(&p,SKY));

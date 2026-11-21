@@ -20,7 +20,7 @@ static int paths(const char *cfg, PrefPaths *p, unsigned version) {
 }
 int eh_prefs_valid(EhAppearance a) {
     return a.theme < EH_THEME_COUNT && a.folder < EH_COLOR_COUNT && a.font < EH_COLOR_COUNT &&
-           a.wallpaper < EH_WALLPAPER_COUNT && a.icon < EH_ICON_COUNT;
+           a.wallpaper < EH_WALLPAPER_COUNT && a.icon < EH_ICON_COUNT && a.icon_color <= EH_THEME_COUNT;
 }
 
 int eh_prefs_parse(const char *data, EhAppearance *out, unsigned version) {
@@ -49,7 +49,7 @@ int eh_prefs_parse(const char *data, EhAppearance *out, unsigned version) {
     }
     if (strcmp(cursor, "\n") != 0) return 0;
     if(version<4)values[0]=eh_legacy_theme(values[0]);
-    *out = (EhAppearance){values[0], values[1], values[2], values[3], values[4]};
+    *out = (EhAppearance){values[0], values[1], values[2], values[3], values[4], 0};
     return 1;
 }
 

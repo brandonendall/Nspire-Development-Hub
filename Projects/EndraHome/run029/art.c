@@ -116,6 +116,7 @@ void eh_icon_paint(uint16_t *frame, EhAppearance a, int x, int y) {
     static uint16_t palette[PALETTE_COLORS];
     static unsigned last_icon = EH_ICON_COUNT, last_theme = EH_THEME_COUNT;
     unsigned icon = checked(a.icon, EH_ICON_COUNT);
+    if(a.icon_color && a.icon_color<=EH_THEME_COUNT)a.theme=a.icon_color-1;
     a.theme = checked(a.theme, EH_THEME_COUNT);
     const uint8_t *asset = eh_art_data + EH_WALLPAPER_COUNT * WALL_BYTES + icon * ICON_BYTES;
     if (icon != last_icon || a.theme != last_theme) {
