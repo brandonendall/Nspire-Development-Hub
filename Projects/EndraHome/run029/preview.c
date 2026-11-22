@@ -137,6 +137,9 @@ int main(void){
  Eh17Files popup={0};popup.active=1;popup.nav=p;popup.menu_open=1;popup.menu_item=3;
  eh17_files_render(fb,&popup,&reg);
  if(save("build/files_menu.ppm"))return 1;
+ popup.menu_item=EH_EXTRACT_ZIP;
+ eh17_files_render(fb,&popup,&reg);if(save("build/archive_menu.ppm"))return 1;
+ popup.menu_item=3;
  Eh17Files editor={0};
  editor.active=1;editor.screen=EH_FILES_TEXT_EDIT;
  strcpy(editor.path,"/documents/Notes.txt.tns");

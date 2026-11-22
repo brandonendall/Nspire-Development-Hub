@@ -1,4 +1,6 @@
-# EndraHome Run046 Desktop
+# EndraHome Run047 Desktop
+
+Files > Menu > New File creates a named file in the current folder. A plain name like Diary becomes Diary.txt.tns and opens in the editor; press Menu to save. Create ZIP packages the selected file or entire folder beside it as .zip.tns. Enter on a .zip or .zip.tns browses its folders and file sizes without extraction. Extract ZIP writes the contents into a new sibling folder ending in _unzipped and refuses an existing destination.
 
 Menu > Appearance > Icon color previews eight independent icon colors for any app icon shape. Match theme follows the interface color. Enter saves the choice.
 
@@ -26,7 +28,7 @@ Interface has eight choices: Blue (default), Red, Green, Yellow, Orange, Purple,
 Black and White. Endra Files uses distinct file-type glyphs based on the suffix.
 An ordinary .tns uses the TI document glyph. Glyphs do not change open or launch behavior.
 
-Keep the executable with `EndraHome_Apps.cfg.tns`. Run046 reads prior appearance
+Keep the executable with `EndraHome_Apps.cfg.tns`. Run047 reads prior appearance
 settings and maps legacy interface colors to their closest retained choice. Save
 stores appearance and app shortcuts in `EndraHome_Apps.cfg.tns`. Older appearance
 files are read as a fallback and are left untouched for older builds. The first
@@ -42,7 +44,7 @@ Native shortcut registration and Ctrl+Home OS standby are pending investigation.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraHome_Run046_Desktop.tns /upload
+push /storage/emulated/0/Download/EndraHome_Run047_Desktop.tns /upload
 ```
 
 Historical source notes follow.

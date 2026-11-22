@@ -1,4 +1,7 @@
 #include "files.h"
+#include "file_ops.h"
+#include "archive.h"
+#include "miniz.h"
 #include "font8x8_basic.h"
 #include <assert.h>
 #include <stdio.h>
@@ -32,6 +35,50 @@ static void open_editor(Eh17Files *f){
  assert(select_name(&f->nav,"notes.txt"));
  for(int i=0;i<3;i++)assert(eh17_files_handle(f,EH_KEY_ENTER)==1);
  assert(f->screen==EH_FILES_TEXT_EDIT && !f->text_edit.dirty);
+}
+static void action(Eh17Files *f,int which){
+ assert(eh17_files_handle(f,EH_KEY_MENU)==1);
+ for(int i=0;i<which;i++)assert(eh17_files_handle(f,EH_KEY_DOWN)==1);
+ assert(f->menu_item==which);assert(eh17_files_handle(f,EH_KEY_ENTER)==1);
+}
+static void archive_workflow(Eh17Files *f,const char *dir){
+ char path[256];
+ assert(select_name(&f->nav,"Projects"));
+ eh17_files_handle(f,EH_KEY_ENTER);
+ action(f,EH_NEW_FILE);
+ for(const char *p="Diary";*p;p++)assert(eh21_files_text(f,*p));
+ eh17_files_handle(f,EH_KEY_ENTER);assert(f->screen==EH_FILES_TEXT_EDIT);
+ eh21_files_text(f,'A');eh17_files_handle(f,EH_KEY_MENU);
+ snprintf(path,sizeof(path),"%s/Projects/Diary.txt.tns",dir);
+ verify_text(path,"A");
+ while(f->screen)eh17_files_handle(f,EH_KEY_ESC);
+ action(f,EH_NEW_FILE);strcpy(f->edit_name,"Diary");eh17_files_handle(f,EH_KEY_ENTER);
+ assert(f->edit_error==3);eh17_files_handle(f,EH_KEY_ESC);
+ eh17_files_handle(f,EH_KEY_ESC);assert(select_name(&f->nav,"Projects"));
+ action(f,EH_CREATE_ZIP);assert(select_name(&f->nav,"Projects.zip.tns"));
+ eh17_files_handle(f,EH_KEY_ENTER);assert(f->screen==EH_FILES_ARCHIVE);
+ assert(select_name(&f->archive,"Projects"));eh17_files_handle(f,EH_KEY_ENTER);
+ assert(select_name(&f->archive,"Diary.txt.tns"));assert(f->archive.items[f->archive.selected].bytes==1);
+ eh17_files_handle(f,EH_KEY_ESC);eh17_files_handle(f,EH_KEY_ESC);
+ assert(!f->screen && select_name(&f->nav,"Projects.zip.tns"));
+ action(f,EH_EXTRACT_ZIP);snprintf(path,sizeof(path),"%s/Projects_unzipped/Projects/Diary.txt.tns",dir);
+ verify_text(path,"A");assert(select_name(&f->nav,"Projects.zip.tns"));
+ action(f,EH_EXTRACT_ZIP);assert(strstr(f->status.text,"EXISTS"));
+ snprintf(path,sizeof(path),"%s/Projects_unzipped",dir);assert(!eh25_remove(path));
+ snprintf(path,sizeof(path),"%s/Projects.zip.tns",dir);assert(!remove(path));
+ snprintf(path,sizeof(path),"%s/Projects/Diary.txt.tns",dir);assert(!remove(path));
+ char zip[256];snprintf(zip,sizeof(zip),"%s/input.zip",dir);
+ mz_zip_archive z={0};assert(mz_zip_writer_init_file(&z,zip,0));
+ assert(mz_zip_writer_add_mem(&z,"outer/inner/a.txt","test",4,6));
+ assert(mz_zip_writer_finalize_archive(&z));mz_zip_writer_end(&z);
+ Eh13Picker list={0};assert(eh_zip_list(zip,"",&list)&&list.count==1&&list.items[0].directory);
+ assert(eh_zip_list(zip,"outer/",&list)&&!strcmp(list.items[0].name,"inner"));eh13_picker_close(&list);
+ memset(&z,0,sizeof(z));assert(mz_zip_writer_init_file(&z,zip,0));
+ assert(mz_zip_writer_add_mem(&z,"ok.txt","ok",2,0));
+ assert(mz_zip_writer_add_mem(&z,"../outside.txt","bad",3,0));
+ assert(mz_zip_writer_finalize_archive(&z));mz_zip_writer_end(&z);
+ snprintf(path,sizeof(path),"%s/failed",dir);assert(!eh_zip_extract(zip,path)&&access(path,F_OK));
+ assert(!remove(zip));
 }
 int main(void){
  char dir[120],sub[150],file[190];
@@ -118,6 +165,7 @@ int main(void){
  assert(!eh_text_type(&f.text_edit,full,&length,'w')&&length==EH_TEXT_CAP);
  eh_text_move(&f.text_edit,full,length,EH_KEY_DOWN);
  assert(f.text_edit.cursor==EH_TEXT_COLUMNS);
+ archive_workflow(&f,dir);
  assert(eh17_files_handle(&f,EH_KEY_ESC)==-1);
  assert(!f.active);
  assert(eh17_is_text_name("EndraHome_Apps.cfg.tns"));

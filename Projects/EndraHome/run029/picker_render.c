@@ -36,13 +36,13 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
  /* Match the Files title to the browser label. */
  eh_box(f,0,0,320,37,eh_skin(&colors,EH_RGB(5,16,31)));
  eh_box(f,0,35,320,2,cyan);
- eh_small_text(f,11,p->show_all?15:10,p->show_all?"ENDRA FILES":p->adding_app?"ADD APP":"REASSIGN APP",pale,p->show_all?1:2,12);
+ eh_small_text(f,11,p->show_all?15:10,p->show_all==2?"ZIP CONTENTS":p->show_all?"ENDRA FILES":p->adding_app?"ADD APP":"REASSIGN APP",pale,p->show_all?1:2,12);
  eh_small_text(f,255,p->show_all?15:21,p->show_all?"BROWSER":"PICKER",steel,1,12);
  eh_theme_glass(f,7,41,306,28,88,&colors);
  eh_box(f,7,41,306,1,cyan);
  eh_box(f,7,68,306,1,cyan);
  eh_small_text(f,13,51,"PATH",cyan,1,5);
- const char *shown=p->dir;
+ const char *shown=p->dir[0]?p->dir:"/";
  char abbreviated[31];
  size_t len=strlen(shown);
  if(len>30){
@@ -83,5 +83,5 @@ void eh13_picker_render(uint16_t *f,const Eh13Picker *p,const EhRegistry *apps){
   * This narrow glass strip follows the selected Neon File Browser concept. */
  eh_theme_glass(f,0,219,320,21,91,&colors);
  eh_box(f,0,218,320,1,cyan);
- eh_small_text(f,9,227,p->show_all?"ENTER OPEN / INFO   ESC BACK   MENU ACTIONS":"ENTER SELECT APP   ESC BACK",pale,1,50);
+ eh_small_text(f,9,227,p->show_all==2?"ENTER OPEN FOLDER   ESC BACK":p->show_all?"ENTER OPEN / INFO   ESC BACK   MENU ACTIONS":"ENTER SELECT APP   ESC BACK",pale,1,50);
 }

@@ -72,12 +72,17 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
  if(!f||!v||!v->active||!apps)return;
  EhPalette p=eh_palette(apps->appearance);
  if(v->screen==EH_FILES_TEXT_EDIT){render_editor(f,v,&p);return;}
+ if(v->screen==EH_FILES_ARCHIVE){
+  eh13_picker_render(f,&v->archive,apps);
+  if(v->status.text[0]){box(f,8,200,304,19,p.panel);eh_fit_text(f,12,205,v->status.text,p.ink,37);}
+  return;
+ }
  if(!v->screen){
   eh13_picker_render(f,&v->nav,apps);
   if(v->status.text[0]){box(f,8,200,304,19,p.panel);eh_fit_text(f,12,205,v->status.text,p.ink,37);}
   if(v->clip_mode && !v->status.text[0]){box(f,8,200,304,19,p.panel);txt(f,12,205,v->clip_mode==1?"Clipboard: copy":"Clipboard: cut",p.ink,28);}
   if(v->menu_open){
-   static const char *menu[8]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES"};
+   static const char *menu[EH_ACTION_COUNT]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES","NEW FILE","CREATE ZIP","EXTRACT ZIP"};
    /* Keep the neon frame while masking file names behind the popup. */
    eh_theme_glass(f,57,24,206,191,99,&p);
    box(f,57,24,206,1,eh_skin(&p,EH_RGB(67,220,253)));
@@ -86,8 +91,10 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
    box(f,262,24,1,190,eh_skin(&p,EH_RGB(67,220,253)));
    eh_small_text(f,77,36,"FILE ACTIONS",p.ink,2,12);
    box(f,69,59,181,1,eh_skin(&p,EH_RGB(59,198,245)));
-   for(int i=0;i<8;i++){
-    int y=72+i*17;
+   int first=v->menu_item<8?0:v->menu_item-7;
+   eh_small_text(f,219,39,first?"UP":"DOWN",p.ink,1,8);
+   for(int i=first;i<first+8;i++){
+    int y=72+(i-first)*17;
     if(i==v->menu_item){
      eh_theme_glass(f,67,y-3,187,16,57,&p);
      box(f,67,y-3,3,16,eh_skin(&p,EH_RGB(145,248,255)));
@@ -121,7 +128,7 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   box(f,0,0,320,240,eh_skin(&p,EH_RGB(5,17,31)));
   box(f,0,0,320,38,eh_skin(&p,EH_RGB(9,28,47)));
   box(f,0,36,320,2,eh_skin(&p,EH_RGB(53,217,254)));
-  eh_small_text(f,12,11,v->edit_folder?"CREATE FOLDER":"RENAME FILE",p.ink,2,21);
+  eh_small_text(f,12,11,v->edit_folder==2?"CREATE FILE":v->edit_folder?"CREATE FOLDER":"RENAME FILE",p.ink,2,21);
   eh_small_text(f,15,64,"NAME",eh_skin(&p,EH_RGB(118,217,251)),1,10);
   box(f,13,81,294,33,eh_skin(&p,EH_RGB(52,216,253)));
   box(f,15,83,290,29,eh_skin(&p,EH_RGB(9,28,47)));
@@ -129,7 +136,7 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   txt(f,21,94,shown,p.ink,34);
   int cursor=(int)strlen(shown);
   if(cursor<34)box(f,21+cursor*8,91,2,15,eh_skin(&p,EH_RGB(135,248,255)));
-  eh_small_text(f,17,142,"USE YOUR PHYSICAL KEYBOARD",eh_skin(&p,EH_RGB(151,208,236)),1,46);
+  eh_small_text(f,17,142,v->edit_folder==2?"PLAIN NAMES GET .TXT.TNS":"USE YOUR PHYSICAL KEYBOARD",eh_skin(&p,EH_RGB(151,208,236)),1,46);
   if(v->edit_error)eh_small_text(f,17,172,v->edit_error==3?"NAME EXISTS":v->edit_error==1?"INVALID NAME":"OPERATION FAILED",EH_RGB(255,170,120),1,48);
   box(f,0,218,320,22,eh_skin(&p,EH_RGB(9,28,47)));
   box(f,0,217,320,1,eh_skin(&p,EH_RGB(53,217,254)));

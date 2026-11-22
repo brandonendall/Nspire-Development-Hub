@@ -1,10 +1,12 @@
 /* Run018: built-in Files with on-demand bounded JPEG/PNG viewing. */
 #include "files.h"
 #include "file_ops.h"
+#include "archive.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <unistd.h>
 static int suffix(const char *p,const char *ending){
  size_t n=strlen(p),k=strlen(ending);
  if(n<k)return 0;
@@ -94,7 +96,7 @@ static int within_root(const Eh17Files *v,const char *path){
 }
 static void file_action(Eh17Files *v,int action){
  char src[EH7_PATH_CAP],dst[EH7_PATH_CAP];int dir=0;
- if(action==6){v->edit_folder=1;v->edit_name[0]=0;v->edit_error=0;v->screen=4;return;}
+ if(action==6||action==EH_NEW_FILE){v->edit_folder=action==6?1:2;v->edit_name[0]=0;v->edit_error=0;v->screen=4;return;}
  if(action==3){ /* Paste into current folder. */
   if(!v->clip_mode||!within_root(v,v->clip_path)){eh_toast_set(&v->status,"CLIPBOARD EMPTY");return;}
   const char *name=strrchr(v->clip_path,'/');if(!name||!name[1])return;
@@ -106,6 +108,21 @@ static void file_action(Eh17Files *v,int action){
   eh_toast_set(&v->status,"PASTE COMPLETE");refresh(v);return;
  }
  if(!selection(v,src,sizeof(src),&dir)||!within_root(v,src))return;
+ if(action==EH_CREATE_ZIP||action==EH_EXTRACT_ZIP){
+  int pack=action==EH_CREATE_ZIP;
+  size_t len=strlen(src);
+  if(!pack){
+   if(dir||(!suffix(src,".zip")&&!suffix(src,".zip.tns"))){eh_toast_set(&v->status,"SELECT A ZIP ARCHIVE");return;}
+   len-=suffix(src,".zip.tns")?8:4;
+  }
+  int n=snprintf(dst,sizeof(dst),"%.*s%s",(int)len,src,pack?".zip.tns":"_unzipped");
+  if(n<0||(size_t)n>=sizeof(dst)){eh_toast_set(&v->status,"PATH TOO LONG");return;}
+  if(!access(dst,F_OK)){eh_toast_set(&v->status,"DESTINATION ALREADY EXISTS");return;}
+  int ok=pack?eh_zip_create(src,dst):eh_zip_extract(src,dst);
+  if(ok)refresh(v);
+  eh_toast_set(&v->status,ok?(pack?"ZIP CREATED":"EXTRACTED TO _UNZIPPED FOLDER"):"ZIP OPERATION FAILED");
+  return;
+ }
  if(action==1||action==2){
   strcpy(v->clip_path,src);v->clip_mode=action;v->clip_is_dir=dir;
   eh_toast_set(&v->status,action==1?"COPIED TO CLIPBOARD":"CUT TO CLIPBOARD");return;
@@ -115,7 +132,7 @@ static void file_action(Eh17Files *v,int action){
   strcpy(v->edit_name,base+1);v->screen=4;return;}
  if(action==5){strcpy(v->path,src);v->confirm_delete=1;return;}
  if(action==7){strcpy(v->path,src);v->file_size=dir?0:v->nav.items[v->nav.selected].bytes;v->screen=1;preview(v);return;}
- if(action==0){char chosen[EH7_PATH_CAP];eh13_picker_handle(&v->nav,EH_KEY_ENTER,chosen,sizeof(chosen));return;}
+ if(action==0){eh17_files_handle(v,EH_KEY_ENTER);return;}
 }
 
 int eh17_files_open(Eh17Files *v,const char *root){
@@ -127,12 +144,29 @@ int eh17_files_open(Eh17Files *v,const char *root){
 void eh17_files_close(Eh17Files *v){
  if(!v)return;
  eh13_picker_close(&v->nav);
+ eh13_picker_close(&v->archive);
  eh18_image_close(&v->image);
  v->active=v->screen=v->preview_ok=0;
  v->text_len=0;v->path[0]=0;
 }
 int eh17_files_handle(Eh17Files *v,EhKey key){
  if(!v||!v->active||key==EH_KEY_NONE)return 0;
+ if(v->screen==EH_FILES_ARCHIVE){
+  Eh13Picker *p=&v->archive;
+  char prefix[EH7_PATH_CAP];
+  if(key==EH_KEY_LEFT||key==EH_KEY_ESC){
+   if(!p->dir[0]){eh13_picker_close(p);v->screen=0;return 1;}
+   strcpy(prefix,p->dir);prefix[strlen(prefix)-1]=0;
+   char *slash=strrchr(prefix,'/');if(slash)slash[1]=0;else prefix[0]=0;
+  }else if(key==EH_KEY_ENTER && p->count && p->items[p->selected].directory){
+   int n=snprintf(prefix,sizeof(prefix),"%s%s/",p->dir,p->items[p->selected].name);
+   if(n<0||(size_t)n>=sizeof(prefix)){eh_toast_set(&v->status,"ZIP PATH TOO LONG");return 1;}
+  }else if(key==EH_KEY_UP||key==EH_KEY_DOWN||key==EH_KEY_RIGHT){
+   return eh13_picker_handle(p,key,NULL,0);
+  }else return 0;
+  if(!eh_zip_list(v->path,prefix,p))eh_toast_set(&v->status,"CANNOT READ ZIP FOLDER");
+  return 1;
+ }
  if(v->confirm_delete){
   if(key==EH_KEY_ESC){v->confirm_delete=0;return 1;}
   if(key==EH_KEY_ENTER){
@@ -147,7 +181,7 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
  if(v->menu_open){
   if(key==EH_KEY_ESC||key==EH_KEY_MENU){v->menu_open=0;return 1;}
   if(key==EH_KEY_UP){if(v->menu_item>0)--v->menu_item;return 1;}
-  if(key==EH_KEY_DOWN){if(v->menu_item<7)++v->menu_item;return 1;}
+  if(key==EH_KEY_DOWN){if(v->menu_item<EH_ACTION_COUNT-1)++v->menu_item;return 1;}
   if(key==EH_KEY_ENTER){int action=v->menu_item;v->menu_open=0;file_action(v,action);return 1;}
   return 0;
  }
@@ -156,28 +190,30 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   if(key==EH_KEY_ENTER){
    char target[EH7_PATH_CAP];
    const char *dir=v->nav.dir;
-   int n=snprintf(target,sizeof(target),"%s/%s",dir,v->edit_name);
+   int new_file=v->edit_folder==2;
+   const char *ext=new_file && !strchr(v->edit_name,'.')?".txt.tns":"";
+   int n=snprintf(target,sizeof(target),"%s/%s%s",dir,v->edit_name,ext);
    v->edit_error=0;
    if(!v->edit_name[0]||!strcmp(v->edit_name,".")||!strcmp(v->edit_name,"..")||strstr(v->edit_name,"..")||strchr(v->edit_name,'/')||strchr(v->edit_name,'\\')||n<0||(size_t)n>=sizeof(target))v->edit_error=1;
+   else if(new_file){
+    struct stat existing;
+    if(stat(target,&existing)==0)v->edit_error=3;
+    else if(errno!=ENOENT)v->edit_error=2;
+    else{
+     FILE *out=fopen(target,"wb");
+     if(!out)v->edit_error=2;
+     else if(fclose(out)){remove(target);v->edit_error=2;}
+    }
+   }
    else if(v->edit_folder){if(mkdir(target,0755)!=0)v->edit_error=2;}
    else if(!strcmp(target,v->path)||stat(target,&(struct stat){0})==0)v->edit_error=3;
    else if(rename(v->path,target)!=0)v->edit_error=2;
    if(v->edit_error)return 1;
    v->screen=0;
-   char root[EH7_PATH_CAP],current[EH7_PATH_CAP];strcpy(root,v->nav.root);strcpy(current,v->nav.dir);
-   eh13_picker_close(&v->nav);eh17_picker_open(&v->nav,3,root,1);
-   /* Re-enter prior directory safely through normal picker navigation. */
-   if(strcmp(current,root)==0)return 1;
-   /* Directory navigation is restored below by traversing components. */
-   const char *part=current+strlen(root);while(*part=='/')part++;
-   while(*part){char name[EH13_NAME_MAX];size_t len=0;while(part[len]&&part[len]!='/')len++;if(!len||len>=sizeof(name))break;memcpy(name,part,len);name[len]=0;
-    int found=-1;for(int i=0;i<v->nav.count;i++)if(v->nav.items[i].directory&&!strcmp(v->nav.items[i].name,name)){found=i;break;}
-    if(found<0)break;
-    v->nav.selected=found;
-    char ignored[EH7_PATH_CAP];
-    eh13_picker_handle(&v->nav,EH_KEY_ENTER,ignored,sizeof(ignored));
-    part+=len;
-    while(*part=='/')part++;
+   refresh(v);
+   if(new_file && v->active && eh_text_editable(target,"",0)){
+    strcpy(v->path,target);v->file_size=0;preview(v);
+    if(v->preview_ok){eh_text_begin(&v->text_edit,v->content,0);v->screen=EH_FILES_TEXT_EDIT;}
    }
    return 1;
   }
@@ -255,6 +291,11 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   if(stat(chosen,&st)!=0)return 0;
   v->file_size=st.st_size>=0?(unsigned long)st.st_size:0;
   strcpy(v->path,chosen);
+  if(suffix(chosen,".zip")||suffix(chosen,".zip.tns")){
+   if(eh_zip_list(chosen,"",&v->archive)){v->screen=EH_FILES_ARCHIVE;v->status.text[0]=0;}
+   else eh_toast_set(&v->status,"CANNOT READ ZIP ARCHIVE");
+   return 1;
+  }
   v->screen=1;preview(v);
   /* One-Enter JPEG/PNG viewing, like opening an app; no extra file menu. */
   if(eh18_is_image_name(v->path)&&eh18_image_open(&v->image,v->path))
