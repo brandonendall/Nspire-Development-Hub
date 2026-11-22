@@ -6,3 +6,5 @@ void runtime_end(void);
 int runtime_exec(const char *name, const char *src, int interactive);
 void console_write(const char *data, size_t size);
 int cancel_pressed(void);
+
+int runtime_error_line(void);

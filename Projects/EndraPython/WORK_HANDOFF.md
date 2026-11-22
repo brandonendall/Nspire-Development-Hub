@@ -1,11 +1,14 @@
-# Run002 physical check and rollback
+# Run003 handheld checks
 
-1. Keep the existing EndraPython scripts folder and Run001 executable. Download EndraPython_Run002.tns to the phone and transfer the new executable.
-   ```sh
-   clear
-   push /storage/emulated/0/Download/EndraPython_Run002.tns /upload
-   ```
-2. Open Run002. Select the existing Hello_World.py.tns in Files. If it is absent, choose + New script and confirm a blank name once to create the sample.
-3. Set the second line to print(sum(range(5))). Press Ctrl+R. Expect Hello from EndraPython, followed by 10. Press Esc, make an edit, and press Ctrl+S. Exit and reopen Run002 to confirm the saved edit.
-4. If saving fails, keep the edited buffer open and record the exact status. A pre-existing .saving folder can hold the only copy of a recovery file. Leave it in place for inspection.
-5. To roll back the executable, close Run002 and launch the retained Run001. Run001 has the reported save defect. Keep the existing scripts directory in either case.
+Brandon confirmed Run002 successful. Keep that executable as the rollback and keep the existing scripts folder. Run003 uses the same directory and save format.
+
+```sh
+clear
+push /storage/emulated/0/Download/EndraPython_Run003.tns /upload
+```
+
+1. Open Run003. Press Down to highlight a saved file. Open Hello_World, make a small edit and press Ctrl+S. Exit, reopen and confirm the edit.
+2. Select a word with Shift+Right. Copy, paste, undo and redo using the editor Menu or the shortcuts in README.md. Use Ctrl+F twice on repeated text to check wraparound.
+3. Run a script with Ctrl+R. To verify error navigation, use a new script containing a print on line one and `1 // 0` on line two. From the traceback press Enter and check the caret on line two.
+4. In Files, press Right then Enter for Python shell. Press Menu to list modules. Try `import random` then `random.randint(1, 6)`. Check text clarity, selection visibility and keys on the actual LCD.
+5. Exit and reopen Documents. If a save reports an error, keep the buffer open and record its exact status. Preserve existing scripts and any .saving recovery folder. To roll back, close Run003 and launch Run002.

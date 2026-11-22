@@ -57,6 +57,7 @@ int load_script(const char *name) {
         if((c<32 && c!='\r' && c!='\n' && c!='\t')||c>=127)return fail("Editor requires ASCII source");
     }
     Editor *d=&app.doc;
+    edit_reset_history();
     memset(d,0,sizeof *d);strcpy(d->name,name);strcpy(d->original,raw);
     d->existing=1;d->crlf=strstr(raw,"\r\n")!=NULL;
     int j=0;

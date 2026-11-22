@@ -23,9 +23,17 @@ int main(void){
             if(k==ESC)k=0;
             if(!isKeyPressed(KEY_NSPIRE_ESC))consumed_escape=0;
         }
+        if(app.page==EDITOR && k>=UP && k<=RIGHT && isKeyPressed(KEY_NSPIRE_SHIFT))
+            k=EXT_UP+(k-UP);
         if(!k){
             if(isKeyPressed(KEY_NSPIRE_CTRL))
-                k=ch=='s'?SAVE:ch=='r'?RUN:0;
+                switch(ch){
+                case 's': k=SAVE; break; case 'r': k=RUN; break;
+                case 'f': k=SEARCH; break; case 'z': k=UNDO; break;
+                case 'y': k=REDO; break; case 'a': k=SELECT_ALL; break;
+                case 'c': k=COPY; break; case 'x': k=CUT; break;
+                case 'v': k=PASTE; break; default: k=0; break;
+                }
             else k=ch;
         }
         app_key(k);redraw=k!=0;

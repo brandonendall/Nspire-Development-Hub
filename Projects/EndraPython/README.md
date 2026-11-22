@@ -1,8 +1,8 @@
-# EndraPython Run002
+# EndraPython Run003
 
-Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Hardware acceptance is pending.
+Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run002 successful on his calculator. Run003 needs a handheld check.
 
-Run002 opens the existing scripts folder before saving. On first use it tries to create the folder, then checks that it can open it. Open your existing Hello_World.py.tns from Files to resume editing.
+Run003 keeps the Run002 save fix. It opens the existing scripts folder before saving. On first use it tries to create the folder, then checks that it can open it. Open your existing Hello_World.py.tns from Files to resume editing.
 
 ## First use
 
@@ -17,13 +17,18 @@ Open EndraPython from Documents. Files starts read-only. Select **+ New script**
 | Del | Delete the preceding character |
 | Shift + minus / comma / apostrophe | Underscore / colon / double quote |
 | Shift + left or right parenthesis | Square bracket |
-| Menu | Save, save and run, insert a symbol, or return to Files |
+| Menu | Open editor tools. In the shell, list compiled modules |
+| Shift + arrow / Ctrl+A | Extend selection / select all |
+| Ctrl+C / X / V | Copy / cut / paste with the application clipboard |
+| Ctrl+Z / Ctrl+Y | Undo / redo, up to 12 edits |
+| Ctrl+F | Find text. Confirm again with the previous query to find the next match |
+| Enter after a script error | Jump to the failing source line when the traceback identifies one |
 | Ctrl+S / Ctrl+R | Save / save and run. Ctrl+R also reruns from output |
 | Esc | Back. With unsaved changes, Esc keeps editing, Enter discards, Ctrl+S saves and leaves |
 | Hold Esc while running | Request KeyboardInterrupt at Python bytecode loop checkpoints |
 | Python shell | Enter executes a single line. Up recalls the previous command. Esc ends the session |
 
-The shell retains variables until exit. Each script run starts fresh. Output wraps at 37 characters and retains the last 96 lines. The editor displays 13 rows with line numbers, horizontal scrolling, and coloring for strings, comments and numeric characters. It supports ASCII including tabs, shown as a single > cell. Input symbols beyond the physical keys are available in the editor menu. Undo, clipboard, selection, search/replace, file management and multiline REPL entry are future work.
+The shell retains variables until exit. Each script run starts fresh. The console retains the last 96 lines. The 12-row, 40-column editor has a line-number gutter, a caret position indicator, horizontal scrolling and syntax colors. Find wraps to the beginning and selects the result. The clipboard supports multiline text within EndraPython. The symbol picker covers punctuation missing from the physical keys.
 
 ## Source files
 
@@ -33,14 +38,20 @@ The application lists up to 96 eligible files directly under /documents/EndraPyt
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run002 scope |
+| Area | Run003 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
-| Imports | Five registered modules are importable: math (single-precision functions), gc (heap and garbage collection), collections (namedtuple), builtins (including sum, range and print) and __main__ (the running program). No filesystem module loader |
+| Imports | Nine registered modules: array, builtins, __main__, cmath, collections, gc, math, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
 | Scripts and files | Editor handles file access. No Python open, os, or user modules exposed |
 | Console | print, line-numbered exceptions, single-line REPL, previous-command recall |
 | Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
 | Other modules | JSON, time, interactive input, display, keys, pygame, pip and desktop packages unavailable |
+
+## PythonUltra parity and the IDE roadmap
+
+The reference is Brandon's Casio PythonUltra at commit `865e4b5e94280c12a405b3752ec2bd2231236e77`. Run003 adds four upstream MicroPython modules and the editor tools above. Multi-file projects and imports between saved scripts are the next IDE milestone. Search and replace, go to line, and a function outline would make longer scripts easier to navigate.
+
+The reference manifest includes pyeditor, pyfiles, pyterm, pyperm, zipfile, pythonultra, pygame, py3d and numpy. The TI port needs its own file, display, keyboard and timing interfaces before those packages can work here. Check dependencies and exercise each port on the handheld. Numerical extensions also need a memory and speed check on the target.
 
 ## Rebuild
 
@@ -48,4 +59,4 @@ From this folder run `sh prepare.sh`, then `make -j2 check` and `python3 tests/p
 
 ## Attribution
 
-EndraPython includes GPL-2.0-or-later display/input code derived from EndraHome Run047 (43aa6d5e3074b01736aeace777888e7bff6070a6), in turn derived from gpSP. Native keyboard scanning adapts the same branch. Distribute the complete program under GPL-2.0-or-later with source. The embedded MicroPython code is MIT licensed; the core license is included. The shared font8x8_basic table by Daniel Hepper is public domain. See licenses/.
+EndraPython includes GPL-2.0-or-later display/input code derived from EndraHome Run047 (43aa6d5e3074b01736aeace777888e7bff6070a6), in turn derived from gpSP. Native keyboard scanning adapts the same branch. Distribute the complete program under GPL-2.0-or-later with source. The embedded MicroPython code is MIT licensed; the core license is included. The Run003 font atlas uses DejaVu Sans, Sans Bold and Sans Mono. The license travels with the source and build artifact. See licenses/.

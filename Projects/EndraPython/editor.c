@@ -14,38 +14,94 @@ static int end_of_line(const char *s,int i) {
     while(s[i] && s[i]!='\n') ++i;
     return i;
 }
-void edit_key(Editor *d,int k) {
-    char *s=d->text;
-    int pos=d->cursor, size=(int)strlen(s), start=line_start(s,pos), col=pos-start;
-    if(k==LEFT && pos) --pos;
-    else if(k==RIGHT && pos<size) ++pos;
-    else if(k==UP || k==DOWN) {
-        int dest=k==UP ? (start ? line_start(s,start-1) : start) : end_of_line(s,pos);
-        if(k==DOWN) dest=dest<size ? dest+1 : start;
-        int end=end_of_line(s,dest);
-        pos=dest+col<end ? dest+col : end;
-    } else if(k==8 && pos) {
-        memmove(s+pos-1,s+pos,size-pos+1);
-        --pos;
-        d->dirty=1;
-    } else if(k==ENTER || k==INDENT || (k>=32 && k<127)) {
-        static char insert[SOURCE_CAP+1];
-        int n=1;
-        insert[0]=k==ENTER ? '\n' : (char)k;
-        if(k==ENTER) {
-            while(start+n-1<pos && s[start+n-1]==' ') {insert[n]=' '; ++n;}
-        } else if(k==INDENT) { n=4-col%4; memset(insert,' ',n); }
-        if(size+n>SOURCE_CAP) {strcpy(app.status,"8 KiB limit reached");return;}
-        memmove(s+pos+n,s+pos,size-pos+1);
-        memcpy(s+pos,insert,n);
-        pos+=n;
-        d->dirty=1;
-    }
-    d->cursor=pos;
-    int row=line_number(s,pos);
-    col=pos-line_start(s,pos);
+#define HISTORY_DEPTH 12
+typedef struct {char text[SOURCE_CAP+1]; int pos,anchor,selecting;} Revision;
+static Revision history[HISTORY_DEPTH],exchange;
+static int slot,undos,redos;
+static char clipboard[SOURCE_CAP+1];
+
+void edit_reset_history(void){slot=undos=redos=0;}
+static void record(Revision *r,const Editor *d){
+    strcpy(r->text,d->text);r->pos=d->cursor;r->anchor=d->anchor;r->selecting=d->selecting;
+}
+static void reveal(Editor *d){
+    int row=line_number(d->text,d->cursor), col=d->cursor-line_start(d->text,d->cursor);
     if(row<d->top)d->top=row;
-    if(row>=d->top+13)d->top=row-12;
+    if(row>=d->top+EDIT_ROWS)d->top=row-EDIT_ROWS+1;
     if(col<d->left)d->left=col;
-    if(col>=d->left+34)d->left=col-33;
+    if(col>=d->left+EDIT_COLS)d->left=col-EDIT_COLS+1;
+}
+static int changed(const Editor *d){
+    const char *src=d->original,*text=d->text;
+    if(!d->existing)return 1;
+    while(*src){
+        char c=*src++;
+        if(c=='\r'){if(*src=='\n')++src;c='\n';}
+        if(*text++!=c)return 1;
+    }
+    return *text!=0;
+}
+static void restore(Editor *d,int back){
+    if(back?!undos:!redos){strcpy(app.status,back?"Nothing to undo":"Nothing to redo");return;}
+    if(back)slot=(slot+HISTORY_DEPTH-1)%HISTORY_DEPTH;
+    Revision *r=&history[slot];record(&exchange,d);
+    strcpy(d->text,r->text);d->cursor=r->pos;d->anchor=r->anchor;d->selecting=r->selecting;
+    *r=exchange;
+    if(back){--undos;++redos;}else{slot=(slot+1)%HISTORY_DEPTH;++undos;--redos;}
+    d->dirty=changed(d);reveal(d);
+}
+void edit_find(Editor *d,const char *query){
+    if(!*query)return;
+    const char *found=strstr(d->text+d->cursor,query);
+    if(!found)found=strstr(d->text,query);
+    if(!found){strcpy(app.status,"No match");return;}
+    d->anchor=(int)(found-d->text);d->cursor=d->anchor+(int)strlen(query);
+    d->selecting=1;reveal(d);
+}
+void edit_key(Editor *d,int k){
+    int pos=d->cursor,size=strlen(d->text),start=line_start(d->text,pos);
+    int extend=k>=EXT_UP && k<=EXT_RIGHT;
+    if(extend)k=UP+(k-EXT_UP);
+    if(k==UNDO || k==REDO){restore(d,k==UNDO);return;}
+    if(k==SELECT_ALL){d->selecting=1;d->anchor=0;d->cursor=size;reveal(d);return;}
+    int a=pos,b=pos;
+    if(d->selecting){if(d->anchor<pos)a=d->anchor;else b=d->anchor;}
+    if(k==UP||k==DOWN||k==LEFT||k==RIGHT){
+        if(extend && !d->selecting){d->selecting=1;d->anchor=pos;}
+        if(!extend)d->selecting=0;
+        if(k==LEFT)pos=(!extend && a<b)?a:(pos?pos-1:0);
+        else if(k==RIGHT)pos=(!extend && a<b)?b:(pos<size?pos+1:pos);
+        else {
+            int dest=k==UP?(start?line_start(d->text,start-1):start):end_of_line(d->text,pos);
+            if(k==DOWN)dest=dest<size?dest+1:start;
+            int end=end_of_line(d->text,dest);
+            pos=dest+pos-start<end?dest+pos-start:end;
+        }
+        d->cursor=pos;reveal(d);return;
+    }
+    if(k==COPY || k==CUT){
+        if(a==b){strcpy(app.status,"Hold Shift and use arrows to select");return;}
+        memcpy(clipboard,d->text+a,b-a);clipboard[b-a]=0;
+        if(k==COPY){strcpy(app.status,"Copied");return;}
+    }
+    static char insert[SOURCE_CAP+1];
+    const char *data=insert;int n=0;
+    if(k==PASTE){data=clipboard;n=strlen(data);if(!n){strcpy(app.status,"Clipboard empty");return;}}
+    else if(k==8 || k==CUT){if(a==b){if(!a)return;--a;}}
+    else if(k==ENTER){
+        insert[n++]='\n';start=line_start(d->text,a);
+        while(start<a && d->text[start++]==' ')insert[n++]=' ';
+    }else if(k==INDENT){n=4-(a-line_start(d->text,a))%4;memset(insert,' ',n);}
+    else if(k>=32 && k<127)insert[n++]=(char)k;
+    else return;
+    if(size-(b-a)+n>SOURCE_CAP){strcpy(app.status,"8 KiB limit reached");return;}
+    record(&history[slot],d);slot=(slot+1)%HISTORY_DEPTH;if(undos<HISTORY_DEPTH)undos++;redos=0;
+    memmove(d->text+a+n,d->text+b,size-b+1);memcpy(d->text+a,data,n);
+    d->cursor=a+n;d->selecting=0;d->dirty=changed(d);reveal(d);
+}
+
+void edit_goto_line(Editor *d,int line){
+    int p=0;
+    while(line>1 && d->text[p])if(d->text[p++]=='\n')line--;
+    d->cursor=p;d->selecting=0;reveal(d);
 }

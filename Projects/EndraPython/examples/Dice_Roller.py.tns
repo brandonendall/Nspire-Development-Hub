@@ -1,0 +1,7 @@
+from random import randint
+
+def roll(sides):
+    return randint(1, sides)
+
+print("Rolling a d20")
+print(roll(20))
