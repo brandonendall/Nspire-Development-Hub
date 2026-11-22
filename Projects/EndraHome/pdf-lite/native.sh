@@ -1,6 +1,7 @@
 #!/bin/bash
 set -eu -o pipefail
-flags="-Os -DNOCJK -fcommon -ffunction-sections -fdata-sections"
+export PATH="$(nspire-tools _toolchainpath):$PATH"
+flags="-Os -DNOCJK -fno-strict-aliasing -fcommon -ffunction-sections -fdata-sections"
 make -j4 -C mupdf OS=ti-nspire build=release OUT=build/arm AR=arm-none-eabi-ar XCFLAGS="$flags" \
   build/arm/libmupdf.a build/arm/libjbig2dec.a build/arm/libjpeg.a build/arm/libopenjpeg.a
 nspire-g++ -std=gnu++11 -marm $flags -Imupdf/include -Wl,--gc-sections *.cpp -o reader.elf \
