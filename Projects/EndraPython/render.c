@@ -189,12 +189,14 @@ static void editor(void){
     workspace_footer();
 }
 static void console(void){
-    int shell=app.page==SHELL || (app.page==ACTIONS && app.origin==SHELL);header(shell?"SHELL":"OUTPUT");
+    int input=app.page==READ_INPUT || (app.page==ACTIONS && app.origin==READ_INPUT);
+    int shell=input || app.page==SHELL || (app.page==ACTIONS && app.origin==SHELL);
+    header(input?"INPUT":shell?"SHELL":"OUTPUT");
     terminal_icon(10,39,shell?AQUA:GREEN);
-    fitted(34,34,BODY,WHITE,shell?"MicroPython 1.24.1":app.doc.name,309);
+    fitted(34,34,BODY,WHITE,input?"Python input":shell?"MicroPython 1.24.1":app.doc.name,309);
     box(0,52,320,1,LINE);
     int visible=shell?10:12,last=app.rows-app.offset,first=last>visible?last-visible:0;
-    if(shell && app.rows==1 && !app.output[app.first][0])
+    if(shell && !input && app.rows==1 && !app.output[app.first][0])
         text(10,62,CODE,MUTED,"help('modules') lists libraries.",312);
     for(int i=first;i<last;i++){
         const char *line=app.output[(app.first+i)%OUT_LINES];
@@ -204,25 +206,27 @@ static void console(void){
     if(shell){
         if(app.status[0])fitted(9,168,BODY,GOLD,app.status,310);
         panel(7,185,306,28,LINE,CARD);text(14,190,CODE,GREEN,">>>",39);
-        int n=strlen(app.command),cols=utf_columns(app.command,n),from=utf_advance(app.command,0,n,cols-36);text(42,190,CODE,WHITE,app.command+from,310);
-        box(42+7*utf_columns(app.command+from,n-from),193,1,12,GREEN);
+        const char *field=input?app.reply:app.command;
+        int n=strlen(field),cols=utf_columns(field,n),from=utf_advance(field,0,n,cols-36);text(42,190,CODE,WHITE,field+from,310);
+        box(42+7*utf_columns(field+from,n-from),193,1,12,GREEN);
     }else{
         box(0,200,320,18,app.error?ERROR_BG:DEEP);
         text(9,201,BODY,app.error?ERROR:GREEN,app.error?"Python exception":"Run complete",308);
     }
-    workspace_footer();
+    if(input){footer();int x=key(8,"Enter","Submit");key(x,"Esc","Cancel");}
+    else workspace_footer();
 }
 static void modal(void){
     int x=17,w=286;
     Page behind=app.page==ACTIONS?app.origin:app.page;
-    if(behind==NAME || behind==SAMPLES || behind==FILES)files();
-    else if(behind==SHELL || behind==OUTPUT)console();else editor();
+    if(behind==NAME || behind==FILES)files();
+    else if(behind==SHELL || behind==OUTPUT || behind==READ_INPUT)console();else editor();
     /* Dim the underlying workspace while keeping the current location visible. */
     for(int i=0;i<320*240;i++)fb[i]=blend(BG,fb[i],2);
-    int list=app.page==ACTIONS || app.page==SAMPLES;
+    int list=app.page==ACTIONS;
     int top=list?39:55,bottom=list?212:181;
     panel(x,top,w,bottom-top,LINE,BAR);box(x+2,top+2,3,22,GREEN);
-    const char *title=app.page==SAMPLES?"Samples":app.page==NAME?(app.sample>=0?"Save sample as":"New script"):app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Marks and symbols":"Commands";
+    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Marks and symbols":"Commands";
     text(x+13,top+7,TITLE,WHITE,title,294);box(x+12,top+34,w-24,1,LINE);
     if(list){
         if(app.page==ACTIONS && app.symbols){
@@ -236,7 +240,7 @@ static void modal(void){
             int first=app.action>5?app.action-5:0;
             const Command *commands=page_commands(app.origin);
             for(int i=first;i<first+6;i++){
-                const char *label=app.page==SAMPLES?(i<sample_count?samples[i].label:NULL):commands[i].label;
+                const char *label=commands[i].label;
                 if(!label)break;
                 int y=top+38+(i-first)*20;
                 if(i==app.action)panel(x+8,y,w-16,19,GREEN,DEEP);
@@ -253,7 +257,7 @@ static void modal(void){
         panel(29,101,262,26,GREEN,CARD);
         text(37,106,CODE,WHITE,s+from,284);box(37+7*utf_columns(s+from,n-from),108,1,12,GREEN);
         fitted(30,139,BODY,app.status[0]?GOLD:MUTED,app.status[0]?app.status:app.page==FIND?
-               "Enter finds the next match and wraps.":app.sample>=0?"Enter saves a copy in this folder.":"Leave blank for the Hello World example.",292);
+               "Enter finds the next match and wraps.":"Enter a name to create a blank script.",292);
     }
     footer();
     if(app.page==DISCARD)key(8,"Esc","Keep editing");
@@ -262,19 +266,19 @@ static void modal(void){
 typedef struct {const char *key,*action;} HelpRow;
 typedef struct {const char *title;HelpRow rows[7];} HelpTopic;
 static const HelpTopic topics[HELP_COUNT]={
-    [HELP_FILES]={"Files and samples",{{"Menu > Samples","Choose a sample to copy"},
+    [HELP_FILES]={"Files",{{"New script","Create a blank script"},
         {"Enter","Open a file or folder"},{"Menu > Browse","Browse Documents"},
         {"Tab","Next page in a large folder"},{"Esc","Parent folder or exit"}}},
     [HELP_EDITOR]={"Editing and running",{{"Ctrl+R","Save and run this script"},
         {"Ctrl+S","Save changes"},{"Ctrl+F","Find text or find next"},
-        {"? key","Insert a symbol"},{"Book","Open TI text input"},
-        {"Tab","Indent"},{"Esc","Return to Files"}}},
+        {"? key","Insert a symbol"},{"Menu > Catalog","Insert a Python command"},
+        {"Tab","Indent to a 2-space stop"},{"Esc","Return to Files"}}},
     [HELP_EDITS]={"Selection and clipboard",{{"Shift + arrows","Extend selection"},
         {"Ctrl+A","Select all"},{"Ctrl+C","Copy"},{"Ctrl+X","Cut"},{"Ctrl+V","Paste"},
         {"Ctrl+Z","Undo"},{"Ctrl+Y","Redo"}}},
     [HELP_SHELL]={"Python shell",{{"Enter","Run the command"},{"Up","Recall last command"},
         {"Left / Right","Scroll earlier / later output"},{"Menu > List modules","See installed libraries"},
-        {"? key","Insert a symbol"},{"Book","Open TI text input"},{"Esc","Return to Files"}}},
+        {"? key","Insert a symbol"},{"Menu > Catalog","Insert a Python command"},{"Esc","Return to Files"}}},
     [HELP_OUTPUT]={"Script output",{{"Ctrl+R","Run the script again"},{"Up / Down","Scroll output"},
         {"Enter on error","Go to the failing line"},{"Hold Esc during run","Interrupt Python"},
         {"Esc","Return to editor"}}}
@@ -291,11 +295,31 @@ static void guide(void){
     }
     footer();int x=key(8,"Left / Right","Topics");key(x,"Esc","Back");
 }
+static void command_catalog(void){
+    header("CATALOG");text(10,35,TITLE,WHITE,catalog_groups[catalog_group],185);
+    right(309,39,SMALL,MUTED,"Left / Right   Groups");box(10,60,300,1,LINE);
+    int first=catalog_index>4?catalog_index-4:0;
+    for(int i=first;i<catalog_count && i<first+5;i++){
+        int y=65+19*(i-first),selected=i==catalog_index;
+        if(selected)panel(8,y,304,19,GREEN,DEEP);
+        text(16,y+1,BODY,selected?WHITE:MUTED,catalog_entries[i].name,299);
+    }
+    if(catalog_count){
+        char name[80],detail[128];catalog_name(name,sizeof name);
+        if(catalog_group<2 && catalog_signature())snprintf(detail,sizeof detail,"%s",catalog_signature());
+        else if(catalog_group<2)snprintf(detail,sizeof detail,"%s%s",name,catalog_entries[catalog_index].callable?"(...)":"");
+        else snprintf(detail,sizeof detail,"%s%s  |  import %s",name,catalog_entries[catalog_index].callable?"(...)":"",catalog_groups[catalog_group]);
+        fitted(10,167,BODY,AQUA,detail,311);
+    }
+    status(app.status[0]?app.status:catalog_filter[0]?catalog_filter:"Type a name to jump",MUTED);
+    footer();int x=key(8,"Enter","Insert");key(x,"Esc","Back");
+}
 void render(uint16_t *pixels){
     fb=pixels;box(0,0,320,240,BG);
-    if(app.page==GUIDE)guide();
+    if(app.page==CATALOG)command_catalog();
+    else if(app.page==GUIDE)guide();
     else if(app.page==FILES)files();
     else if(app.page==EDITOR)editor();
-    else if(app.page==SHELL||app.page==OUTPUT)console();
+    else if(app.page==SHELL||app.page==OUTPUT||app.page==READ_INPUT)console();
     else modal();
 }

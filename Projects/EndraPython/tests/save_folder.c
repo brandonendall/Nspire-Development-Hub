@@ -33,7 +33,9 @@ void test_save_folder(void *stack){
 
     /* The first create makes the directory visible despite its return code. */
     response=AMBIGUOUS_CREATE;
-    app_init(folder,stack);app_key(ENTER);app_key(ENTER);
+    app_init(folder,stack);app_key(ENTER);
+    for(const char *s="Hello_World";*s;s++)app_key(*s);
+    app_key(ENTER);app_insert_text("print(sum(range(10)))");app_key(SAVE);
     assert(app.page==EDITOR && app.doc.existing && root_creates==1);
 
     /* Reopen Run001-compatible source and make the photographed edit. */

@@ -1,14 +1,16 @@
-# EndraPython Run005
+# EndraPython Run006
 
-Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run004 working and its physical punctuation key on his calculator. Run005 needs a handheld check of the menus and footer.
+Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run004 working and its physical punctuation key on his calculator. Run006 needs a handheld check of the catalog, two-space Tab and interactive input.
 
 The editor keeps the Run002 save fix. It opens the existing scripts folder before saving. On first use it tries to create the folder, then checks that it can open it. Open your existing Hello_World.py.tns from Files to resume editing.
 
-## Commands, help and samples
+## Commands, help and catalog
 
-Press **Menu** from Files, Editor, Shell or Output. **Help** is highlighted. Press **Enter** to see controls for the current screen. Left and Right cycle through Files and samples, Editing and running, Selection and clipboard, Python shell, and Script output. Esc returns directly to the same work, including a partially typed shell command.
+Press **Menu** from Files, Editor, Shell or Output. **Help** is highlighted. Press **Enter** to see controls for the current screen. Left and Right cycle through Files, Editing and running, Selection and clipboard, Python shell, and Script output. Esc returns directly to the same work, including a partially typed shell command.
 
-In Files choose **Menu > Samples**, pick Hello World, Dice Roller or Functions, then confirm a filename to create an editable copy in the current folder. All three programs are inside the executable. Existing filenames are protected. You can cancel before creating the copy. **Ctrl+R** or **Menu > Run script** saves and runs the open script.
+In the editor or shell choose **Menu > Command catalog**. Common opens with print and input. Use Left/Right to switch to builtins or a compiled module, Up/Down to select a member, or type a name prefix to jump. Del shortens the prefix. Enter inserts the name and an opening parenthesis for callables. Import a module before using its qualified entries. The module and builtins groups read public names directly from the embedded runtime. This follows PythonUltra’s module/member grouping and uses the TI build's own inventory.
+
+The built-in input([prompt]) reads a line in the IDE and returns a string in scripts and the shell. Enter accepts an empty or filled reply, Esc raises KeyboardInterrupt, and the punctuation key opens the existing symbol picker. Each reply holds up to 511 UTF-8 bytes.
 
 ## Symbols and folders
 
@@ -20,14 +22,14 @@ In Files, **Menu > Browse Documents** opens Documents. Enter opens a folder or a
 
 ## First use
 
-Open EndraPython from Documents. Files starts read-only. Select **+ New script** and press Enter again with a blank name to create and open the two-line Hello World example. A typed name creates an empty script. Bare names gain the .py.tns suffix. Ctrl+R saves changes and executes. Expected output is Hello from EndraPython followed by 45 on its own line. Esc returns to the same caret. Esc in Files exits to TI Documents.
+Open EndraPython from Documents. Choose New script, type a filename and press Enter to create a blank script. Ctrl+R saves and runs it. Esc returns from output to the same caret. Esc in Files exits to TI Documents.
 
 | Control | Effect |
 | --- | --- |
 | Arrows / directional pad | Select a file or menu item, move the caret, scroll console history |
 | Enter / center click | Open or confirm. In the editor, insert a newline and copy leading spaces |
 | Shift + letter | Uppercase |
-| Tab | Insert spaces up to the next four-column stop |
+| Tab | Insert spaces up to the next two-column stop |
 | Del | Delete the preceding character |
 | Shift + minus / comma / apostrophe | Underscore / colon / double quote |
 | Shift + left or right parenthesis | Square bracket |
@@ -52,14 +54,14 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run005 scope |
+| Area | Run006 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Nine registered modules: array, builtins, __main__, cmath, collections, gc, math, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
 | Scripts and files | Editor handles file access. No Python open, os, or user modules exposed |
 | Console | print, line-numbered exceptions, single-line REPL, previous-command recall |
 | Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
-| Other modules | JSON, time, interactive input, display, keys, pygame, pip and desktop packages unavailable |
+| Other modules | JSON, time, display, keys, pygame, pip and desktop packages unavailable |
 
 ## PythonUltra parity and the IDE roadmap
 

@@ -103,7 +103,12 @@ void edit_key(Editor *d,int k){
     else if(k==ENTER){
         insert[n++]='\n';start=line_start(d->text,a);
         while(start<a && d->text[start++]==' ')insert[n++]=' ';
-    }else if(k==INDENT){start=line_start(d->text,a);n=4-utf_columns(d->text+start,a-start)%4;memset(insert,' ',n);}
+    }else if(k==INDENT){
+        const int indent_width=2;
+        start=line_start(d->text,a);
+        n=indent_width-utf_columns(d->text+start,a-start)%indent_width;
+        memset(insert,' ',n);
+    }
     else if(k>=32 && k<127)insert[n++]=(char)k;
     else return;
     replace_text(d,a,b,data,n);

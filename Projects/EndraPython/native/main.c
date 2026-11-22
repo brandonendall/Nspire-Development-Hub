@@ -9,26 +9,37 @@ int cancel_pressed(void){
     consumed_escape=1;
     return 1;
 }
+static int read_key(void){
+    const int keys[]={0,UP,DOWN,LEFT,RIGHT,ENTER,ESC,MENU};
+    int k=keys[eh_platform_readkey()],ch=eh16_textkey();
+    if(consumed_escape){
+        if(k==ESC)k=0;
+        if(!isKeyPressed(KEY_NSPIRE_ESC))consumed_escape=0;
+    }
+    if(app.page==EDITOR && k>=UP && k<=RIGHT && isKeyPressed(KEY_NSPIRE_SHIFT))
+        k=EXT_UP+(k-UP);
+    k=eh16_key_event(k,ch,isKeyPressed(KEY_NSPIRE_CTRL));
+    app_key(k);
+    if(app.request_input){app.request_input=0;ti_text_input();}
+    return k!=0;
+}
+void platform_wait_input(void){
+    int redraw=1;
+    while(!app.input_result && !app.quit){
+        if(redraw){render(eh_framebuffer());eh_platform_flip();}
+        redraw=read_key();eh_platform_sleep();
+    }
+}
 int main(void){
     volatile int stack_marker=0;
     app_init("/documents/EndraPython",(void *)&stack_marker);
     if(!eh_platform_start())return 1;
-    const int keys[]={0,UP,DOWN,LEFT,RIGHT,ENTER,ESC,MENU};
     int redraw=1;
     /* Consume the launch press before offering the first Files action. */
     eh_platform_readkey();eh16_textkey();
     while(!app.quit){
         if(redraw){render(eh_framebuffer());eh_platform_flip();}
-        int k=keys[eh_platform_readkey()],ch=eh16_textkey();
-        if(consumed_escape){
-            if(k==ESC)k=0;
-            if(!isKeyPressed(KEY_NSPIRE_ESC))consumed_escape=0;
-        }
-        if(app.page==EDITOR && k>=UP && k<=RIGHT && isKeyPressed(KEY_NSPIRE_SHIFT))
-            k=EXT_UP+(k-UP);
-        k=eh16_key_event(k,ch,isKeyPressed(KEY_NSPIRE_CTRL));
-        app_key(k);redraw=k!=0;
-        if(app.request_input){app.request_input=0;ti_text_input();redraw=1;}
+        redraw=read_key();
         eh_platform_sleep();
     }
     eh_platform_stop();

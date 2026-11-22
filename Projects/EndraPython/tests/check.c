@@ -53,23 +53,38 @@ static void help_check(int topic){
     assert(app.help_topic==topic);app_key(LEFT);app_key(RIGHT);
     app_key(ESC);assert(app.page==page && app.doc.cursor==pos && app.selected==sel && app.offset==offset);
 }
-static void sample_checks(const char *root,void *stack){
+static const char *answer;
+void platform_wait_input(void){
+    assert(app.page==READ_INPUT);
+    if(answer){app_insert_text(answer);if(*answer)preview("input");app_key(ENTER);}
+    else app_key(ESC);
+}
+static void catalog_checks(const char *root,void *stack){
     app_init(root,stack);help_check(HELP_FILES);
-    for(int i=0;i<sample_count;i++){
-        choose_command(OPEN_SAMPLES);assert(app.page==SAMPLES);
-        for(int j=0;j<i;j++)app_key(DOWN);
-        preview("samples");app_key(ENTER);assert(app.page==NAME);
-        app_key(ESC);assert(app.page==SAMPLES && app.action==i);
-        app_key(ENTER);
-        if(i==0){app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));}
-        type("_Test");app_key(ENTER);
-        assert(app.page==EDITOR && !strcmp(app.doc.text,samples[i].source));
-        app_key('#');help_check(HELP_EDITOR);assert(app.doc.dirty);app_key(UNDO);
-        choose_command(RUN);assert(app.page==OUTPUT && !app.error);
-        help_check(HELP_OUTPUT);app_key(ESC);app_key(ESC);
-        char path[512];snprintf(path,sizeof path,"%s/%s_Test.py.tns",root,samples[i].filename);
-        assert(!unlink(path));
+    app_key(ENTER);type("catalog_test");app_key(ENTER);assert(!app.doc.text[0]);
+    app_key(INDENT);assert(!strcmp(app.doc.text,"  "));app_key(ENTER);assert(!strcmp(app.doc.text,"  \n  "));
+    app_key('x');app_key(INDENT);assert(strstr(app.doc.text,"  x "));
+    app_key(SELECT_ALL);type("name=");
+    choose_command(OPEN_CATALOG);assert(app.page==CATALOG);type("in");preview("catalog");
+    app_key(ENTER);assert(!strcmp(app.doc.text,"name=input("));type("'Name? ')");app_key(ENTER);
+    choose_command(OPEN_CATALOG);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
+    answer="Brandon";app_key(RUN);assert(!app.error && output_has("Brandon"));help_check(HELP_OUTPUT);
+    app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);
+    type("keep=27");app_key(ENTER);choose_command(OPEN_CATALOG);
+    for(int i=0;i<catalog_count;i++){
+        char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
+        assert(runtime_exec("<check>",check,0));
     }
+    for(int i=1;i<=8;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
+    app_key(RIGHT);app_key(RIGHT);type("input");
+    assert(!strcmp(catalog_entries[catalog_index].name,"input"));app_key(ESC);
+    type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);app_key(RIGHT);app_key(RIGHT);
+    type("sqrt");app_key(ENTER);assert(!strcmp(app.command,"math.sqrt("));type("9)");app_key(ENTER);assert(output_has("3.0"));
+    type("keep");app_key(ENTER);assert(output_has("27"));
+    answer="";type("len(input())");app_key(ENTER);assert(output_has("0"));
+    answer=NULL;type("input()");app_key(ENTER);assert(output_has("KeyboardInterrupt"));
+    type("keep+1");app_key(ENTER);assert(output_has("28"));app_key(ESC);
+    char path[512];snprintf(path,sizeof path,"%s/catalog_test.py.tns",root);assert(!unlink(path));
 }
 static void browse_checks(const char *home,void *stack){
     app_init(home,stack);
@@ -169,11 +184,14 @@ int main(void){
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
     char scripts[150];snprintf(scripts,sizeof scripts,"%s/EndraPython",root);
     app_init(scripts,&stack);assert(!app.count && access(scripts,F_OK));
-    app_key(ENTER);app_key(ENTER);assert(app.page==EDITOR && app.doc.existing);
+    app_key(ENTER);app_key(ENTER);assert(app.page==NAME && access(scripts,F_OK));
+    type("Hello_World");app_key(ENTER);assert(app.page==EDITOR && app.doc.existing && !app.doc.text[0]);
+    type("print('Hello from EndraPython')");app_key(ENTER);type("print(sum(range(10)))");app_key(ENTER);app_key(SAVE);
+    app.doc.cursor=0;
     assert(!strcmp(app.doc.name,"Hello_World.py.tns"));
     app_key(RUN);assert(app.page==OUTPUT && !app.error && output_has("Hello from EndraPython") && output_has("45"));
     preview("console");app_key(ESC);app_key(ESC);assert(app.count==1);
-    app_key(ENTER);app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));app_key(ESC);
+    app_key(ENTER);type("Hello_World");app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));app_key(ESC);
     app_key(DOWN);app_key(ENTER);assert(app.page==EDITOR);
     assert(app.doc.cursor==0);app_key(RIGHT);app_key(RIGHT);preview("editor");
     app_key(LEFT);app_key(LEFT);type("#");app_key(RUN);assert(!app.error&&!output_has("Hello from EndraPython")&&output_has("45"));
@@ -215,11 +233,11 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
-    sample_checks(scripts,&stack);
+    catalog_checks(scripts,&stack);
     ide_checks(scripts,&stack);
     browse_checks(scripts,&stack);
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 14 framebuffer previews, contextual help and three built-in samples, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 16 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

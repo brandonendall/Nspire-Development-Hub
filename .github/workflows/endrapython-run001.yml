@@ -1,4 +1,4 @@
-name: EndraPython Run005
+name: EndraPython Run006
 on:
   push:
     branches: [feature/endrapython-run001]
@@ -28,18 +28,17 @@ jobs:
       - name: Verify and package
         working-directory: Projects/EndraPython
         run: |
-          test "$(head -c4 EndraPython_Run005.tns)" = Zehn
+          test "$(head -c4 EndraPython_Run006.tns)" = Zehn
           readelf -h build/endrapython.elf | grep -E 'Machine: +ARM'
-          sha256sum EndraPython_Run005.tns > build/SHA256SUMS.txt
-          wc -c EndraPython_Run005.tns
+          sha256sum EndraPython_Run006.tns > build/SHA256SUMS.txt
+          wc -c EndraPython_Run006.tns
           cat build/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraPython_Run005
+          name: EndraPython_Run006
           if-no-files-found: error
           path: |
-            Projects/EndraPython/EndraPython_Run005.tns
+            Projects/EndraPython/EndraPython_Run006.tns
             Projects/EndraPython/build/SHA256SUMS.txt
             Projects/EndraPython/build/previews/
-            Projects/EndraPython/examples/
             Projects/EndraPython/licenses/

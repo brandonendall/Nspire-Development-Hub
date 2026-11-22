@@ -6,24 +6,17 @@
 #include <ctype.h>
 
 App app;
-extern const char sample_hello[],sample_dice[],sample_functions[];
-const Sample samples[]={
-    {"Hello World","Hello_World",sample_hello},
-    {"Dice Roller","Dice_Roller",sample_dice},
-    {"Functions","Functions",sample_functions}
-};
-const int sample_count=sizeof samples/sizeof samples[0];
 const char *const ep_symbols[]={"\"","?","'","!","$","°","%",":","_","\\","[","]","(",")","{","}","=",",",".",";","#","+","-","*","/","<",">","@","&","|","^","~","`","¡","¿"};
 const int ep_symbol_count=sizeof ep_symbols/sizeof ep_symbols[0];
 const Command *page_commands(Page page){
-    static const Command files[]={{"Help",OPEN_GUIDE},{"Samples",OPEN_SAMPLES},{"Browse Documents",BROWSE},{NULL,0}};
+    static const Command files[]={{"Help",OPEN_GUIDE},{"Browse Documents",BROWSE},{NULL,0}};
     static const Command editor[]={
-        {"Help",OPEN_GUIDE},{"Run script",RUN},{"Save",SAVE},{"Find text",SEARCH},
+        {"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"Run script",RUN},{"Save",SAVE},{"Find text",SEARCH},
         {"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},{"Undo",UNDO},
         {"Redo",REDO},{"Copy",COPY},{"Cut",CUT},{"Paste",PASTE},
         {"Select all",SELECT_ALL},{"Files",ESC},{NULL,0}
     };
-    static const Command shell[]={{"Help",OPEN_GUIDE},{"List modules",LIST_MODULES},
+    static const Command shell[]={{"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"List modules",LIST_MODULES},
         {"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},{"Files",ESC},{NULL,0}};
     static const Command output[]={{"Help",OPEN_GUIDE},{"Run again",RUN},{"Editor",ESC},{NULL,0}};
     if(page==FILES)return files;
@@ -55,7 +48,7 @@ void console_write(const char *s,size_t n) {
 }
 void app_init(const char *root,void *stack) {
     memset(&app,0,sizeof app);
-    app.sample=-1;app.home=root;app.stack=stack;
+    app.home=root;app.stack=stack;
     if(strlen(root)>=sizeof app.folder){app.quit=1;return;}
     strcpy(app.folder,root);app.root=app.folder;strcpy(app.documents,root);
     char *end=strrchr(app.documents,'/');if(end && end!=app.documents)*end=0;
@@ -80,26 +73,26 @@ void app_insert_text(const char *value){
     if(app.page==EDITOR){edit_insert(&app.doc,value);return;}
     char *dst;size_t cap;
     if(app.page==SHELL){dst=app.command;cap=sizeof app.command;}
+    else if(app.page==READ_INPUT){dst=app.reply;cap=sizeof app.reply;}
     else if(app.page==FIND){dst=app.query;cap=sizeof app.query;}
     else if(app.page==NAME){dst=app.name;cap=sizeof app.name;}
     else return;
     if(strlen(dst)+strlen(value)>=cap){strcpy(app.status,"Text too long for this field");return;}
     strcat(dst,value);
 }
-static void begin_name(void){app.sample=-1;app.page=NAME;app.name[0]=0;}
+static void begin_name(void){app.page=NAME;app.name[0]=0;}
 static void start_shell(void){
     reset_output();app.command[0]=app.history[0]=0;
     runtime_start(app.stack);app.page=SHELL;
 }
 static void create_doc(void){
     char name[NAME_CAP];
-    const char *base=app.name[0]?app.name:app.sample>=0?samples[app.sample].filename:"Hello_World";
+    if(!app.name[0]){strcpy(app.status,"Enter a script name");return;}
+    const char *base=app.name;
     int n=snprintf(name,sizeof name,"%s%s",base,valid_script(base)?"":".py.tns");
     if(n>=(int)sizeof name||!valid_script(name)){strcpy(app.status,"Choose a shorter plain filename");return;}
     edit_reset_history();
     memset(&app.doc,0,sizeof app.doc);strcpy(app.doc.name,name);
-    if(app.sample>=0)strcpy(app.doc.text,samples[app.sample].source);
-    else if(!app.name[0])strcpy(app.doc.text,sample_hello);
     app.doc.dirty=1;
     if(save_script())app.page=EDITOR;
 }
@@ -119,20 +112,21 @@ void app_key(int k) {
         if(k==LEFT || k==UP)app.help_topic=(app.help_topic+HELP_COUNT-1)%HELP_COUNT;
         return;
     }
-    if(app.page==SAMPLES){
-        if(k==ESC){app.page=FILES;return;}
-        if(k==UP)app.action=(app.action+sample_count-1)%sample_count;
-        if(k==DOWN)app.action=(app.action+1)%sample_count;
-        if(k==ENTER){
-            app.sample=app.action;strcpy(app.name,samples[app.sample].filename);app.page=NAME;
-        }
-        return;
-    }
-    if(k==MARKS && (app.page==EDITOR || app.page==SHELL || app.page==NAME || app.page==FIND)){
+    if(app.page==CATALOG){catalog_key(k);return;}
+    if(k==OPEN_CATALOG && (app.page==SHELL || app.page==EDITOR)){catalog_open();return;}
+    if(k==MARKS && (app.page==EDITOR || app.page==SHELL || app.page==NAME || app.page==FIND || app.page==READ_INPUT)){
         app.origin=app.page;app.page=ACTIONS;app.action=0;app.symbols=1;return;
     }
-    if(k==TI_INPUT && (app.page==EDITOR || app.page==SHELL || app.page==FIND || app.page==NAME)){
+    if(k==TI_INPUT && (app.page==EDITOR || app.page==SHELL || app.page==FIND || app.page==NAME || app.page==READ_INPUT)){
         app.request_input=1;return;
+    }
+    if(app.page==READ_INPUT){
+        if(k==ENTER)app.input_result=1;
+        else if(k==ESC)app.input_result=-1;
+        else if(k>=32 && k<127 && strlen(app.reply)+1>=sizeof app.reply)
+            strcpy(app.status,"Input field is full");
+        else text_field(app.reply,sizeof app.reply,k);
+        return;
     }
     if(app.page==FILES){
         int last=app.count+1;
@@ -146,7 +140,6 @@ void app_key(int k) {
             if(app.count)app.selected=2;
         }
         else if(k==BROWSE)browse_folder(app.documents);
-        else if(k==OPEN_SAMPLES){app.page=SAMPLES;app.action=0;}
         else if((k==ESC || k==LEFT) && app.browsing)browse_parent();
         else if(k==ESC)app.quit=1;
         else if(k==ENTER){
@@ -163,7 +156,7 @@ void app_key(int k) {
             }
         }
     }else if(app.page==NAME){
-        if(k==ESC){if(app.sample>=0){app.page=SAMPLES;app.action=app.sample;}else show_files();}
+        if(k==ESC)show_files();
         else if(k==ENTER)create_doc();
         else text_field(app.name,sizeof app.name,k);
     }else if(app.page==EDITOR){

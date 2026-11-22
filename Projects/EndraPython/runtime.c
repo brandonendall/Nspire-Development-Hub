@@ -1,9 +1,14 @@
 #include "runtime.h"
+#include "app.h"
+#include "py/builtin.h"
+#include <stdlib.h>
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "port/micropython_embed.h"
 #include <string.h>
+
+#include "shared/readline/readline.h"
 
 static uintptr_t heap[128 * 1024 / sizeof(uintptr_t)];
 static unsigned polls;
@@ -55,3 +60,34 @@ const char endra_help_text[] =
     "help(math.sqrt)   Inspect an object\n"
     "Up recalls your last command.\n"
     "Left/Right scroll output.\n";
+
+int readline(vstr_t *line,const char *prompt){
+    (void)prompt;
+    Page caller=app.page,origin=app.origin;
+    app.page=READ_INPUT;app.reply[0]=0;app.input_result=0;
+    platform_wait_input();
+    app.page=caller;app.origin=origin;
+    if(app.input_result<=0){console_write("\n",1);return CHAR_CTRL_C;}
+    vstr_add_str(line,app.reply);
+    console_write(app.reply,strlen(app.reply));console_write("\n",1);
+    return 0;
+}
+
+/* Copy names before closing a temporary editor VM. Shell browsing keeps its VM. */
+int runtime_catalog(const char *module){
+    nlr_buf_t handler;
+    if(nlr_push(&handler)!=0)return 0;
+    mp_obj_t obj=mp_import_name(qstr_from_str(module),mp_const_none,MP_OBJ_NEW_SMALL_INT(0));
+    mp_obj_module_t *mod=MP_OBJ_TO_PTR(obj);
+    const mp_map_t *map=&mod->globals->map;
+    int count=0;
+    for(size_t i=0;i<map->alloc && count<CATALOG_CAP;i++){
+        if(!mp_map_slot_is_filled(map,i))continue;
+        const mp_map_elem_t *e=map->table+i;
+        const char *name=mp_obj_str_get_str(e->key);
+        if(*name=='_' || strlen(name)>=sizeof catalog_entries[0].name)continue;
+        strcpy(catalog_entries[count].name,name);
+        catalog_entries[count++].callable=mp_obj_is_callable(e->value);
+    }
+    nlr_pop();return count;
+}
