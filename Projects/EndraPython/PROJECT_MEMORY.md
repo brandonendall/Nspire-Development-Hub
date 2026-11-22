@@ -1,12 +1,22 @@
 # EndraPython project memory
 
+## Run003 IDE and module discovery, 2026-11-22
+
+Brandon confirmed Run002 successful on the TI-Nspire CX II CAS. Retain Run002 and the existing scripts directory as the working rollback. He requested a fuller IDE and the commands and libraries in his Casio PythonUltra. The TI implementation is separate.
+
+Run003 source `193c2803899dc75c3704b9acf0b26aa0147e154e` on feature/endrapython-run001, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47). [Actions 45056645849](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45056645849) passed. [Artifact 14767647166](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45056645849/artifacts/14767647166) contains EndraPython_Run003.tns, 165163 bytes, SHA-256 `e07749c74a257a9dc2f523047bc56e1a2080efd75f232a2af0f68b006cb86dc3`. Downloaded ZIP SHA-256 `ecf2a73a79bcd8b42deb5056782dff4dde75690bbeefcbea2b647143f8056fc6`. The CI executable matched the independent local ARM build byte for byte. Six framebuffer previews and their contact sheet matched pixel for pixel.
+
+The redesigned workspace, editor, shell and console include selection, multiline clipboard operations, 12-step undo/redo, find-next and traceback line navigation. The shell Menu runs help('modules'). Four new imports (array, cmath, random, struct) bring the inventory to nine. Host checks exercised the bundled dice script, import calls, saves, clipboard/undo around saves, wrapped find and error navigation as well as Run002 regressions.
+
+Physical Run003 acceptance is pending. Check LCD text clarity, modal navigation, modifier keys, existing-file save/reopen and error jumps. After feedback, work toward imports between saved scripts and multi-file projects. README records the reference package inventory and remaining port dependencies.
+
 ## Run002 storage fix, 2026-11-22
 
 Brandon photographed Run001 on the CX II CAS with Hello_World.py.tns open, range(5) edited, and “Cannot create scripts folder”. The folder appeared on leaving and reopening. This confirms physical launch and editing; no successful persistence of that edit or execution result was reported.
 
 Run001 unconditionally attempted mkdir on the root and accepted only success or EEXIST. A host reproduction with an existing root and mkdir returning EIO produced the exact photographed message. The calculator's actual errno was not measured. Run002 successfully runs the same edited example (10), reuses accessible directories without mkdir, and checks actual accessibility after first-use creation. Save lock ownership and overwrite protection remain in force. Regression tests cover the root appearing despite a failed create return, duplicate names, a denied create, a same-name blocking file, repeat save, and reopen. The five built-in modules are math, gc, collections, builtins and __main__. All five imports were checked on the compiled host port.
 
-Source `641bdfc5aead129e25437aaf7ddc6dc270e64294` on `feature/endrapython-run001`, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47). [CI 45055316907](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45055316907) passed. [Artifact 14767496881](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45055316907/artifacts/14767496881). EndraPython_Run002.tns, 149421 bytes, SHA-256 `2e111f5ff3adec98da67de8d0d4ee941f3115edc037a0946f94f9c65844c57d1`. Extracted CI binary matched local ARM build byte for byte. All five UI frames matched the local renders. Hardware acceptance of Run002 is pending. Confirm save/run/reopen on the existing example and retain the scripts folder. Run001 is available as an executable rollback with the known save defect.
+Source `641bdfc5aead129e25437aaf7ddc6dc270e64294` on `feature/endrapython-run001`, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47). [CI 45055316907](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45055316907) passed. [Artifact 14767496881](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45055316907/artifacts/14767496881). EndraPython_Run002.tns, 149421 bytes, SHA-256 `2e111f5ff3adec98da67de8d0d4ee941f3115edc037a0946f94f9c65844c57d1`. Extracted CI binary matched local ARM build byte for byte. All five UI frames matched the local renders. Brandon subsequently confirmed Run002 successful on his calculator. Confirm save/run/reopen on the existing example and retain the scripts folder. Run001 is available as an executable rollback with the known save defect.
 
 ## Run001 verified build, 2026-11-22
 
