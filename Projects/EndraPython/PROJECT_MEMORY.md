@@ -1,5 +1,13 @@
 # EndraPython project memory
 
+## Run004 punctuation key, native TI text entry and Documents, 2026-11-22
+
+Brandon reported that Run003 on his handheld could not access his keyboard popup or enter quotes and brackets as expected, could only browse the default scripts folder, and he wanted the green E removed. Run002 remains his explicitly confirmed working rollback. Source `f83d7f17f3b2c6c8856140573a4ecf13a4546f2c` on feature/endrapython-run001, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47). [Actions 45059581295](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45059581295) passed. [Artifact 14768782801](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45059581295/artifacts/14768782801) includes EndraPython_Run004.tns, 177942 bytes, SHA-256 `0143168af503a64c36ea43ae4f8d8bcbefde85b0e9a39908a42b67b410808603`. Downloaded archive SHA-256 `d754d7d83c487a766f565ee9a759f2c40b01a29edfa11064aaa7c53c662986c6`. The local ARM binary and all eight test screens match the CI results.
+
+The physical ?▸ SDK key now opens a one-press marks picker in the editor, shell, find and naming fields. Enter inserts the selection. The dedicated Catalog key opens a native TI Request field through the SDK's dialog interface; press ?▸ or Ctrl+Catalog inside that field for the OS palette, then confirm. UTF-16 results are converted atomically to UTF-8. Direct Ctrl+parentheses and tap-then-key Ctrl are supported. Files > Menu browses Documents with nested folders, in-place edit/run/save, Esc to parent and Tab paging for over 96 entries. Header is text only.
+
+Tests exercised every picker entry, cancel, key press edges and modifiers, multibyte selection and deletion, Unicode strings through execution and save/reopen, and selecting an external script with the same basename as a home script without changing the home copy. Displayed previews are EndraPython framebuffer captures. Physical TI dialog key routing, available symbol sets in that field, LCD restoration after native entry, on-device external-folder saves and Run004 acceptance still need confirmation. Next verify these before continuing multi-file project imports. Launch the retained Run002 for rollback and preserve scripts.
+
 ## Run003 IDE and module discovery, 2026-11-22
 
 Brandon confirmed Run002 successful on the TI-Nspire CX II CAS. Retain Run002 and the existing scripts directory as the working rollback. He requested a fuller IDE and the commands and libraries in his Casio PythonUltra. The TI implementation is separate.
