@@ -9,8 +9,8 @@
 #define EDIT_COLS 40
 #define OUT_WIDTH 40
 #define OUT_LINES 96
-typedef enum { FILES, EDITOR, OUTPUT, SHELL, NAME, ACTIONS, DISCARD, FIND } Page;
-typedef enum { UP=256, DOWN, LEFT, RIGHT, ENTER, ESC, MENU, SAVE, RUN, INDENT, UNDO, REDO, COPY, CUT, PASTE, SELECT_ALL, SEARCH, EXT_UP, EXT_DOWN, EXT_LEFT, EXT_RIGHT, TI_INPUT, MARKS } Key;
+typedef enum { FILES, EDITOR, OUTPUT, SHELL, NAME, ACTIONS, DISCARD, FIND, GUIDE, SAMPLES } Page;
+typedef enum { UP=256, DOWN, LEFT, RIGHT, ENTER, ESC, MENU, SAVE, RUN, INDENT, UNDO, REDO, COPY, CUT, PASTE, SELECT_ALL, SEARCH, EXT_UP, EXT_DOWN, EXT_LEFT, EXT_RIGHT, TI_INPUT, MARKS, OPEN_GUIDE, OPEN_SAMPLES, BROWSE, LIST_MODULES } Key;
 typedef struct {
     char name[NAME_CAP], text[SOURCE_CAP+1], original[SOURCE_CAP+1];
     int cursor, top, left, dirty, existing, crlf, anchor, selecting;
@@ -21,6 +21,7 @@ typedef struct {
     char query[64];
     struct FileEntry { char name[NAME_CAP]; int folder; } entries[FILE_CAP];
     char name[NAME_CAP], status[80], folder[PATH_CAP], documents[PATH_CAP];
+    int sample, help_topic;
     int browsing, request_input, file_page, more_files;
     int count, selected, action, quit, error, error_line, symbols;
     char output[OUT_LINES][4*OUT_WIDTH+1], command[128], history[128];
@@ -44,7 +45,12 @@ void edit_reset_history(void);
 void edit_find(Editor *d,const char *query);
 extern const char *const ep_symbols[];
 extern const int ep_symbol_count;
-extern const char *const ep_actions[];
+typedef struct { const char *label; int key; } Command;
+const Command *page_commands(Page page);
+typedef struct { const char *label, *filename, *source; } Sample;
+extern const Sample samples[];
+extern const int sample_count;
+enum { HELP_FILES, HELP_EDITOR, HELP_EDITS, HELP_SHELL, HELP_OUTPUT, HELP_COUNT };
 void edit_goto_line(Editor *d,int line);
 
 int browse_folder(const char *path);

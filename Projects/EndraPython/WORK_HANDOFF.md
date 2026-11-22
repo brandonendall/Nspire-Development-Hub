@@ -1,13 +1,13 @@
-# Run004 handheld checks
+# Run005 handheld checks
 
-Brandon reported Run003 could not access the calculator punctuation popup or open scripts stored elsewhere. Keep Run002 as the last owner-confirmed working rollback and preserve existing scripts.
+Brandon confirmed the Run004 shell and punctuation control working. His photo showed the Esc Files label clipped on the shell footer. Keep Run004 as the rollback.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run004.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run005.tns /upload
 ```
 
-1. In the shell, type `print(`, press the physical **?▸** key, pick the double quote with Enter, type a word, insert another quote the same way, then type `)` and press Enter. Repeat in the editor and try square brackets.
-2. For TI's own interface press the **Catalog (book)** key. In the TI text field press **?▸** for punctuation or **Ctrl+Catalog** for the wider symbol palette. Choose a symbol and confirm the text field. Check cancel, returning to the same caret, and the LCD after exiting. This OS-dialog interaction requires physical confirmation.
-3. In Files, press Menu to browse Documents. Enter opens a folder or Python script, Esc moves up, and Tab cycles pages when a folder has more than 96 entries. Open a plain-text .py or .py.tns from another folder, edit a test copy, run it, exit and reopen the same file. Save writes to that original folder.
-4. Roll back by closing Run004 and opening the retained Run002 executable.
+1. Open the shell. The bottom bar should show only Menu and Commands & help. Type part of a command, press Menu then Enter on Help, and browse the topics with Left and Right. Press Esc to return to the same input.
+2. From Files choose Menu > Samples, select Dice Roller and confirm a new filename. Press Ctrl+R. Expect “Rolling a d20” and a number from 1 to 20. Press Esc to return to the same caret.
+3. Open Menu in the editor or output to check its commands. In Files choose Menu > Browse Documents. In Shell choose Menu > List modules or enter help('modules').
+4. Roll back by closing Run005 and launching Run004. Preserve the scripts directory.

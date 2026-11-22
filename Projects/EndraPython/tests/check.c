@@ -35,6 +35,42 @@ static void pick(const char *ch){
     for(int i=0;strcmp(ch,ep_symbols[app.action]);i++){assert(i<ep_symbol_count);app_key(RIGHT);}
     app_key(ENTER);
 }
+static void choose_command(int command){
+    app_key(MENU);assert(app.page==ACTIONS && !app.symbols);
+    const Command *commands=page_commands(app.origin);
+    while(commands[app.action].key!=command){
+        assert(commands[app.action+1].label);app_key(DOWN);
+    }
+    app_key(ENTER);
+}
+static void help_check(int topic){
+    Page page=app.page;int pos=app.doc.cursor,sel=app.selected,offset=app.offset;
+    choose_command(OPEN_GUIDE);assert(app.page==GUIDE && app.help_topic==topic);
+    for(int i=0;i<HELP_COUNT;i++){
+        char frame[24];snprintf(frame,sizeof frame,"help%d",app.help_topic);preview(frame);
+        app_key(RIGHT);
+    }
+    assert(app.help_topic==topic);app_key(LEFT);app_key(RIGHT);
+    app_key(ESC);assert(app.page==page && app.doc.cursor==pos && app.selected==sel && app.offset==offset);
+}
+static void sample_checks(const char *root,void *stack){
+    app_init(root,stack);help_check(HELP_FILES);
+    for(int i=0;i<sample_count;i++){
+        choose_command(OPEN_SAMPLES);assert(app.page==SAMPLES);
+        for(int j=0;j<i;j++)app_key(DOWN);
+        preview("samples");app_key(ENTER);assert(app.page==NAME);
+        app_key(ESC);assert(app.page==SAMPLES && app.action==i);
+        app_key(ENTER);
+        if(i==0){app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));}
+        type("_Test");app_key(ENTER);
+        assert(app.page==EDITOR && !strcmp(app.doc.text,samples[i].source));
+        app_key('#');help_check(HELP_EDITOR);assert(app.doc.dirty);app_key(UNDO);
+        choose_command(RUN);assert(app.page==OUTPUT && !app.error);
+        help_check(HELP_OUTPUT);app_key(ESC);app_key(ESC);
+        char path[512];snprintf(path,sizeof path,"%s/%s_Test.py.tns",root,samples[i].filename);
+        assert(!unlink(path));
+    }
+}
 static void browse_checks(const char *home,void *stack){
     app_init(home,stack);
     char other[400],nested[420],path[540];
@@ -43,7 +79,7 @@ static void browse_checks(const char *home,void *stack){
     write_file(nested,"Lesson (1).PY.TNS","print('original')");
     write_file(home,"Lesson (1).PY.TNS","print('home')");
     write_file(nested,"unrelated.tns","leave me");
-    app_key(MENU);assert(app.browsing && !strcmp(app.root,app.documents));
+    choose_command(BROWSE);assert(app.browsing && !strcmp(app.root,app.documents));
     while(strcmp(app.entries[app.selected-2].name,"Class Notes")){assert(app.selected<app.count+1);app_key(DOWN);}
     app_key(ENTER);assert(!strcmp(app.root,other));app_key(ENTER);assert(!strcmp(app.root,nested));
     assert(app.count==1);preview("browser");
@@ -113,7 +149,9 @@ static void ide_checks(const char *root,void *stack){
     for(int i=0;i<16;i++)app_key(UNDO);
     assert(strlen(app.doc.text)==5);app_key('y');app_key(REDO);assert(!strcmp(app.doc.text,"xxxxxy"));
     app_init(root,stack);app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);
-    app_key(MENU);assert(output_has("collections") && output_has("random") && output_has("struct"));
+    type("6*7");help_check(HELP_SHELL);assert(!strcmp(app.command,"6*7"));
+    app_key(ENTER);assert(output_has("42"));
+    choose_command(LIST_MODULES);assert(output_has("collections") && output_has("random") && output_has("struct"));
     preview("repl");type("help('modules')");app_key(ENTER);assert(output_has("__main__"));
     type("import random, array, cmath, struct");app_key(ENTER);
     type("random.seed(7)");app_key(ENTER);type("v=random.randint(1,20)");app_key(ENTER);
@@ -177,10 +215,11 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    sample_checks(scripts,&stack);
     ide_checks(scripts,&stack);
     browse_checks(scripts,&stack);
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 8 framebuffer previews, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 14 framebuffer previews, contextual help and three built-in samples, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

@@ -98,6 +98,7 @@ static int key(int x,const char *k,const char *action){
     return x+w+width(BODY,action)+14;
 }
 static void footer(void){box(0,218,320,22,BAR);box(0,218,320,1,LINE);}
+static void workspace_footer(void){footer();key(8,"Menu","Commands & help");}
 static void status(const char *s,int c){
     if(!*s)return;
     box(0,200,320,18,BAR);fitted(9,201,BODY,c,s,311);
@@ -131,8 +132,7 @@ static void files(void){
     char location[PATH_CAP+16];
     snprintf(location,sizeof location,"Documents%s",app.root+strlen(app.documents));
     status(app.status[0]?app.status:location,app.status[0]?GOLD:FAINT);
-    footer();int x=key(8,"Enter",app.selected==0?"Create":"Open");x=key(x,"Menu","Browse");key(x,"Esc",app.browsing?"Back":"Exit");
-    right(311,223,SMALL,MUTED,"RUN 004");
+    workspace_footer();
 }
 static int token(const char *s,int n){
     static const char *const words[]={"and","as","assert","break","class","continue","def","del",
@@ -186,10 +186,10 @@ static void editor(void){
     }
     char loc[80];snprintf(loc,sizeof loc,"Line %d    Col %d",1+line_number(d->text,d->cursor),1+utf_columns(d->text+line_start(d->text,d->cursor),d->cursor-line_start(d->text,d->cursor)));
     status(app.status[0]?app.status:loc,app.status[0]?GOLD:MUTED);
-    footer();int x=key(8,"Menu","Tools");x=key(x,"?","Symbols");x=key(x,"^R","Run");key(x,"Esc","Files");
+    workspace_footer();
 }
 static void console(void){
-    int shell=app.page==SHELL || (app.page==ACTIONS && app.symbols && app.origin==SHELL);header(shell?"SHELL":"OUTPUT");
+    int shell=app.page==SHELL || (app.page==ACTIONS && app.origin==SHELL);header(shell?"SHELL":"OUTPUT");
     terminal_icon(10,39,shell?AQUA:GREEN);
     fitted(34,34,BODY,WHITE,shell?"MicroPython 1.24.1":app.doc.name,309);
     box(0,52,320,1,LINE);
@@ -210,24 +210,22 @@ static void console(void){
         box(0,200,320,18,app.error?ERROR_BG:DEEP);
         text(9,201,BODY,app.error?ERROR:GREEN,app.error?"Python exception":"Run complete",308);
     }
-    footer();int x=key(8,shell?"Enter":"^R",shell?"Eval":"Run");
-    if(shell){x=key(x,"?","Symbols");x=key(x,"Menu","Modules");}
-    else if(app.error_line>0)x=key(x,"Enter","Go to line");
-    else x=key(x,"Up/Dn","Scroll");
-    key(x,"Esc",shell?"Files":"Editor");
+    workspace_footer();
 }
 static void modal(void){
     int x=17,w=286;
-    if(app.page==NAME || (app.page==ACTIONS && app.symbols && app.origin==NAME))files();
-    else if(app.page==ACTIONS && app.symbols && app.origin==SHELL)console();else editor();
+    Page behind=app.page==ACTIONS?app.origin:app.page;
+    if(behind==NAME || behind==SAMPLES || behind==FILES)files();
+    else if(behind==SHELL || behind==OUTPUT)console();else editor();
     /* Dim the underlying workspace while keeping the current location visible. */
     for(int i=0;i<320*240;i++)fb[i]=blend(BG,fb[i],2);
-    int top=app.page==ACTIONS?39:55,bottom=app.page==ACTIONS?212:181;
+    int list=app.page==ACTIONS || app.page==SAMPLES;
+    int top=list?39:55,bottom=list?212:181;
     panel(x,top,w,bottom-top,LINE,BAR);box(x+2,top+2,3,22,GREEN);
-    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Marks and symbols":"Editor tools";
+    const char *title=app.page==SAMPLES?"Samples":app.page==NAME?(app.sample>=0?"Save sample as":"New script"):app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Marks and symbols":"Commands";
     text(x+13,top+7,TITLE,WHITE,title,294);box(x+12,top+34,w-24,1,LINE);
-    if(app.page==ACTIONS){
-        if(app.symbols){
+    if(list){
+        if(app.page==ACTIONS && app.symbols){
             for(int i=0;i<ep_symbol_count;i++){
                 int cx=x+11+22*(i%12),cy=top+43+23*(i/12);
                 if(i==app.action)panel(cx,cy,20,20,GREEN,DEEP);
@@ -236,30 +234,67 @@ static void modal(void){
             text(31,161,BODY,MUTED,"Book opens TI catalog input",290);
         }else{
             int first=app.action>5?app.action-5:0;
-            for(int i=first;ep_actions[i] && i<first+6;i++){
+            const Command *commands=page_commands(app.origin);
+            for(int i=first;i<first+6;i++){
+                const char *label=app.page==SAMPLES?(i<sample_count?samples[i].label:NULL):commands[i].label;
+                if(!label)break;
                 int y=top+38+(i-first)*20;
                 if(i==app.action)panel(x+8,y,w-16,19,GREEN,DEEP);
-                text(x+17,y+1,BODY,i==app.action?WHITE:MUTED,ep_actions[i],292);
+                text(x+17,y+1,BODY,i==app.action?WHITE:MUTED,label,292);
             }
         }
     }else if(app.page==DISCARD){
         text(32,101,BODY,WHITE,"Save this script before leaving?",291);
-        text(32,129,BODY,MUTED,"Esc keeps the editor open.",291);
+        text(32,123,BODY,MUTED,"Ctrl+S saves. Enter discards.",291);
+        text(32,145,BODY,MUTED,"Esc keeps editing.",291);
     }else{
         const char *s=app.page==FIND?app.query:app.name;
         int n=strlen(s),from=utf_advance(s,0,n,utf_columns(s,n)-34);
         panel(29,101,262,26,GREEN,CARD);
         text(37,106,CODE,WHITE,s+from,284);box(37+7*utf_columns(s+from,n-from),108,1,12,GREEN);
         fitted(30,139,BODY,app.status[0]?GOLD:MUTED,app.status[0]?app.status:app.page==FIND?
-               "Enter finds the next match and wraps.":"Leave blank for the Hello World example.",292);
+               "Enter finds the next match and wraps.":app.sample>=0?"Enter saves a copy in this folder.":"Leave blank for the Hello World example.",292);
     }
-    footer();int next=key(8,"Enter",app.page==NAME?"Create":app.page==FIND?"Find":app.page==DISCARD?"Discard":"Choose");
-    if(app.page==DISCARD)next=key(next,"^S","Save");
-    key(next,"Esc","Back");
+    footer();
+    if(app.page==DISCARD)key(8,"Esc","Keep editing");
+    else {int x=key(8,"Enter",app.page==NAME?"Create":app.page==FIND?"Find":"Choose");key(x,"Esc","Back");}
+}
+typedef struct {const char *key,*action;} HelpRow;
+typedef struct {const char *title;HelpRow rows[7];} HelpTopic;
+static const HelpTopic topics[HELP_COUNT]={
+    [HELP_FILES]={"Files and samples",{{"Menu > Samples","Choose a sample to copy"},
+        {"Enter","Open a file or folder"},{"Menu > Browse","Browse Documents"},
+        {"Tab","Next page in a large folder"},{"Esc","Parent folder or exit"}}},
+    [HELP_EDITOR]={"Editing and running",{{"Ctrl+R","Save and run this script"},
+        {"Ctrl+S","Save changes"},{"Ctrl+F","Find text or find next"},
+        {"? key","Insert a symbol"},{"Book","Open TI text input"},
+        {"Tab","Indent"},{"Esc","Return to Files"}}},
+    [HELP_EDITS]={"Selection and clipboard",{{"Shift + arrows","Extend selection"},
+        {"Ctrl+A","Select all"},{"Ctrl+C","Copy"},{"Ctrl+X","Cut"},{"Ctrl+V","Paste"},
+        {"Ctrl+Z","Undo"},{"Ctrl+Y","Redo"}}},
+    [HELP_SHELL]={"Python shell",{{"Enter","Run the command"},{"Up","Recall last command"},
+        {"Left / Right","Scroll earlier / later output"},{"Menu > List modules","See installed libraries"},
+        {"? key","Insert a symbol"},{"Book","Open TI text input"},{"Esc","Return to Files"}}},
+    [HELP_OUTPUT]={"Script output",{{"Ctrl+R","Run the script again"},{"Up / Down","Scroll output"},
+        {"Enter on error","Go to the failing line"},{"Hold Esc during run","Interrupt Python"},
+        {"Esc","Return to editor"}}}
+};
+static void guide(void){
+    const HelpTopic *topic=&topics[app.help_topic];
+    header("HELP");text(10,38,TITLE,WHITE,topic->title,267);
+    char pos[12];snprintf(pos,sizeof pos,"%d / %d",app.help_topic+1,HELP_COUNT);
+    right(309,42,SMALL,MUTED,pos);box(10,63,300,1,LINE);
+    for(int i=0;i<7 && topic->rows[i].key;i++){
+        int y=71+i*20;
+        text(10,y,SMALL,GREEN,topic->rows[i].key,145);
+        text(148,y-1,BODY,WHITE,topic->rows[i].action,314);
+    }
+    footer();int x=key(8,"Left / Right","Topics");key(x,"Esc","Back");
 }
 void render(uint16_t *pixels){
     fb=pixels;box(0,0,320,240,BG);
-    if(app.page==FILES)files();
+    if(app.page==GUIDE)guide();
+    else if(app.page==FILES)files();
     else if(app.page==EDITOR)editor();
     else if(app.page==SHELL||app.page==OUTPUT)console();
     else modal();

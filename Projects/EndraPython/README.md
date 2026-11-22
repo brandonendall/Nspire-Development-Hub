@@ -1,16 +1,22 @@
-# EndraPython Run004
+# EndraPython Run005
 
-Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run002 successful on his calculator. Run004 needs a handheld check of the punctuation key and native TI dialog.
+Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run004 working and its physical punctuation key on his calculator. Run005 needs a handheld check of the menus and footer.
 
-Run004 keeps the Run002 save fix. It opens the existing scripts folder before saving. On first use it tries to create the folder, then checks that it can open it. Open your existing Hello_World.py.tns from Files to resume editing.
+The editor keeps the Run002 save fix. It opens the existing scripts folder before saving. On first use it tries to create the folder, then checks that it can open it. Open your existing Hello_World.py.tns from Files to resume editing.
+
+## Commands, help and samples
+
+Press **Menu** from Files, Editor, Shell or Output. **Help** is highlighted. Press **Enter** to see controls for the current screen. Left and Right cycle through Files and samples, Editing and running, Selection and clipboard, Python shell, and Script output. Esc returns directly to the same work, including a partially typed shell command.
+
+In Files choose **Menu > Samples**, pick Hello World, Dice Roller or Functions, then confirm a filename to create an editable copy in the current folder. All three programs are inside the executable. Existing filenames are protected. You can cancel before creating the copy. **Ctrl+R** or **Menu > Run script** saves and runs the open script.
 
 ## Symbols and folders
 
-The physical **?▸** key opens Marks and symbols directly in the editor, shell, Find field or filename. Select a character with the arrows and press Enter. It includes every mark listed in the TI guide plus programming punctuation and brackets. The same popup is the first editor Menu item. Ctrl with the parenthesis keys enters the corresponding square bracket; a tapped Ctrl applies to the next key. The original Shift shortcuts still work.
+The physical **?▸** key opens Marks and symbols directly in the editor, shell, Find field or filename. Select a character with the arrows and press Enter. It includes every mark listed in the TI guide plus programming punctuation and brackets. The same popup is an editor Menu item. Ctrl with the parenthesis keys enters the corresponding square bracket; a tapped Ctrl applies to the next key. The original Shift shortcuts still work.
 
 For TI's own keyboard interface, press **Catalog (book)** to open a native TI text field. Use **?▸** inside it for TI punctuation or **Ctrl+Catalog** for the broader TI symbol palette. Confirm the field to insert its text. Esc cancels. Technical notes: the Ndless SDK exports a TI Request text dialog and EndraPython reads its UTF-16 result, converts it to UTF-8, and inserts the whole result as one undoable edit. This two-stage route requires hardware verification. EndraPython stores actual characters, including mathematical symbols. Executable expressions must follow MicroPython syntax. Uncovered font characters use a replacement glyph while retaining the original text.
 
-In Files, **Menu** opens Documents. Enter opens a folder or a Python script. Esc goes up one folder and returns to the usual EndraPython view from Documents. Save and Run use the opened file's own directory. New script also uses the displayed directory. Tab cycles 96-entry pages in large folders. Browsing reads directory listings only.
+In Files, **Menu > Browse Documents** opens Documents. Enter opens a folder or a Python script. Esc goes up one folder and returns to the usual EndraPython view from Documents. Save and Run use the opened file's own directory. New script also uses the displayed directory. Tab cycles 96-entry pages in large folders. Browsing reads directory listings only.
 
 ## First use
 
@@ -25,7 +31,7 @@ Open EndraPython from Documents. Files starts read-only. Select **+ New script**
 | Del | Delete the preceding character |
 | Shift + minus / comma / apostrophe | Underscore / colon / double quote |
 | Shift + left or right parenthesis | Square bracket |
-| Menu | Open editor tools. In the shell, list compiled modules |
+| Menu | Open commands and help for the current screen. In the shell choose List modules to print the inventory |
 | Shift + arrow / Ctrl+A | Extend selection / select all |
 | Ctrl+C / X / V | Copy / cut / paste with the application clipboard |
 | Ctrl+Z / Ctrl+Y | Undo / redo, up to 12 edits |
@@ -46,7 +52,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run004 scope |
+| Area | Run005 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Nine registered modules: array, builtins, __main__, cmath, collections, gc, math, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
