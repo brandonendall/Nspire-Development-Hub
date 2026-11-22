@@ -119,6 +119,21 @@ int main(int argc,char **argv){
     }
     action|=eh21_files_text(&built_files,typed);
     action|=eh17_files_handle(&built_files,key);
+    if(built_files.pdf_requested){
+     built_files.pdf_requested=0;
+     char reader[EH7_PATH_CAP];
+     const char *slash=strrchr(self,'/');
+     int size=slash?snprintf(reader,sizeof(reader),"%.*s/nPDF.tns",(int)(slash-self),self):-1;
+     if(size<0||(size_t)size>=sizeof(reader)||eh_app_target(reader,self)!=EH_APP_READY){
+      eh_toast_set(&built_files.status,"PUT NPDF.TNS BESIDE ENDRAHOME");
+     }else{
+      char *args[]={built_files.path};
+      eh_platform_stop();
+      int result=nl_exec(reader,1,args);
+      if(!eh_platform_start())return 1;
+      if(result)eh_toast_set(&built_files.status,"PDF READER RETURNED AN ERROR");
+     }
+    }
     if(action)paint(&ui,&picker);
    }else if(picker.active){
     char chosen[EH7_PATH_CAP];

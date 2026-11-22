@@ -12,6 +12,7 @@ enum { EH_NEW_FILE=8, EH_CREATE_ZIP, EH_EXTRACT_ZIP, EH_ACTION_COUNT };
 #define EH_FILES_TEXT_EDIT 5
 typedef struct {
  Eh13Picker nav,archive;
+ int pdf_requested;
  int active,screen,preview_ok,preview_truncated,line_count,scroll;
  unsigned long file_size;
  Eh18Image image;

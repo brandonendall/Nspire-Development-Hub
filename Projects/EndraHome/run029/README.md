@@ -1,4 +1,12 @@
-# EndraHome Run048 Desktop
+# EndraHome Run049 Desktop
+
+Place Legimet's nPDF.tns beside EndraHome. In Files, select a PDF or PDF.TNS
+and press Enter. Esc closes nPDF and returns to the same folder. This launch
+passes the selected document explicitly and requires no file association setup.
+The reader comes from https://github.com/Legimet/nPDF/releases/tag/v0.4b.
+
+Files > Menu > New File / Note accepts Diary or Diary.txt and creates
+Diary.txt.tns. Type into the built-in editor and press Menu to save.
 
 Appearance > Wallpaper includes Solid White and Solid Black. In Set clock, use Left/Right to select Show seconds on desktop, Enter to toggle, and Menu to save. Hours, minutes and seconds remain editable.
 

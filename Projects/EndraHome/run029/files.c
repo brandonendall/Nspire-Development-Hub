@@ -191,7 +191,11 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
    char target[EH7_PATH_CAP];
    const char *dir=v->nav.dir;
    int new_file=v->edit_folder==2;
-   const char *ext=new_file && !strchr(v->edit_name,'.')?".txt.tns":"";
+   const char *ext="";
+   if(new_file){
+    if(!strchr(v->edit_name,'.'))ext=".txt.tns";
+    else if(suffix(v->edit_name,".txt"))ext=".tns";
+   }
    int n=snprintf(target,sizeof(target),"%s/%s%s",dir,v->edit_name,ext);
    v->edit_error=0;
    if(!v->edit_name[0]||!strcmp(v->edit_name,".")||!strcmp(v->edit_name,"..")||strstr(v->edit_name,"..")||strchr(v->edit_name,'/')||strchr(v->edit_name,'\\')||n<0||(size_t)n>=sizeof(target))v->edit_error=1;
@@ -291,6 +295,17 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   if(stat(chosen,&st)!=0)return 0;
   v->file_size=st.st_size>=0?(unsigned long)st.st_size:0;
   strcpy(v->path,chosen);
+  if(suffix(chosen,".pdf")||suffix(chosen,".pdf.tns")){
+   unsigned char header[1024];
+   FILE *pdf=fopen(chosen,"rb");
+   size_t bytes=pdf?fread(header,1,sizeof(header),pdf):0;
+   if(pdf)fclose(pdf);
+   for(size_t offset=0;offset+5<=bytes;++offset){
+    if(!memcmp(header+offset,"%PDF-",5)){v->pdf_requested=1;return 1;}
+   }
+   eh_toast_set(&v->status,"CANNOT READ PDF HEADER");
+   return 1;
+  }
   if(suffix(chosen,".zip")||suffix(chosen,".zip.tns")){
    if(eh_zip_list(chosen,"",&v->archive)){v->screen=EH_FILES_ARCHIVE;v->status.text[0]=0;}
    else eh_toast_set(&v->status,"CANNOT READ ZIP ARCHIVE");

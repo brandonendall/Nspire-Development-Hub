@@ -46,7 +46,7 @@ static void archive_workflow(Eh17Files *f,const char *dir){
  assert(select_name(&f->nav,"Projects"));
  eh17_files_handle(f,EH_KEY_ENTER);
  action(f,EH_NEW_FILE);
- for(const char *p="Diary";*p;p++)assert(eh21_files_text(f,*p));
+ for(const char *p="Diary.txt";*p;p++)assert(eh21_files_text(f,*p));
  eh17_files_handle(f,EH_KEY_ENTER);assert(f->screen==EH_FILES_TEXT_EDIT);
  eh21_files_text(f,'A');eh17_files_handle(f,EH_KEY_MENU);
  snprintf(path,sizeof(path),"%s/Projects/Diary.txt.tns",dir);
@@ -107,6 +107,12 @@ int main(void){
  assert(eh17_files_handle(&f,EH_KEY_ENTER)==1&&f.screen==2);
  assert(eh17_files_handle(&f,EH_KEY_ESC)==1&&f.screen==1);
  assert(eh17_files_handle(&f,EH_KEY_ESC)==1&&f.screen==0);
+ assert(select_name(&f.nav,"slides.pdf"));
+ assert(eh17_files_handle(&f,EH_KEY_ENTER)==1&&!f.pdf_requested);
+ assert(strstr(f.status.text,"PDF HEADER"));
+ snprintf(file,sizeof(file),"%s/slides.pdf",dir);create(file,"%PDF-1.7");
+ assert(eh17_files_handle(&f,EH_KEY_ENTER)==1&&f.pdf_requested&&!strcmp(file,f.path));
+ f.pdf_requested=0;
  assert(select_name(&f.nav,"photo.jpg"));
  assert(eh17_files_handle(&f,EH_KEY_ENTER)==1);
  assert(f.screen==1&&!f.preview_ok); /* malformed JPEG gracefully rejected */
