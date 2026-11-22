@@ -1,0 +1,5 @@
+def squares(limit):
+    for i in range(limit):
+        print(i, i * i)
+
+squares(5)
