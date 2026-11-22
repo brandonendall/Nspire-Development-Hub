@@ -47,6 +47,11 @@ int eh7_config_path(char *dst,size_t cap,const char *app_executable){
 int eh7_registry_parse(EhRegistry *apps,const char *line){
  if(!apps||!line)return 0;
  while(*line==' '||*line=='\t')line++;
+ if(!strncmp(line,EH_HIDE_SECONDS,sizeof(EH_HIDE_SECONDS)-1)){
+  const char *value=line+sizeof(EH_HIDE_SECONDS)-1;
+  if((*value!='0'&&*value!='1')||value[1+strspn(value+1,"\r\n")])return 0;
+  apps->hide_seconds=*value=='1';return 1;
+ }
  int remainder=!strncmp(line,EH_CLOCK_REMAINDER,sizeof(EH_CLOCK_REMAINDER)-1);
  if(remainder||!strncmp(line,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1)){
   const char *value=line+(remainder?sizeof(EH_CLOCK_REMAINDER):sizeof(EH_CLOCK_LINE))-1;

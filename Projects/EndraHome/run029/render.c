@@ -76,6 +76,14 @@ static void draw_tile(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPa
   caption_ring(f,tx-pad,ty-2,width,edge);
   caption_ring(f,tx-pad,ty-3,width,ring);
  }
+ int white=r->appearance.wallpaper==EH_SOLID_WHITE;
+ if((white && eh_luma(p->ink)>160) || (r->appearance.wallpaper==EH_SOLID_BLACK && eh_luma(p->ink)<95)){
+  uint16_t edge=white?0:UINT16_MAX;
+  eh_small_text_plain(f,tx-1,ty,label,edge,1,12);
+  eh_small_text_plain(f,tx+1,ty,label,edge,1,12);
+  eh_small_text_plain(f,tx,ty-1,label,edge,1,12);
+  eh_small_text_plain(f,tx,ty+1,label,edge,1,12);
+ }
  eh_icon_caption(f,tx,ty,label,p);
 }
 void eh_clock_seconds_label(char label[12],int second){
@@ -84,11 +92,12 @@ void eh_clock_seconds_label(char label[12],int second){
  snprintf(label,12,"%02d:%02d:%02d %s",hour%12?hour%12:12,
           second/60%60,second%60,hour<12?"AM":"PM");
 }
-void eh_desktop_clock(uint16_t *frame,int second){
+void eh_desktop_clock(uint16_t *frame,int second,int hide_seconds){
  char label[12];
  eh_clock_seconds_label(label,second);
  /* One-pixel contour follows only the glyphs on bright wallpaper. */
- const int x=247,y=14;
+ if(hide_seconds && label[0])memmove(label+5,label+8,4);
+ const int x=hide_seconds?265:247,y=14;
  eh_small_text_plain(frame,x-1,y,label,0,1,11);
  eh_small_text_plain(frame,x+1,y,label,0,1,11);
  eh_small_text_plain(frame,x,y-1,label,0,1,11);

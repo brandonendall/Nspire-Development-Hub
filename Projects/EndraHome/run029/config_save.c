@@ -71,7 +71,7 @@ int eh14_recover_config(const char *cfg,Eh14SaveError *error){
 static int matches(const char *file,const EhRegistry *expected,int slot,const char *path){
  EhRegistry actual;eh7_registry_init(&actual);
  if(eh7_registry_load(&actual,file)<0||actual.errors||actual.theme!=expected->theme||
-    actual.clock_offset_seconds!=expected->clock_offset_seconds||!actual.has_appearance)return 0;
+    actual.hide_seconds!=expected->hide_seconds||actual.clock_offset_seconds!=expected->clock_offset_seconds||!actual.has_appearance)return 0;
  const EhAppearance a=actual.appearance,b=expected->appearance;
  if(a.theme!=b.theme||a.folder!=b.folder||a.font!=b.font||
     a.wallpaper!=b.wallpaper||a.icon!=b.icon||a.icon_color!=b.icon_color)return 0;
@@ -106,6 +106,7 @@ static int save_config(EhRegistry *apps,int slot,const char *path,const char *cf
    if(len==sizeof(line)-1&&line[len-1]!='\n'&&!feof(in)){ok=0;break;}
    const char *key=line+strspn(line," \t");
    if(!strncmp(key,EH_ICON_COLOR_LINE,sizeof(EH_ICON_COLOR_LINE)-1))continue;
+   if(!strncmp(key,EH_HIDE_SECONDS,sizeof(EH_HIDE_SECONDS)-1))continue;
    if(!strncmp(key,EH_CLOCK_REMAINDER,sizeof(EH_CLOCK_REMAINDER)-1))continue;
    if(!strncmp(key,EH_CLOCK_LINE,sizeof(EH_CLOCK_LINE)-1))continue;
    if(!strncmp(key,EH_APPEARANCE_LINE,sizeof(EH_APPEARANCE_LINE)-1))continue;
@@ -131,6 +132,7 @@ static int save_config(EhRegistry *apps,int slot,const char *path,const char *cf
    if(!slot_line(out,i,apps,i==slot?path:apps->slots[i].path))ok=0;
   if(ok&&fprintf(out,"T=%d\n",apps->theme)<0)ok=0;
  }
+ if(ok && apps->hide_seconds && fputs(EH_HIDE_SECONDS "1\n",out)==EOF)ok=0;
  if(ok && apps->clock_offset_seconds/60 && fprintf(out,EH_CLOCK_LINE "%d\n",apps->clock_offset_seconds/60)<0)ok=0;
  if(ok && apps->clock_offset_seconds%60 && fprintf(out,EH_CLOCK_REMAINDER "%d\n",apps->clock_offset_seconds%60)<0)ok=0;
  const EhAppearance a=apps->appearance;
@@ -189,12 +191,13 @@ int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,
  return save_config(apps,slot,path,cfg,error);
 }
 
-int eh_save_clock(EhRegistry *apps,int offset,const char *cfg,Eh14SaveError *error){
+int eh_save_clock(EhRegistry *apps,int offset,int hide_seconds,const char *cfg,Eh14SaveError *error){
  if(!apps||offset<0||offset>=86400){errno=EINVAL;return failure(error,EH14_INVALID);}
- int previous=apps->clock_offset_seconds;
+ int previous=apps->clock_offset_seconds,previous_hide=apps->hide_seconds;
+ apps->hide_seconds=!!hide_seconds;
  apps->clock_offset_seconds=offset;
  if(save_config(apps,-1,NULL,cfg,error))return 1;
- apps->clock_offset_seconds=previous;
+ apps->clock_offset_seconds=previous;apps->hide_seconds=previous_hide;
  return 0;
 }
 

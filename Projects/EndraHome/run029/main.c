@@ -39,7 +39,7 @@ static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
   if(s->page.page==EH_PAGE_HOME){
    eh7_render(fb,&s->page,s->apps);
    desktop_second=read_second(s->apps->clock_offset_seconds);
-   eh_desktop_clock(fb,desktop_second);
+   eh_desktop_clock(fb,desktop_second,s->apps->hide_seconds);
   }
   else eh15_manager_render(fb,s);
   eh7_overlay(fb,s);
@@ -96,7 +96,10 @@ int main(int argc,char **argv){
    if(!built_files.active&&!picker.active&&ui.page.page==EH_PAGE_HOME &&
       now-clock_tick>=EH_TICKS_PER_SECOND/8){
     clock_tick=now;
-    expired|=read_second(apps.clock_offset_seconds)!=desktop_second;
+    int current=read_second(apps.clock_offset_seconds);
+    int changed=current!=desktop_second;
+    if(apps.hide_seconds && current>=0 && desktop_second>=0)changed=current/60!=desktop_second/60;
+    expired|=changed;
    }
    if(expired)paint(&ui,&picker);
    int typed=eh16_textkey(); /* read each frame; one fresh QWERTY event */
@@ -172,8 +175,8 @@ int main(int argc,char **argv){
        if(raw<0)eh_toast_set(&ui.notice,"CLOCK SOURCE UNAVAILABLE");
        else if(action==EH_CLOCK_OPEN){
         ui.clock_draft=(raw+apps.clock_offset_seconds)%86400;
-        ui.clock_field=0;ui.subview=2;
-       }else if(shortcuts_writable && eh_save_clock(&apps,(86400+ui.clock_draft-raw)%86400,cfg,&diag)){
+        ui.clock_edited=0;ui.hide_seconds=apps.hide_seconds;ui.clock_field=0;ui.subview=2;
+       }else if(shortcuts_writable && eh_save_clock(&apps,!ui.clock_edited?apps.clock_offset_seconds:(86400+ui.clock_draft-raw)%86400,ui.hide_seconds,cfg,&diag)){
         ui.subview=1;
         eh_toast_set(&ui.notice,"Clock saved");
        }else eh_toast_set(&ui.notice,shortcuts_writable?eh14_save_stage_name(diag.stage):"Config path unavailable");

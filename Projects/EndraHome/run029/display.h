@@ -12,7 +12,7 @@
 /* Persisted v4 interface IDs. Folder and text use their original IDs. */
 enum { EH_BLUE, EH_RED, EH_GREEN, EH_YELLOW, EH_ORANGE, EH_PURPLE,
        EH_BLACK, EH_WHITE, EH_THEME_COUNT };
-#define EH_WALLPAPER_COUNT 5
+enum { EH_ART_WALLPAPERS=5, EH_SOLID_WHITE=5, EH_SOLID_BLACK, EH_WALLPAPER_COUNT };
 #define EH_ICON_COUNT 10
 #define EH_RGB(r,g,b) ((uint16_t)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 

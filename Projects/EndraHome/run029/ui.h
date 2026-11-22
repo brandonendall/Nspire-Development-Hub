@@ -14,7 +14,7 @@ typedef struct {
  const EhRegistry *apps;
  int missing,request,assign_slot,adding_app,edit_action,open_files;
  int manager_item,subview,renaming,confirm_remove;
- int setting_row,clock_field,clock_draft;
+ int setting_row,clock_field,clock_draft,clock_edited,hide_seconds;
  EhAppearance preview;
  EhToast notice;
  char rename_input[EH7_LABEL_CAP];

@@ -127,7 +127,8 @@ int main(void) {
         wallpaper_hash[i]=fingerprint();
         for(unsigned j=0;j<i;j++)assert(wallpaper_hash[j]!=wallpaper_hash[i]);
         a.theme=EH_GREEN;eh_wallpaper_paint(frame,a);
-        assert(fingerprint()!=wallpaper_hash[i]);
+        if(i<EH_ART_WALLPAPERS)assert(fingerprint()!=wallpaper_hash[i]);
+        else assert(color_count(i==EH_SOLID_WHITE?UINT16_MAX:0)==320*240);
     }
     for(unsigned i=0;i<EH_ICON_COUNT;i++){
         EhAppearance a={.icon=i};
@@ -173,7 +174,7 @@ int main(void) {
     eh_clock_seconds_label(seconds,0);assert(!strcmp(seconds,"12:00:00 AM"));
     eh_clock_seconds_label(seconds,-1);assert(!*seconds);
     eh_box(frame,0,0,320,240,0x7777);
-    eh_desktop_clock(frame,43199);assert(color_count(UINT16_MAX)>80 && color_count(0)>80);
+    eh_desktop_clock(frame,43199,0);assert(color_count(UINT16_MAX)>80 && color_count(0)>80);
     for(int y=0;y<240;y++)for(int x=0;x<320;x++)
         if(x<246||x>312||y<13||y>21)assert(frame[y*320+x]==0x7777);
     ui.renaming=1;

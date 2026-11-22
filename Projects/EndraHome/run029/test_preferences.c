@@ -60,15 +60,15 @@ int main(void) {
     assert(!strcmp(saved.slots[3].path,"/documents/Manager.tns"));
     assert(eh7_registry_parse(&r,"# clock-offset 1140\n")==1);
     assert(r.clock_offset_seconds==68400);
-    assert(eh_save_clock(&r,68426,cfg,NULL));
-    assert(!eh_save_clock(&r,120,"",NULL) && r.clock_offset_seconds==68426);
+    assert(eh_save_clock(&r,68426,1,cfg,NULL));
+    assert(!eh_save_clock(&r,120,0,"",NULL) && r.clock_offset_seconds==68426);
     assert(eh_save_appearance(&r,new,cfg,NULL));
     assert(!eh_save_appearance(&r,(EhAppearance){.font=EH_COLOR_COUNT},cfg,NULL));
     assert(!eh_save_appearance(&r,(EhAppearance){.theme=EH_THEME_COUNT},cfg,NULL));
     assert(!access(live,F_OK) && access(stage,F_OK)!=0 && access(bak,F_OK)!=0);
     eh7_registry_init(&saved);
     assert(eh7_registry_load(&saved,cfg)==2 && saved.errors==0 && saved.has_appearance);
-    assert(saved.clock_offset_seconds==68426);
+    assert(saved.clock_offset_seconds==68426 && saved.hide_seconds);
     out=saved.appearance;
     assert(out.icon_color==EH_GREEN+1 && out.theme==EH_RED && out.folder==2 && out.font==3 && out.wallpaper==4 && out.icon==9);
     assert(!strcmp(saved.slots[0].path,"/documents/EndraGBA.tns"));
@@ -79,7 +79,7 @@ int main(void) {
     assert(eh_save_appearance(&r,(EhAppearance){0},cfg,NULL));
     eh7_registry_init(&saved);
     assert(eh7_registry_load(&saved,cfg)==2 && saved.has_appearance);
-    assert(saved.clock_offset_seconds==68426);
+    assert(saved.clock_offset_seconds==68426 && saved.hide_seconds);
     out=saved.appearance;
     assert(!out.theme && !out.folder && !out.font && !out.wallpaper && !out.icon);
     char buffer[256]={0}; FILE *f=fopen(cfg,"rb"); assert(f);

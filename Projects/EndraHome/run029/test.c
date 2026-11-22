@@ -178,7 +178,10 @@ int main(void){
  eh7_ui_handle(&info,EH_KEY_RIGHT);assert(info.clock_field==2);
  eh7_ui_handle(&info,EH_KEY_UP);assert(info.clock_draft==0);
  eh7_ui_handle(&info,EH_KEY_DOWN);assert(info.clock_draft==59);
+ eh7_ui_handle(&info,EH_KEY_RIGHT);assert(info.clock_field==3);
+ eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.hide_seconds && !info.edit_action);
  eh7_ui_handle(&info,EH_KEY_RIGHT);assert(info.clock_field==0);
+ eh7_ui_handle(&info,EH_KEY_LEFT);assert(info.clock_field==3);
  eh7_ui_handle(&info,EH_KEY_LEFT);assert(info.clock_field==2);
  eh7_ui_handle(&info,EH_KEY_ENTER);assert(info.edit_action==EH_CLOCK_SAVE);info.edit_action=0;
  eh7_ui_handle(&info,EH_KEY_ESC);assert(info.subview==1 && !info.edit_action);

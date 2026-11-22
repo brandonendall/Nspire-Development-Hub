@@ -15,7 +15,7 @@ typedef struct {Eh14SaveStage stage; int os_error;} Eh14SaveError;
 int eh14_assign_save(EhRegistry *apps,int slot,const char *path,const char *cfg,Eh14SaveError *error);
 /* Return 1 if no recovery is needed or interrupted swap was recovered.
  * Return 0 if existing backup needs manual recovery; never delete it. */
-int eh_save_clock(EhRegistry *apps,int offset,const char *cfg,Eh14SaveError *error);
+int eh_save_clock(EhRegistry *apps,int offset,int hide_seconds,const char *cfg,Eh14SaveError *error);
 int eh_save_appearance(EhRegistry *apps,EhAppearance appearance,const char *cfg,Eh14SaveError *error);
 int eh14_recover_config(const char *cfg,Eh14SaveError *error);
 const char *eh14_save_stage_name(Eh14SaveStage stage);

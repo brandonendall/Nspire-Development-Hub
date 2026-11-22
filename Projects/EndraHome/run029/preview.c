@@ -158,14 +158,23 @@ int main(void){
  eh7_render(fb,&only.page,&empty);
  empty.appearance.theme=EH_GREEN;empty.appearance.wallpaper=0;
  eh7_render(fb,&only.page,&empty);
- eh_desktop_clock(fb,11*3600+58*60+37);
+ eh_desktop_clock(fb,11*3600+58*60+37,0);
  if(save("build/clock.ppm"))return 1;
  s.page.page=EH_PAGE_HELP;s.subview=2;s.clock_draft=(11*60+47)*60+26;s.clock_field=2;
  eh15_manager_render(fb,&s);
  if(save("build/set_clock.ppm"))return 1;
  photo.appearance.theme=EH_ORANGE;photo.appearance.icon_color=EH_GREEN+1;
- eh7_render(fb,&selected.page,&photo);eh_desktop_clock(fb,12*3600+206);
+ eh7_render(fb,&selected.page,&photo);eh_desktop_clock(fb,12*3600+206,0);
  if(save("build/orange_green_icons.ppm"))return 1;
  s.subview=1;s.preview=photo.appearance;s.setting_row=EH_LOOK_ICON_COLOR;
- eh15_manager_render(fb,&s);return save("build/icon_color_setting.ppm");
+ eh15_manager_render(fb,&s);if(save("build/icon_color_setting.ppm"))return 1;
+ eh7_registry_parse(&photo,"1=ZIP|/documents/ZIP.tns");
+ photo.appearance.theme=EH_GREEN;photo.appearance.icon=5;
+ for(int i=0;i<2;i++){
+  photo.appearance.wallpaper=i?EH_SOLID_BLACK:EH_SOLID_WHITE;
+  eh7_render(fb,&selected.page,&photo);eh_desktop_clock(fb,12*3600+206,i);
+  if(save(i?"build/solid_black.ppm":"build/solid_white.ppm"))return 1;
+ }
+ s.subview=2;s.clock_field=3;s.preview=photo.appearance;s.hide_seconds=0;
+ eh15_manager_render(fb,&s);return save("build/show_seconds.ppm");
 }

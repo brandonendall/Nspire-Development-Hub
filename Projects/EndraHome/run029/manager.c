@@ -56,10 +56,17 @@ void eh15_manager_render(uint16_t *f,const EhUniversalUI *s){
   title34(f,"SET CLOCK",&p);
   eh_small_text(f,62,88,"ENDRAHOME LOCAL TIME",custom,1,20);
   eh_small_text(f,62,111,time,UINT16_MAX,3,11);
-  box(f,62+s->clock_field*54,136,33,2,eh_skin(&p,SKY));
-  eh_small_text(f,62,155,"LEFT / RIGHT   HOUR MIN SEC",custom,1,32);
-  eh_small_text(f,62,174,"UP / DOWN      CHANGE VALUE",custom,1,32);
-  eh_small_text(f,15,225,"ENTER SAVE      ESC CANCEL",p.ink,1,32);
+  if(s->clock_field<3)box(f,62+s->clock_field*54,136,33,2,eh_skin(&p,SKY));
+  uint16_t mark=eh_skin(&p,SKY);
+  if(s->clock_field==3)row34(f,156,1,&p);
+  box(f,62,154,11,11,mark);box(f,63,155,9,9,eh_skin(&p,DEEP));
+  if(!s->hide_seconds){
+   box(f,64,159,2,2,UINT16_MAX);box(f,66,161,2,2,UINT16_MAX);
+   for(int i=0;i<4;i++)box(f,67+i,160-i,2,2,UINT16_MAX);
+  }
+  eh_small_text(f,80,156,"SHOW SECONDS ON DESKTOP",custom,1,24);
+  eh_small_text(f,24,187,"L/R SELECT   UP/DOWN CHANGE",custom,1,42);
+  eh_small_text(f,12,225,s->clock_field==3?"ENTER TOGGLE   MENU SAVE   ESC CANCEL":"ENTER SAVE   MENU SAVE   ESC CANCEL",p.ink,1,46);
   return;
  }
  if(s->renaming){

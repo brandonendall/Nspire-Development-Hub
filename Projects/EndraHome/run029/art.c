@@ -14,7 +14,7 @@ enum {
 extern const uint8_t eh_art_data[];
 
 const char *const eh_wallpaper_names[EH_WALLPAPER_COUNT] = {
-    "Cyber Wave", "Neon City", "Cyber Lab", "Reactor", "Tech Corridor"
+    "Cyber Wave", "Neon City", "Cyber Lab", "Reactor", "Tech Corridor", "Solid White", "Solid Black"
 };
 const char *const eh_icon_names[EH_ICON_COUNT] = {
     "Core Cube", "Nexus Ring", "Shield Core", "Tech Gear", "Hex Fusion",
@@ -53,7 +53,7 @@ static void load_palette(uint16_t table[PALETTE_COLORS], const uint8_t *asset,
 static const uint8_t *wallpaper(EhAppearance a, uint16_t **colors) {
     static uint16_t palette[PALETTE_COLORS];
     static unsigned last_wall = EH_WALLPAPER_COUNT, last_theme = EH_THEME_COUNT;
-    unsigned wall = checked(a.wallpaper, EH_WALLPAPER_COUNT);
+    unsigned wall = checked(a.wallpaper, EH_ART_WALLPAPERS);
     a.theme = checked(a.theme, EH_THEME_COUNT);
     const uint8_t *asset = eh_art_data + wall * WALL_BYTES;
     if (wall != last_wall || a.theme != last_theme) {
@@ -67,6 +67,10 @@ static const uint8_t *wallpaper(EhAppearance a, uint16_t **colors) {
 
 void eh_wallpaper_paint(uint16_t *frame, EhAppearance a) {
     if (!frame) return;
+    if(a.wallpaper==EH_SOLID_WHITE||a.wallpaper==EH_SOLID_BLACK){
+        eh_box(frame,0,0,EH_SCREEN_WIDTH,EH_SCREEN_HEIGHT,a.wallpaper==EH_SOLID_WHITE?UINT16_MAX:0);
+        return;
+    }
     uint16_t *colors;
     const uint8_t *pixels = wallpaper(a, &colors);
     for (unsigned i = 0; i < EH_SCREEN_WIDTH * EH_SCREEN_HEIGHT; ++i)
@@ -76,6 +80,10 @@ void eh_wallpaper_paint(uint16_t *frame, EhAppearance a) {
 void eh_wallpaper_preview(uint16_t *frame, EhAppearance a, int x, int y) {
     if (!frame || x < 0 || y < 0 || x > EH_SCREEN_WIDTH - PREVIEW_W ||
         y > EH_SCREEN_HEIGHT - PREVIEW_H) return;
+    if(a.wallpaper==EH_SOLID_WHITE||a.wallpaper==EH_SOLID_BLACK){
+        eh_box(frame,x,y,PREVIEW_W,PREVIEW_H,a.wallpaper==EH_SOLID_WHITE?UINT16_MAX:0);
+        return;
+    }
     uint16_t *colors;
     const uint8_t *pixels = wallpaper(a, &colors);
     for (int row = 0; row < PREVIEW_H; ++row) {
@@ -118,7 +126,7 @@ void eh_icon_paint(uint16_t *frame, EhAppearance a, int x, int y) {
     unsigned icon = checked(a.icon, EH_ICON_COUNT);
     if(a.icon_color && a.icon_color<=EH_THEME_COUNT)a.theme=a.icon_color-1;
     a.theme = checked(a.theme, EH_THEME_COUNT);
-    const uint8_t *asset = eh_art_data + EH_WALLPAPER_COUNT * WALL_BYTES + icon * ICON_BYTES;
+    const uint8_t *asset = eh_art_data + EH_ART_WALLPAPERS * WALL_BYTES + icon * ICON_BYTES;
     if (icon != last_icon || a.theme != last_theme) {
         load_palette(palette, asset, a);
         last_icon = icon;
@@ -131,7 +139,7 @@ void eh_header_paint(uint16_t *frame, EhAppearance a) {
     static uint16_t palette[PALETTE_COLORS];
     static unsigned last_theme = EH_THEME_COUNT;
     a.theme = checked(a.theme, EH_THEME_COUNT);
-    const uint8_t *asset = eh_art_data + EH_WALLPAPER_COUNT * WALL_BYTES +
+    const uint8_t *asset = eh_art_data + EH_ART_WALLPAPERS * WALL_BYTES +
                            EH_ICON_COUNT * ICON_BYTES;
     if (a.theme != last_theme) {
         load_palette(palette, asset, a);

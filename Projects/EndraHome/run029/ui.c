@@ -9,7 +9,7 @@ void eh7_ui_init(EhUniversalUI *s,const EhRegistry *apps){
  s->missing=s->request=s->assign_slot=s->adding_app=s->edit_action=s->open_files=0;
  s->manager_item=s->subview=s->renaming=s->confirm_remove=0;
  s->preview=apps?apps->appearance:(EhAppearance){0};
- s->setting_row=s->clock_field=s->clock_draft=0;
+ s->setting_row=s->clock_field=s->clock_draft=s->clock_edited=s->hide_seconds=0;
  s->notice=(EhToast){0};
  s->rename_input[0]=0;
 }
@@ -113,16 +113,19 @@ int eh7_ui_handle(EhUniversalUI *s,EhKey k){
   }
  }
  if(s->page.page==EH_PAGE_HELP&&s->subview==2){
-  if(k==EH_KEY_ESC||k==EH_KEY_MENU){s->subview=1;return 1;}
-  if(k==EH_KEY_ENTER){s->edit_action=EH_CLOCK_SAVE;return 1;}
-  if(k==EH_KEY_LEFT||k==EH_KEY_RIGHT){s->clock_field=(s->clock_field+(k==EH_KEY_RIGHT?1:2))%3;return 1;}
+  if(k==EH_KEY_ESC){s->subview=1;return 1;}
+  if(k==EH_KEY_ENTER && s->clock_field==3){s->hide_seconds=!s->hide_seconds;return 1;}
+  if(k==EH_KEY_ENTER||k==EH_KEY_MENU){s->edit_action=EH_CLOCK_SAVE;return 1;}
+  if(k==EH_KEY_LEFT||k==EH_KEY_RIGHT){s->clock_field=(s->clock_field+(k==EH_KEY_RIGHT?1:3))%4;return 1;}
   if(k==EH_KEY_UP||k==EH_KEY_DOWN){
    int delta=k==EH_KEY_UP?1:-1;
+   if(s->clock_field==3){s->hide_seconds=!s->hide_seconds;return 1;}
    const int units[]={3600,60,1};
    int unit=units[s->clock_field],limit=s->clock_field==0?24:60;
    int current=s->clock_draft/unit%limit;
    int next=(current+limit+delta)%limit;
    s->clock_draft+=(next-current)*unit;
+   s->clock_edited=1;
    return 1;
   }
   return 0;

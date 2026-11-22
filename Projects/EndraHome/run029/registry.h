@@ -7,6 +7,7 @@
 #define EH7_LABEL_CAP 16
 #define EH7_PATH_CAP 256
 #define EH_CLOCK_REMAINDER "# clock-seconds "
+#define EH_HIDE_SECONDS "# hide-seconds "
 #define EH_CLOCK_LINE "# clock-offset "
 #define EH7_CONFIG_FILE "EndraHome_Apps.cfg.tns"
 typedef struct {
@@ -20,7 +21,7 @@ typedef struct {
  int errors;
  int enabled;
  int has_appearance;
- int clock_offset_seconds;
+ int clock_offset_seconds,hide_seconds;
  int theme; /* Run028 shortcut file theme, used until separate preferences exist. */
  EhAppearance appearance;
 } EhRegistry;
