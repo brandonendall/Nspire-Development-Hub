@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+void test_save_folder(void *stack);
 static int cancel;
 int cancel_pressed(void){return cancel;}
 static void type(const char *s){while(*s)app_key((unsigned char)*s++);}
@@ -80,5 +81,6 @@ int main(void){
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=0;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
     assert(!rmdir(scripts)&&!rmdir(root));
+    test_save_folder(&stack);
     puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 5 framebuffer previews.");
 }

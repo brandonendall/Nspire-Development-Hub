@@ -54,7 +54,7 @@ int load_script(const char *name) {
     if(n<0)return fail("Unreadable, binary or over 8 KiB");
     for(int i=0;i<n;i++){
         unsigned char c=raw[i];
-        if((c<32 && c!='\r' && c!='\n' && c!='\t')||c>=127)return fail("Run001 editor requires ASCII source");
+        if((c<32 && c!='\r' && c!='\n' && c!='\t')||c>=127)return fail("Editor requires ASCII source");
     }
     Editor *d=&app.doc;
     memset(d,0,sizeof *d);strcpy(d->name,name);strcpy(d->original,raw);
@@ -66,12 +66,27 @@ int load_script(const char *name) {
     }
     return 1;
 }
+/* An existing scripts folder is reusable. Only the .saving lock below
+ * requires exclusive creation. Verify the root by the operation we need. */
+static int ensure_scripts_folder(void) {
+    DIR *dir=opendir(app.root);
+    if(!dir){
+        struct stat st;
+        if(stat(app.root,&st)==0)
+            return fail(S_ISDIR(st.st_mode) ? "Cannot open scripts folder" : "Scripts path is not a folder");
+        int created=mkdir(app.root,0755);
+        dir=opendir(app.root);
+        if(!dir)return fail(created==0 ? "Cannot open scripts folder" : "Cannot create scripts folder");
+    }
+    closedir(dir);
+    return 1;
+}
 int save_script(void) {
     Editor *d=&app.doc;
     char dst[PATH_CAP], lock[PATH_CAP], tmp[PATH_CAP], backup[PATH_CAP];
     if(!valid_script(d->name)||!join(dst,d->name)||!join(lock,".saving")||!join(tmp,".saving/source")||!join(backup,".saving/original.py.tns"))
         return fail("Invalid save path");
-    if(mkdir(app.root,0755) && errno!=EEXIST)return fail("Cannot create scripts folder");
+    if(!ensure_scripts_folder())return 0;
     if(mkdir(lock,0700))return fail("Save busy - original preserved");
     const char *error=NULL;
     struct stat st;

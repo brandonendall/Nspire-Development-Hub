@@ -1,5 +1,5 @@
 .deps/
 build*/
 micropython_embed/
-EndraPython_Run001.tns
+EndraPython_Run*.tns
 !examples/*.tns

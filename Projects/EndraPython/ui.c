@@ -174,7 +174,7 @@ void render(uint16_t *pixels){
         int first=app.selected>8?app.selected-8:0;
         for(int i=first;i<app.count+2 && i<first+9;i++)
             item(48+(i-first)*17,i==0?"+ New script":i==1?"> Python shell":app.names[i-2],i==app.selected);
-        snprintf(detail,sizeof detail,"%d saved script%s",app.count,app.count==1?"":"s");
+        snprintf(detail,sizeof detail,"Run002   %d saved script%s",app.count,app.count==1?"":"s");
     }else if(app.page==EDITOR){
         sub=app.doc.name;hint="Menu   Ctrl+S Save   Ctrl+R Run   Esc";
         editor();
