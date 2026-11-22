@@ -1,0 +1,28 @@
+name: EndraPDF Lite Run001
+on:
+  push:
+    branches: [feature/endrahome-run001]
+    paths: ['Projects/EndraHome/pdf-lite/**', '.github/workflows/endra-pdf-lite.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reader:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned sources and generate tables
+        run: |
+          mkdir work && cd work
+          bash ../Projects/EndraHome/pdf-lite/prepare.sh
+      - name: Compile PDF-only calculator companion
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work/work --entrypoint /bin/bash bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093 ../Projects/EndraHome/pdf-lite/native.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraPDF_Lite_Run001
+          path: |
+            work/EndraPDF_Lite_Run001.tns
+            work/SHA256SUMS.txt
+            work/LICENSE

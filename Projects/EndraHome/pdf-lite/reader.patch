@@ -1,0 +1,78 @@
+--- a/main.cpp
++++ b/main.cpp
+@@ -91,28 +91,12 @@
+ 		return 1;
+ 	}
+ 
+-	if (argc >= 2) {
+-		v->openDoc(argv[1]);
+-	} else if (argc >= 1) {
+-		std::string s = std::string(argv[0]);
+-		size_t pos = s.find_last_of("/");
+-		if (pos != std::string::npos) {
+-			s.erase(0, s.find_last_of("/") + 1);
+-		}
+-		if (s.size() >= 4 && s.substr(s.size() - 4) == ".tns") {
+-			s.erase(s.size() - 4);
+-		}
+-		cfg_register_fileext("pdf", s.c_str());
+-		cfg_register_fileext("xps", s.c_str());
+-		cfg_register_fileext("cbz", s.c_str());
+-		cfg_register_fileext("xml", s.c_str());
+-		cfg_register_fileext("xhtml", s.c_str());
+-		cfg_register_fileext("html", s.c_str());
+-		cfg_register_fileext("htm", s.c_str());
+-		cfg_register_fileext("epub", s.c_str());
+-		show_msgbox("nPDF", "File extensions registered. You can now open a .pdf, .xps, .cbz, .xml, .xhtml, .html, .htm and .epub files from the Documents screen");
++	if (argc < 2) {
++		show_msgbox("EndraPDF Lite", "Open a PDF from EndraHome Files.");
+ 		return 0;
+ 	}
++	if (!v->openDoc(argv[1]))
++		return 1;
+ 
+ 	if(!Screen::init())
+ 		return 1;
+--- a/Viewer.cpp
++++ b/Viewer.cpp
+@@ -34,7 +34,7 @@
+ Viewer::Viewer() {
+ 	ctx = fz_new_context(nullptr, nullptr, FZ_STORE_UNLIMITED);
+ 	if (ctx) {
+-		fz_register_document_handlers(ctx);
++		fz_register_document_handler(ctx, &pdf_document_handler);
+ 	} else {
+ 		throw "Could not allocate MuPDF context";
+ 	}
+@@ -94,7 +94,7 @@
+ 	return true;
+ }
+ 
+-void Viewer::openDoc(const char *path) {
++bool Viewer::openDoc(const char *path) {
+ 	fz_try(ctx) {
+ 		doc = fz_open_document(ctx, path);
+ 		if (fz_needs_password(ctx, doc)) {
+@@ -113,8 +113,9 @@
+ 		}
+ 	} fz_catch(ctx) {
+ 		show_msgbox("nPDF", "Can't open document");
+-		fz_throw(ctx, FZ_ERROR_GENERIC, "can't open document");
+-	}
++		return false;
++	}
++	return true;
+ }
+ 
+ int Viewer::getPages() {
+--- a/Viewer.hpp
++++ b/Viewer.hpp
+@@ -56,7 +56,7 @@
+ 		void invert(const fz_rect *rect);
+ 		bool find(const char *s);
+ 		bool findNext(bool dir);
+-		void openDoc(const char *path);
++		bool openDoc(const char *path);
+ 		int getPages();
+ 		void drawPage();
+ 		void display();
