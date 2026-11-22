@@ -1,0 +1,2 @@
+print('Hello from EndraPython')
+print(sum(range(10)))

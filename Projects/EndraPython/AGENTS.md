@@ -1,0 +1,1 @@
+Read the hub workflow and PROJECT_MEMORY.md before editing. Keep this a standalone native app. Preserve physical display restoration, existing scripts, and earlier builds. Pin interpreter and SDK revisions. Keep host and calculator acceptance results distinct. Regenerate previews from the actual UI and run make check before release.

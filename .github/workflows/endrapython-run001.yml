@@ -1,0 +1,44 @@
+name: EndraPython Run001
+on:
+  push:
+    branches: [feature/endrapython-run001]
+    paths: ['Projects/EndraPython/**', '.github/workflows/endrapython-run001.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare pinned MicroPython core
+        working-directory: Projects/EndraPython
+        run: sh prepare.sh
+      - name: Exercise the editor and interpreter
+        working-directory: Projects/EndraPython
+        run: |
+          make -j2 check
+          python3 -m pip install Pillow
+          python3 tests/previews.py
+      - name: Build with the pinned Ndless SDK
+        run: bash toolchain/build.sh Projects/EndraPython
+      - name: Verify and package
+        working-directory: Projects/EndraPython
+        run: |
+          test "$(head -c4 EndraPython_Run001.tns)" = Zehn
+          readelf -h build/endrapython.elf | grep -E 'Machine: +ARM'
+          sha256sum EndraPython_Run001.tns > build/SHA256SUMS.txt
+          wc -c EndraPython_Run001.tns
+          cat build/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraPython_Run001
+          if-no-files-found: error
+          path: |
+            Projects/EndraPython/EndraPython_Run001.tns
+            Projects/EndraPython/build/SHA256SUMS.txt
+            Projects/EndraPython/build/previews/
+            Projects/EndraPython/examples/

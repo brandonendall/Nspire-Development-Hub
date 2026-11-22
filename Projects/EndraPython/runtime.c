@@ -1,0 +1,35 @@
+#include "runtime.h"
+#include "py/compile.h"
+#include "py/runtime.h"
+#include "py/stackctrl.h"
+#include "port/micropython_embed.h"
+#include <string.h>
+
+static uintptr_t heap[128 * 1024 / sizeof(uintptr_t)];
+static unsigned polls;
+void runtime_start(void *stack_top) {
+    mp_embed_init(heap, sizeof heap, stack_top);
+    mp_stack_set_limit(16 * 1024);
+}
+void runtime_end(void) { mp_embed_deinit(); }
+
+void ep_vm_poll(void) {
+    if ((++polls & 63u) == 0 && cancel_pressed())
+        nlr_raise(mp_obj_new_exception(&mp_type_KeyboardInterrupt));
+}
+void mp_hal_stdout_tx_strn_cooked(const char *data, size_t size) {
+    console_write(data, size);
+}
+int runtime_exec(const char *name, const char *src, int interactive) {
+    nlr_buf_t handler;
+    if (nlr_push(&handler) == 0) {
+        qstr label = qstr_from_str(name);
+        mp_lexer_t *lexer = mp_lexer_new_from_str_len(label, src, strlen(src), 0);
+        mp_parse_tree_t tree = mp_parse(lexer, interactive ? MP_PARSE_SINGLE_INPUT : MP_PARSE_FILE_INPUT);
+        mp_call_function_0(mp_compile(&tree, label, interactive));
+        nlr_pop();
+        return 1;
+    }
+    mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(handler.ret_val));
+    return 0;
+}
