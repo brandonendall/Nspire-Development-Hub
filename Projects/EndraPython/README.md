@@ -36,7 +36,7 @@ Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838
 | Area | Run002 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
-| Imports | Built-in gc, math and collections. Host tests import each. No filesystem module loader |
+| Imports | Five registered modules are importable: math (single-precision functions), gc (heap and garbage collection), collections (namedtuple), builtins (including sum, range and print) and __main__ (the running program). No filesystem module loader |
 | Scripts and files | Editor handles file access. No Python open, os, or user modules exposed |
 | Console | print, line-numbered exceptions, single-line REPL, previous-command recall |
 | Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |

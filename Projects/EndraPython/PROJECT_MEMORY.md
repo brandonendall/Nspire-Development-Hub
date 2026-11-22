@@ -1,5 +1,13 @@
 # EndraPython project memory
 
+## Run002 storage fix, 2026-11-22
+
+Brandon photographed Run001 on the CX II CAS with Hello_World.py.tns open, range(5) edited, and “Cannot create scripts folder”. The folder appeared on leaving and reopening. This confirms physical launch and editing; no successful persistence of that edit or execution result was reported.
+
+Run001 unconditionally attempted mkdir on the root and accepted only success or EEXIST. A host reproduction with an existing root and mkdir returning EIO produced the exact photographed message. The calculator's actual errno was not measured. Run002 successfully runs the same edited example (10), reuses accessible directories without mkdir, and checks actual accessibility after first-use creation. Save lock ownership and overwrite protection remain in force. Regression tests cover the root appearing despite a failed create return, duplicate names, a denied create, a same-name blocking file, repeat save, and reopen. The five built-in modules are math, gc, collections, builtins and __main__. All five imports were checked on the compiled host port.
+
+Source `641bdfc5aead129e25437aaf7ddc6dc270e64294` on `feature/endrapython-run001`, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47). [CI 45055316907](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45055316907) passed. [Artifact 14767496881](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45055316907/artifacts/14767496881). EndraPython_Run002.tns, 149421 bytes, SHA-256 `2e111f5ff3adec98da67de8d0d4ee941f3115edc037a0946f94f9c65844c57d1`. Extracted CI binary matched local ARM build byte for byte. All five UI frames matched the local renders. Hardware acceptance of Run002 is pending. Confirm save/run/reopen on the existing example and retain the scripts folder. Run001 is available as an executable rollback with the known save defect.
+
 ## Run001 verified build, 2026-11-22
 
 Branch `feature/endrapython-run001`, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47), source `ebec0a7effc16c6de24a70ab758492cb0c0b3556`. [Actions 45049865864](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45049865864) passed host checks, native compilation, ARM/Zehn verification and artifact upload. [Artifact 14764633024](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45049865864/artifacts/14764633024) contains the executable, checksum, two scripts and five 320×240 framebuffer previews plus a contact sheet.
