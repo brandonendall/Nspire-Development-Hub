@@ -1,5 +1,15 @@
 # EndraPython project memory
 
+## Run006 indentation, command catalog and interactive input, 2026-11-22
+
+Brandon requested two-space indentation and removal of samples in favor of a PythonUltra-style command catalog. Run005 was delivered but Brandon had not installed it. Run004 is the most recent owner-confirmed working rollback.
+
+Source `93e7d33cf3e496d8c9c383ba28445845f7351fe4` on feature/endrapython-run001, [draft PR 47](https://github.com/brandonendall/Nspire-Development-Hub/pull/47). [Actions 45062443942](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45062443942) passed. [Artifact 14770640133](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45062443942/artifacts/14770640133) contains EndraPython_Run006.tns, 181310 bytes, SHA-256 `c412910938abb82caf3a4bf99cfbb5b716551ee12a07c74e05267b9258b3cec5`. Downloaded ZIP SHA-256 `c0b865b8b3f75218400e93882884a3104e3af5d0938fff5ad5a001309e76d891`. The downloaded executable and the local ARM build match byte for byte. All 16 screens and their contact sheet matched. Archive inspection found only the executable among TNS files.
+
+Tab advances to a two-space stop counting Unicode characters. Enter copies the current leading spaces; the editor preserves older four-space files. New script requires a filename and starts blank. The samples menu and embedded source templates were removed. Existing scripts are preserved. Editor/Shell > Menu > Command catalog offers common calls, public builtins and the public members of seven runtime modules. Prefix jump, module-qualified insertions and syntax hints are available. Common calls were checked against the compiled port. The build enables native MicroPython input(), min() and max(). Input reads within the IDE in scripts and the REPL. Empty replies return an empty string and Esc raises KeyboardInterrupt.
+
+Host tests exercised indentation, blank/colliding filenames, existing CRLF/four-space files, catalog selection and insertion, the shell namespace after module browsing, and input reply, empty reply, cancellation and recovery. Run006 physical acceptance is pending. Next check Tab, catalog controls and interactive input with the calculator keys. Roll back by launching Run004 and preserving the script files.
+
 ## Run005 contextual help, footer and samples, 2026-11-22
 
 Brandon confirms Run004 working on his CX II CAS, including the punctuation key. The shell photo showed Esc Files clipped at the right edge. Run004 is the working rollback. Broader module and library ports are future work.
