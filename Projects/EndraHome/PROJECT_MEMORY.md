@@ -1,3 +1,5 @@
+> **EndraHome final packaging direction — owner clarification, 2026-11-22.** Defer packaging until the remaining EndraHome work is complete. Integrate the PDF rendering engine directly into EndraHome so Files opens PDFs inside the desktop app and the final install needs only one EndraHome .tns. The separate Run001 Lite reader and Run049 desktop serve as the tested development baseline. This supersedes the two-file packaging proposal.
+
 > **EndraHome Run049 hardware result, 2026-11-22.** Brandon confirmed that the built-in text editor works on his TI-Nspire CX II CAS. Together with the earlier PDF viewing result, Run049 and EndraPDF Lite Run001 are the working baseline for packaging.
 
 > **EndraPDF Lite Run001 hardware result, 2026-11-22.** Brandon confirmed his PDF worked on his TI-Nspire CX II CAS with the Lite reader after transfer. This confirms opening and viewing the tested document. Page turning, zoom and return to Files were not individually reported.
