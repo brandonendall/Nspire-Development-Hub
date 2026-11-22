@@ -7,32 +7,39 @@
 
 App app;
 static const char hello[]="print('Hello from EndraPython')\nprint(sum(range(10)))\n";
-const char ep_symbols[]="()[]{}:='\042_+-*/%<>!#&|^~@;\\";
-const char *const ep_actions[]={"Save","Run script","Find text","Undo","Redo","Copy","Cut","Paste","Select all","Insert symbol","Files",NULL};
-static const int action_keys[]={SAVE,RUN,SEARCH,UNDO,REDO,COPY,CUT,PASTE,SELECT_ALL,0,ESC};
+const char *const ep_symbols[]={"\"","?","'","!","$","°","%",":","_","\\","[","]","(",")","{","}","=",",",".",";","#","+","-","*","/","<",">","@","&","|","^","~","`","¡","¿"};
+const int ep_symbol_count=sizeof ep_symbols/sizeof ep_symbols[0];
+const char *const ep_actions[]={"Marks and symbols","TI catalog input","Save","Run script","Find text","Undo","Redo","Copy","Cut","Paste","Select all","Files",NULL};
+static const int action_keys[]={MARKS,TI_INPUT,SAVE,RUN,SEARCH,UNDO,REDO,COPY,CUT,PASTE,SELECT_ALL,ESC};
 static void reset_output(void) {
     memset(app.output,0,sizeof app.output);
-    app.rows=1;app.first=app.col=app.offset=0;
+    app.rows=1;app.first=app.col=app.output_bytes=app.offset=0;
 }
 static void new_output_line(void) {
     int slot=(app.first+app.rows)%OUT_LINES;
     if(app.rows==OUT_LINES)app.first=(app.first+1)%OUT_LINES;
     else app.rows++;
-    app.output[slot][0]=0;app.col=0;
+    app.output[slot][0]=0;app.col=app.output_bytes=0;
 }
 void console_write(const char *s,size_t n) {
     for(size_t i=0;i<n;i++){
         unsigned char c=s[i];
         if(c=='\r')continue;
         if(c=='\n'){new_output_line();continue;}
-        if(app.col==OUT_WIDTH)new_output_line();
+        int lead=(c&0xc0)!=0x80;
+        if((lead && app.col==OUT_WIDTH) || app.output_bytes==4*OUT_WIDTH)new_output_line();
         char *line=app.output[(app.first+app.rows-1)%OUT_LINES];
-        line[app.col++]=(c>=32 && c<127)?c:'?';line[app.col]=0;
+        if(lead)app.col++;
+        line[app.output_bytes++]=c>=32 && c!=127?(char)c:'?';line[app.output_bytes]=0;
     }
 }
 void app_init(const char *root,void *stack) {
     memset(&app,0,sizeof app);
-    app.root=root;app.stack=stack;files_refresh();
+    app.home=root;app.stack=stack;
+    if(strlen(root)>=sizeof app.folder){app.quit=1;return;}
+    strcpy(app.folder,root);app.root=app.folder;strcpy(app.documents,root);
+    char *end=strrchr(app.documents,'/');if(end && end!=app.documents)*end=0;
+    files_refresh();
 }
 static void show_files(void){app.page=FILES;files_refresh();}
 static void leave_doc(void){if(app.doc.dirty)app.page=DISCARD;else show_files();}
@@ -45,8 +52,19 @@ static void run(void){
 }
 static void text_field(char *s,size_t cap,int k){
     size_t n=strlen(s);
-    if(k==8&&n)s[n-1]=0;
+    if(k==8&&n)s[utf_prev(s,(int)n)]=0;
     else if(k>=32&&k<127&&n+1<cap){s[n]=(char)k;s[n+1]=0;}
+}
+void app_insert_text(const char *value){
+    if(!*value)return;
+    if(app.page==EDITOR){edit_insert(&app.doc,value);return;}
+    char *dst;size_t cap;
+    if(app.page==SHELL){dst=app.command;cap=sizeof app.command;}
+    else if(app.page==FIND){dst=app.query;cap=sizeof app.query;}
+    else if(app.page==NAME){dst=app.name;cap=sizeof app.name;}
+    else return;
+    if(strlen(dst)+strlen(value)>=cap){strcpy(app.status,"Text too long for this field");return;}
+    strcat(dst,value);
 }
 static void begin_name(void){app.page=NAME;app.name[0]=0;}
 static void start_shell(void){
@@ -67,6 +85,12 @@ static void create_doc(void){
 void app_key(int k) {
     if(!k)return;
     app.status[0]=0;
+    if(k==MARKS && (app.page==EDITOR || app.page==SHELL || app.page==NAME || app.page==FIND)){
+        app.origin=app.page;app.page=ACTIONS;app.action=0;app.symbols=1;return;
+    }
+    if(k==TI_INPUT && (app.page==EDITOR || app.page==SHELL || app.page==FIND || app.page==NAME)){
+        app.request_input=1;return;
+    }
     if(app.page==FILES){
         int last=app.count+1;
         if(k==RIGHT && app.selected==0)app.selected=1;
@@ -74,11 +98,25 @@ void app_key(int k) {
         else if(k==DOWN && app.selected<2 && app.count)app.selected=2;
         else if(k==UP && app.selected)app.selected--;
         else if(k==DOWN && app.selected<last)app.selected++;
+        else if(k==INDENT && (app.more_files || app.file_page)){
+            app.file_page=app.more_files?app.file_page+1:0;files_refresh();
+            if(app.count)app.selected=2;
+        }
+        else if(k==MENU)browse_folder(app.documents);
+        else if((k==ESC || k==LEFT) && app.browsing)browse_parent();
         else if(k==ESC)app.quit=1;
         else if(k==ENTER){
             if(app.selected==0)begin_name();
             else if(app.selected==1)start_shell();
-            else if(load_script(app.names[app.selected-2]))app.page=EDITOR;
+            else {
+                struct FileEntry *item=&app.entries[app.selected-2];
+                if(item->folder){
+                    char path[PATH_CAP];
+                    if(snprintf(path,sizeof path,"%s/%s",app.root,item->name)>=(int)sizeof path)
+                        strcpy(app.status,"Folder path too long");
+                    else browse_folder(path);
+                }else if(load_script(item->name))app.page=EDITOR;
+            }
         }
     }else if(app.page==NAME){
         if(k==ESC)show_files();
@@ -100,17 +138,17 @@ void app_key(int k) {
         else if(k==ENTER)show_files();
         else if(k==SAVE && save_script())show_files();
     }else if(app.page==ACTIONS){
-        int count=app.symbols?(int)strlen(ep_symbols):(int)(sizeof action_keys/sizeof action_keys[0]);
-        if(k==ESC)app.page=EDITOR;
+        int count=app.symbols?ep_symbol_count:(int)(sizeof action_keys/sizeof action_keys[0]);
+        if(k==ESC)app.page=app.symbols?app.origin:EDITOR;
+        else if(k==TI_INPUT && app.symbols){app.page=app.origin;app_key(TI_INPUT);}
         else if(app.symbols && k==DOWN){if(app.action+12<count)app.action+=12;}
         else if(app.symbols && k==UP){if(app.action>=12)app.action-=12;}
         else if(k==DOWN||k==RIGHT)app.action=(app.action+1)%count;
         else if(k==UP||k==LEFT)app.action=(app.action+count-1)%count;
         else if(k==ENTER){
-            app.page=EDITOR;
-            if(app.symbols)edit_key(&app.doc,ep_symbols[app.action]);
-            else if(action_keys[app.action])app_key(action_keys[app.action]);
-            else {app.page=ACTIONS;app.symbols=1;app.action=0;}
+            app.page=app.symbols?app.origin:EDITOR;
+            if(app.symbols)app_insert_text(ep_symbols[app.action]);
+            else app_key(action_keys[app.action]);
         }
     }else if(app.page==OUTPUT){
         if(k==ESC)app.page=EDITOR;

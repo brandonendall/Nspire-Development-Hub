@@ -30,6 +30,55 @@ static void write_file(const char *root,const char *name,const char *src){
     char path[512];snprintf(path,sizeof path,"%s/%s",root,name);
     FILE *f=fopen(path,"wb");assert(f);assert(fwrite(src,1,strlen(src),f)==strlen(src));assert(!fclose(f));
 }
+static void pick(const char *ch){
+    app_key(MARKS);assert(app.page==ACTIONS && app.symbols);
+    for(int i=0;strcmp(ch,ep_symbols[app.action]);i++){assert(i<ep_symbol_count);app_key(RIGHT);}
+    app_key(ENTER);
+}
+static void browse_checks(const char *home,void *stack){
+    app_init(home,stack);
+    char other[400],nested[420],path[540];
+    snprintf(other,sizeof other,"%s/Class Notes",app.documents);assert(!mkdir(other,0700));
+    snprintf(nested,sizeof nested,"%s/Algebra",other);assert(!mkdir(nested,0700));
+    write_file(nested,"Lesson (1).PY.TNS","print('original')");
+    write_file(home,"Lesson (1).PY.TNS","print('home')");
+    write_file(nested,"unrelated.tns","leave me");
+    app_key(MENU);assert(app.browsing && !strcmp(app.root,app.documents));
+    while(strcmp(app.entries[app.selected-2].name,"Class Notes")){assert(app.selected<app.count+1);app_key(DOWN);}
+    app_key(ENTER);assert(!strcmp(app.root,other));app_key(ENTER);assert(!strcmp(app.root,nested));
+    assert(app.count==1);preview("browser");
+    app_key(ENTER);assert(app.page==EDITOR && !strcmp(app.doc.text,"print('original')"));
+    app_key(SELECT_ALL);type("print(");pick("\"");pick("°");pick("\"");type(")");
+    app_key(RUN);assert(!app.error && output_has("°"));
+    app_key(ESC);app_key(ESC);app_key(DOWN);app_key(ENTER);assert(!strcmp(app.doc.text,"print(\"°\")"));
+    app_key(SELECT_ALL);app_key(TI_INPUT);assert(app.request_input);app.request_input=0;
+    uint16_t ti[]={'p','r','i','n','t','(','"',0x03c0,0x2264,0x03b8,'"',')'};
+    char converted[64];assert(utf16_input(ti,sizeof ti/sizeof ti[0],converted,sizeof converted));
+    app_insert_text(converted);app_key(RUN);assert(!app.error && output_has("π≤θ"));app_key(ESC);
+    app_key(UNDO);assert(!strcmp(app.doc.text,"print(\"°\")"));
+    app_key(SELECT_ALL);app_insert_text("aπb");app_key(LEFT);app_key(8);
+    assert(!strcmp(app.doc.text,"ab"));app_key(UNDO);assert(!strcmp(app.doc.text,"aπb"));
+    app_key(ESC);app_key(ENTER);app_key(ESC);assert(!strcmp(app.root,other));
+    app_key(ESC);assert(!strcmp(app.root,app.documents));app_key(ESC);assert(!strcmp(app.root,home));
+    assert(load_script("Lesson (1).PY.TNS") && !strcmp(app.doc.text,"print('home')"));
+    app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);type("print(");pick("[");pick("'");
+    type("ok");pick("'");pick("]");type(")");app_key(ENTER);assert(output_has("['ok']"));
+    app_key(MARKS);preview("symbols");app_key(ESC);assert(app.page==SHELL && !app.command[0]);
+    for(int i=0;i<ep_symbol_count;i++){pick(ep_symbols[i]);assert(!strcmp(app.command,ep_symbols[i]));app_key(8);assert(!app.command[0]);}
+    app_key(MARKS);app_key(TI_INPUT);assert(app.request_input && app.page==SHELL);app.request_input=0;
+    uint16_t emoji[]={0xd83d,0xde00};assert(utf16_input(emoji,2,converted,sizeof converted) && strlen(converted)==4);
+    assert(!utf16_input(emoji,1,converted,sizeof converted) && !utf16_input(ti,12,converted,3));
+    app_key(ESC);
+    snprintf(path,sizeof path,"%s/Lesson (1).PY.TNS",home);assert(!unlink(path));
+    snprintf(path,sizeof path,"%s/Lesson (1).PY.TNS",nested);assert(!unlink(path));
+    snprintf(path,sizeof path,"%s/unrelated.tns",nested);assert(!unlink(path));
+    for(int i=0;i<FILE_CAP+2;i++){char name[24];snprintf(name,sizeof name,"clip%03d.py",i);write_file(nested,name,"pass");}
+    assert(browse_folder(nested) && app.more_files && app.count==FILE_CAP);app_key(INDENT);
+    assert(app.count==2 && !app.more_files && app.file_page==1);app_key(INDENT);assert(!app.file_page);
+    for(int i=0;i<FILE_CAP+2;i++){snprintf(path,sizeof path,"%s/clip%03d.py",nested,i);assert(!unlink(path));}
+    assert(!rmdir(nested) && !rmdir(other));
+}
+
 static void ide_checks(const char *root,void *stack){
     char path[220];
     /* Exercise actual bundled examples in the normal load/edit/run flow. */
@@ -80,7 +129,7 @@ static void ide_checks(const char *root,void *stack){
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
-    char scripts[150];snprintf(scripts,sizeof scripts,"%s/scripts",root);
+    char scripts[150];snprintf(scripts,sizeof scripts,"%s/EndraPython",root);
     app_init(scripts,&stack);assert(!app.count && access(scripts,F_OK));
     app_key(ENTER);app_key(ENTER);assert(app.page==EDITOR && app.doc.existing);
     assert(!strcmp(app.doc.name,"Hello_World.py.tns"));
@@ -109,7 +158,8 @@ int main(void){
     app_key(ESC);assert(app.page==FILES);
     for(int i=0;i<24;i++){assert(load_script("Hello_World.py.tns"));app.page=EDITOR;app_key(RUN);assert(!app.error && output_has("45"));app_key(ESC);}
     assert(!valid_script("../x.py")&&!valid_script("x/abc.py")&&!valid_script("system.tns"));
-    write_file(scripts,"foreign.py","print('\xc3\xa9')\n");assert(!load_script("foreign.py"));
+    write_file(scripts,"foreign.py","print('\xc3\xa9')\n");assert(load_script("foreign.py"));
+    write_file(scripts,"foreign.py","\xc0\xaf");assert(!load_script("foreign.py"));
     static char big[SOURCE_CAP+2];memset(big,'x',SOURCE_CAP+1);write_file(scripts,"large.py",big);assert(!load_script("large.py"));
     write_file(scripts,"Windows.py","if True:\r\n    pass\r\n");assert(load_script("Windows.py"));
     app.doc.cursor=strlen(app.doc.text)-1;edit_key(&app.doc,ENTER);assert(strstr(app.doc.text,"pass\n    "));
@@ -128,8 +178,9 @@ int main(void){
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
     ide_checks(scripts,&stack);
+    browse_checks(scripts,&stack);
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 6 framebuffer previews, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 8 framebuffer previews, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

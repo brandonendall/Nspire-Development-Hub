@@ -2,6 +2,7 @@
 #include "platform.h"
 #include "text_input.h"
 #include <libndls.h>
+void ti_text_input(void);
 static int consumed_escape;
 int cancel_pressed(void){
     if(!isKeyPressed(KEY_NSPIRE_ESC))return 0;
@@ -25,18 +26,9 @@ int main(void){
         }
         if(app.page==EDITOR && k>=UP && k<=RIGHT && isKeyPressed(KEY_NSPIRE_SHIFT))
             k=EXT_UP+(k-UP);
-        if(!k){
-            if(isKeyPressed(KEY_NSPIRE_CTRL))
-                switch(ch){
-                case 's': k=SAVE; break; case 'r': k=RUN; break;
-                case 'f': k=SEARCH; break; case 'z': k=UNDO; break;
-                case 'y': k=REDO; break; case 'a': k=SELECT_ALL; break;
-                case 'c': k=COPY; break; case 'x': k=CUT; break;
-                case 'v': k=PASTE; break; default: k=0; break;
-                }
-            else k=ch;
-        }
+        k=eh16_key_event(k,ch,isKeyPressed(KEY_NSPIRE_CTRL));
         app_key(k);redraw=k!=0;
+        if(app.request_input){app.request_input=0;ti_text_input();redraw=1;}
         eh_platform_sleep();
     }
     eh_platform_stop();

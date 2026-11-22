@@ -4,10 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define PATH_CAP 384
+
 static char raw[SOURCE_CAP+1], staged[SOURCE_CAP+1], check[SOURCE_CAP+1];
 static int fail(const char *msg){ snprintf(app.status,sizeof app.status,"%s",msg); return 0; }
 static int join(char *p,const char *name) {
@@ -15,28 +16,66 @@ static int join(char *p,const char *name) {
 }
 int valid_script(const char *s) {
     size_t n=strlen(s);
-    if(!n || s[0]=='.' || n>=NAME_CAP || strstr(s,".."))return 0;
+    if(!n || s[0]=='.' || n>=NAME_CAP)return 0;
     for(size_t i=0;i<n;i++){
-        char c=s[i];
-        if(!((c>='A'&&c<='Z')||(c>='a'&&c<='z')||(c>='0'&&c<='9')||strchr("_-. ",c)))return 0;
+        unsigned char c=s[i];
+        if(c<32 || c==127 || c=='/' || c=='\\')return 0;
     }
-    return (n>3&&!strcmp(s+n-3,".py"))||(n>7&&!strcmp(s+n-7,".py.tns"));
+    return (n>3&&!strcasecmp(s+n-3,".py"))||(n>7&&!strcasecmp(s+n-7,".py.tns"));
 }
-static int compare_names(const void *a,const void *b){return strcmp(a,b);}
-void files_refresh(void) {
-    app.count=app.selected=0;
-    DIR *d=opendir(app.root);
-    if(!d){if(errno!=ENOENT)fail("Cannot read scripts folder");return;}
+static int compare_entries(const void *a,const void *b){
+    const struct FileEntry *x=a,*y=b;
+    return x->folder!=y->folder ? y->folder-x->folder : strcasecmp(x->name,y->name);
+}
+static void enumerate(DIR *d){
     struct dirent *entry;
-    while((entry=readdir(d))) {
-        if(!valid_script(entry->d_name))continue;
-        char path[PATH_CAP]; struct stat st;
-        if(!join(path,entry->d_name)||stat(path,&st)||!S_ISREG(st.st_mode))continue;
-        if(app.count==FILE_CAP){fail("Showing first 96 scripts");break;}
-        strcpy(app.names[app.count++],entry->d_name);
+    app.count=app.selected=0;
+    int skip=app.file_page*FILE_CAP;app.more_files=0;
+    while((entry=readdir(d))){
+        const char *name=entry->d_name;
+        if(!*name || *name=='.' || strlen(name)>=NAME_CAP || strchr(name,'/') || strchr(name,'\\'))continue;
+        char path[PATH_CAP];struct stat st;
+        if(!join(path,name))continue;
+#ifdef __arm__
+        if(stat(path,&st))continue;
+#else
+        if(lstat(path,&st))continue;
+#endif
+        int folder=S_ISDIR(st.st_mode);
+        if(!folder && !(S_ISREG(st.st_mode) && valid_script(name)))continue;
+        if(skip>0){skip--;continue;}
+        if(app.count==FILE_CAP){app.more_files=1;break;}
+        struct FileEntry *item=&app.entries[app.count++];
+        strcpy(item->name,name);item->folder=folder;
     }
     closedir(d);
-    qsort(app.names,app.count,sizeof app.names[0],compare_names);
+    qsort(app.entries,app.count,sizeof app.entries[0],compare_entries);
+}
+void files_refresh(void){
+    app.count=app.selected=app.more_files=0;
+    DIR *d=opendir(app.root);
+    if(d)enumerate(d);
+    else if(errno!=ENOENT)fail("Cannot read folder");
+}
+int browse_folder(const char *path){
+    if(strlen(path)>=sizeof app.folder)return fail("Folder path too long");
+    DIR *d=opendir(path);
+    if(!d)return fail("Cannot open folder");
+    strcpy(app.folder,path);app.browsing=1;app.file_page=0;enumerate(d);
+    if(app.count)app.selected=2;
+    return 1;
+}
+void browse_parent(void){
+    if(!strcmp(app.folder,app.documents)){
+        strcpy(app.folder,app.home);app.browsing=0;app.file_page=0;files_refresh();return;
+    }
+    char parent[PATH_CAP];strcpy(parent,app.folder);
+    char *slash=strrchr(parent,'/');
+    if(!slash)return;
+    const char *old=slash+1;*slash=0;
+    if(browse_folder(parent)){
+        for(int i=0;i<app.count;i++)if(!strcmp(app.entries[i].name,old)){app.selected=i+2;break;}
+    }
 }
 static int read_bytes(const char *path,char *dst) {
     FILE *f=fopen(path,"rb");
@@ -52,9 +91,9 @@ int load_script(const char *name) {
     if(!valid_script(name)||!join(path,name))return fail("Invalid script name");
     int n=read_bytes(path,raw);
     if(n<0)return fail("Unreadable, binary or over 8 KiB");
-    for(int i=0;i<n;i++){
-        unsigned char c=raw[i];
-        if((c<32 && c!='\r' && c!='\n' && c!='\t')||c>=127)return fail("Editor requires ASCII source");
+    for(int i=0;i<n;){
+        int step,c=utf_decode(raw+i,&step);i+=step;
+        if((c<32 && c!='\r' && c!='\n' && c!='\t')||c==127)return fail("Invalid UTF-8 or binary source");
     }
     Editor *d=&app.doc;
     edit_reset_history();
@@ -72,6 +111,7 @@ int load_script(const char *name) {
 static int ensure_scripts_folder(void) {
     DIR *dir=opendir(app.root);
     if(!dir){
+        if(strcmp(app.root,app.home))return fail("Original folder is unavailable");
         struct stat st;
         if(stat(app.root,&st)==0)
             return fail(S_ISDIR(st.st_mode) ? "Cannot open scripts folder" : "Scripts path is not a folder");

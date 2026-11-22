@@ -5,4 +5,5 @@
  * Call on every frame (also outside Rename) to track key releases.
  * Never launches OS text dialogs or touches Ndless hooks. */
 int eh16_textkey(void);
+int eh16_key_event(int navigation,int text,int ctrl);
 #endif

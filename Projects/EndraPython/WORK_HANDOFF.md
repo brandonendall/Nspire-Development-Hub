@@ -1,14 +1,13 @@
-# Run003 handheld checks
+# Run004 handheld checks
 
-Brandon confirmed Run002 successful. Keep that executable as the rollback and keep the existing scripts folder. Run003 uses the same directory and save format.
+Brandon reported Run003 could not access the calculator punctuation popup or open scripts stored elsewhere. Keep Run002 as the last owner-confirmed working rollback and preserve existing scripts.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run003.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run004.tns /upload
 ```
 
-1. Open Run003. Press Down to highlight a saved file. Open Hello_World, make a small edit and press Ctrl+S. Exit, reopen and confirm the edit.
-2. Select a word with Shift+Right. Copy, paste, undo and redo using the editor Menu or the shortcuts in README.md. Use Ctrl+F twice on repeated text to check wraparound.
-3. Run a script with Ctrl+R. To verify error navigation, use a new script containing a print on line one and `1 // 0` on line two. From the traceback press Enter and check the caret on line two.
-4. In Files, press Right then Enter for Python shell. Press Menu to list modules. Try `import random` then `random.randint(1, 6)`. Check text clarity, selection visibility and keys on the actual LCD.
-5. Exit and reopen Documents. If a save reports an error, keep the buffer open and record its exact status. Preserve existing scripts and any .saving recovery folder. To roll back, close Run003 and launch Run002.
+1. In the shell, type `print(`, press the physical **?▸** key, pick the double quote with Enter, type a word, insert another quote the same way, then type `)` and press Enter. Repeat in the editor and try square brackets.
+2. For TI's own interface press the **Catalog (book)** key. In the TI text field press **?▸** for punctuation or **Ctrl+Catalog** for the wider symbol palette. Choose a symbol and confirm the text field. Check cancel, returning to the same caret, and the LCD after exiting. This OS-dialog interaction requires physical confirmation.
+3. In Files, press Menu to browse Documents. Enter opens a folder or Python script, Esc moves up, and Tab cycles pages when a folder has more than 96 entries. Open a plain-text .py or .py.tns from another folder, edit a test copy, run it, exit and reopen the same file. Save writes to that original folder.
+4. Roll back by closing Run004 and opening the retained Run002 executable.

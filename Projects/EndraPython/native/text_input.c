@@ -40,14 +40,41 @@ int eh16_textkey(void){
  if(!scan&&isKeyPressed(KEY_NSPIRE_LP)){scan=44;ascii=shift?'[':'(';}
  if(!scan&&isKeyPressed(KEY_NSPIRE_RP)){scan=45;ascii=shift?']':')';}
  if(!scan&&isKeyPressed(KEY_NSPIRE_MULTIPLY)){scan=46;ascii='*';}
- if(!scan&&isKeyPressed(KEY_NSPIRE_DIVIDE)){scan=47;ascii='/';}
+ if(!scan&&isKeyPressed(KEY_NSPIRE_DIVIDE)){scan=47;ascii=shift?92:'/';}
  if(!scan&&isKeyPressed(KEY_NSPIRE_EQU)){scan=48;ascii='=';}
  if(!scan&&isKeyPressed(KEY_NSPIRE_TAB)){scan=49;ascii=INDENT;}
  if(!scan&&isKeyPressed(KEY_NSPIRE_RET)){scan=50;ascii=ENTER;}
  if(!scan&&isKeyPressed(KEY_NSPIRE_COLON)){scan=51;ascii=':';}
  if(!scan&&isKeyPressed(KEY_NSPIRE_QUOTE)){scan=52;ascii='"';}
+ if(!scan&&isKeyPressed(KEY_NSPIRE_CAT)){scan=53;ascii=TI_INPUT;}
+ if(!scan&&isKeyPressed(KEY_NSPIRE_QUESEXCL)){scan=54;ascii=MARKS;}
+ if(!scan&&isKeyPressed(KEY_NSPIRE_PI)){scan=55;ascii=TI_INPUT;}
  if(!scan){last_scan=0;return 0;}
  if(last_scan==scan)return 0;
  last_scan=scan;
  return ascii;
+}
+
+int eh16_key_event(int k,int ch,int ctrl){
+    static int ctrl_was_down,ctrl_latched;
+    if(ctrl && !ctrl_was_down)ctrl_latched=1;
+    ctrl_was_down=ctrl;
+    int modified=ctrl || ctrl_latched;
+    if(k || ch)ctrl_latched=0;
+    if(!k){
+        if(ch==TI_INPUT || ch==MARKS)k=ch;
+        else if(modified)
+            switch(ch){
+            case '=': k=TI_INPUT; break;
+            case '(': k='['; break; case ')': k=']'; break;
+            case 39: k=34; break;
+            case 's': k=SAVE; break; case 'r': k=RUN; break;
+            case 'f': k=SEARCH; break; case 'z': k=UNDO; break;
+            case 'y': k=REDO; break; case 'a': k=SELECT_ALL; break;
+            case 'c': k=COPY; break; case 'x': k=CUT; break;
+            case 'v': k=PASTE; break; default: k=0; break;
+            }
+        else k=ch;
+    }
+    return k;
 }

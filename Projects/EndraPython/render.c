@@ -36,13 +36,23 @@ static int blend(int src,int dst,int a){
         | (((src&31)*a+(dst&31)*b)/3);
 }
 static const unsigned char *glyph(int f,int c){
-    if(c<32||c>126)c=c=='\t'?'>':'?';
-    return ep_font_data+fonts[f].offset+(c-32)*(1+fonts[f].stride*fonts[f].height);
+    int index=c-32;
+    if(c<32)index=(c=='\t'?'>':'?')-32;
+    if(c>126){
+        int base=95;index='?'-32;
+        if(f==CODE)for(unsigned i=0;i<sizeof code_ranges/sizeof code_ranges[0];i++){
+            int lo=code_ranges[i][0],hi=code_ranges[i][1];
+            if(c>=lo && c<=hi){index=base+c-lo;break;}
+            base+=hi-lo+1;
+        }
+    }
+    return ep_font_data+fonts[f].offset+index*(1+fonts[f].stride*fonts[f].height);
 }
 static int width(int f,const char *s){
-    int w=0;for(;*s;s++)w+=*glyph(f,(unsigned char)*s);return w;
+    int w=0;while(*s){int n,c=utf_decode(s,&n);w+=*glyph(c>126?CODE:f,c);s+=n;}return w;
 }
 static int letter(int x,int y,int f,int color,int ch,int limit){
+    if(ch>126)f=CODE;
     const Font *font=&fonts[f];const unsigned char *g=glyph(f,ch);
     int advance=*g++;
     for(unsigned row=0;row<font->height;row++)
@@ -56,22 +66,14 @@ static int letter(int x,int y,int f,int color,int ch,int limit){
     return advance;
 }
 static void text(int x,int y,int f,int c,const char *s,int limit){
-    while(*s && x<limit)x+=letter(x,y,f,c,(unsigned char)*s++,limit);
+    while(*s && x<limit){int n,ch=utf_decode(s,&n);x+=letter(x,y,f,c,ch,limit);s+=n;}
 }
 static void right(int x,int y,int f,int c,const char *s){text(x-width(f,s),y,f,c,s,x);}
 static void fitted(int x,int y,int f,int c,const char *s,int end){
     if(width(f,s)<=end-x){text(x,y,f,c,s,end);return;}
     int stop=end-width(f,"...");
-    while(*s && x+*glyph(f,*s)<=stop)x+=letter(x,y,f,c,*s++,stop);
+    while(*s){int n,ch=utf_decode(s,&n);if(x+*glyph(ch>126?CODE:f,ch)>stop)break;x+=letter(x,y,f,c,ch,stop);s+=n;}
     text(x,y,f,c,"...",end);
-}
-static void mark(int x,int y){
-    for(int row=0;row<17;row++){
-        int slant=(16-row)/4;
-        if(row<4 || (row>=7&&row<=10) || row>=14)
-            box(x+slant,y+row,row<4?17:row>=14?13:10,1,GREEN);
-        else box(x+slant,y+row,4,1,GREEN);
-    }
 }
 static void page_icon(int x,int y,int c){
     box(x,y,8,1,c);box(x,y,1,13,c);box(x,y+12,11,1,c);
@@ -84,8 +86,8 @@ static void terminal_icon(int x,int y,int c){
     box(x+8,y+8,6,2,c);
 }
 static void header(const char *page){
-    box(0,0,320,30,BAR);box(0,29,320,1,LINE);mark(9,6);
-    text(37,5,TITLE,WHITE,"EndraPython",180);
+    box(0,0,320,30,BAR);box(0,29,320,1,LINE);
+    text(10,5,TITLE,WHITE,"EndraPython",180);
     int w=width(SMALL,page)+18;panel(311-w,6,w,18,DEEP,DEEP);
     text(320-w,8,SMALL,GREEN,page,309);
 }
@@ -111,21 +113,26 @@ static void tile(int x,int which,const char *name){
 static void files(void){
     char count[32];header("FILES");tile(9,0,"New script");tile(164,1,"Python shell");
     box(10,103,13,8,GOLD);box(11,100,6,4,GOLD);
-    text(29,95,TITLE,WHITE,"Scripts",155);
-    snprintf(count,sizeof count,"%d %s",app.count,app.count==1?"file":"files");right(310,99,BODY,MUTED,count);
+    const char *leaf=strrchr(app.root,'/');
+    fitted(29,95,TITLE,WHITE,app.browsing?(leaf?leaf+1:app.root):"Scripts",238);
+    if(app.file_page || app.more_files)snprintf(count,sizeof count,"Page %d / Tab",1+app.file_page);
+    else snprintf(count,sizeof count,"%d %s",app.count,app.count==1?"entry":"entries");right(310,99,BODY,MUTED,count);
     box(10,118,300,1,LINE);
     int first=app.selected>5?app.selected-5:0;
     for(int i=first;i<app.count && i<first+4;i++){
         int y=122+(i-first)*19,sel=app.selected==i+2;
         if(sel){panel(8,y,304,19,GREEN,DEEP);box(10,y+3,2,13,GREEN);}
-        page_icon(17,y+3,sel?GREEN:GOLD);
-        fitted(38,y+1,BODY,sel?WHITE:MUTED,app.names[i],290);
+        if(app.entries[i].folder){box(17,y+7,13,8,GOLD);box(18,y+4,6,4,GOLD);}
+        else page_icon(17,y+3,sel?GREEN:GOLD);
+        fitted(38,y+1,BODY,sel?WHITE:MUTED,app.entries[i].name,290);
         if(sel)text(298,y+2,BODY,GREEN,">",311);
     }
-    if(!app.count)text(12,133,BODY,MUTED,"Create a script to start editing.",306);
-    status(app.status[0]?app.status:"/documents/EndraPython/",app.status[0]?GOLD:FAINT);
-    footer();int x=key(8,"Enter",app.selected==0?"Create":"Open");key(x,"Esc","Exit");
-    right(311,223,SMALL,MUTED,"RUN 003");
+    if(!app.count)text(12,133,BODY,MUTED,"No folders or Python scripts here.",306);
+    char location[PATH_CAP+16];
+    snprintf(location,sizeof location,"Documents%s",app.root+strlen(app.documents));
+    status(app.status[0]?app.status:location,app.status[0]?GOLD:FAINT);
+    footer();int x=key(8,"Enter",app.selected==0?"Create":"Open");x=key(x,"Menu","Browse");key(x,"Esc",app.browsing?"Back":"Exit");
+    right(311,223,SMALL,MUTED,"RUN 004");
 }
 static int token(const char *s,int n){
     static const char *const words[]={"and","as","assert","break","class","continue","def","del",
@@ -137,8 +144,9 @@ static int token(const char *s,int n){
 }
 static void code_line(const Editor *d,int start,int end,int y,int current){
     int quote=0,escaped=0,comment=0,word_end=start,word_color=WHITE;
-    for(int p=start;p<end;p++){
-        unsigned char c=d->text[p];int color=WHITE;
+    int step=1;
+    for(int p=start,col=-d->left;p<end;p+=step,col++){
+        int c=utf_decode(d->text+p,&step),color=WHITE;
         if(!quote && c=='#')comment=1;
         if(comment)color=FAINT;
         else if(quote){
@@ -147,19 +155,18 @@ static void code_line(const Editor *d,int start,int end,int y,int current){
             escaped=!escaped&&c=='\\';
         }else if(c=='\''||c=='"'){quote=c;color=GOLD;escaped=0;}
         else if(p<word_end)color=word_color;
-        else if(isalpha(c)||c=='_'){
+        else if((c>=0 && c<128 && isalpha(c))||c=='_'){
             word_end=p+1;
             while(word_end<end && (isalnum((unsigned char)d->text[word_end])||d->text[word_end]=='_'))word_end++;
             color=word_color=token(d->text+p,word_end-p);
-        }else if(isdigit(c))color=GREEN;
-        int col=p-start-d->left;
+        }else if(c>=0 && c<128 && isdigit(c))color=GREEN;
         if(col<0||col>=EDIT_COLS)continue;
         int x=32+7*col;
         if(d->selecting && ((p>=d->anchor&&p<d->cursor)||(p>=d->cursor&&p<d->anchor)))
             box(x,y,7,13,DEEP);
         letter(x,y-1,CODE,color,c,316);
     }
-    if(current)box(32+7*(d->cursor-start-d->left),y+1,1,12,GREEN);
+    if(current)box(32+7*(utf_columns(d->text+start,d->cursor-start)-d->left),y+1,1,12,GREEN);
 }
 static void editor(void){
     const Editor *d=&app.doc;header("EDITOR");
@@ -177,12 +184,12 @@ static void editor(void){
         if(!d->text[end])break;
         start=end+1;
     }
-    char loc[80];snprintf(loc,sizeof loc,"Line %d    Col %d",1+line_number(d->text,d->cursor),1+d->cursor-line_start(d->text,d->cursor));
+    char loc[80];snprintf(loc,sizeof loc,"Line %d    Col %d",1+line_number(d->text,d->cursor),1+utf_columns(d->text+line_start(d->text,d->cursor),d->cursor-line_start(d->text,d->cursor)));
     status(app.status[0]?app.status:loc,app.status[0]?GOLD:MUTED);
-    footer();int x=key(8,"Menu","Tools");x=key(x,"^S","Save");x=key(x,"^R","Run");key(x,"Esc","Files");
+    footer();int x=key(8,"Menu","Tools");x=key(x,"?","Symbols");x=key(x,"^R","Run");key(x,"Esc","Files");
 }
 static void console(void){
-    int shell=app.page==SHELL;header(shell?"SHELL":"OUTPUT");
+    int shell=app.page==SHELL || (app.page==ACTIONS && app.symbols && app.origin==SHELL);header(shell?"SHELL":"OUTPUT");
     terminal_icon(10,39,shell?AQUA:GREEN);
     fitted(34,34,BODY,WHITE,shell?"MicroPython 1.24.1":app.doc.name,309);
     box(0,52,320,1,LINE);
@@ -195,35 +202,38 @@ static void console(void){
         text(10,55+12*(i-first),CODE,c,line,311);
     }
     if(shell){
+        if(app.status[0])fitted(9,168,BODY,GOLD,app.status,310);
         panel(7,185,306,28,LINE,CARD);text(14,190,CODE,GREEN,">>>",39);
-        int n=strlen(app.command),from=n>36?n-36:0;text(42,190,CODE,WHITE,app.command+from,310);
-        box(42+7*(n-from),193,1,12,GREEN);
+        int n=strlen(app.command),cols=utf_columns(app.command,n),from=utf_advance(app.command,0,n,cols-36);text(42,190,CODE,WHITE,app.command+from,310);
+        box(42+7*utf_columns(app.command+from,n-from),193,1,12,GREEN);
     }else{
         box(0,200,320,18,app.error?ERROR_BG:DEEP);
         text(9,201,BODY,app.error?ERROR:GREEN,app.error?"Python exception":"Run complete",308);
     }
     footer();int x=key(8,shell?"Enter":"^R",shell?"Eval":"Run");
-    if(shell)x=key(x,"Menu","Modules");
+    if(shell){x=key(x,"?","Symbols");x=key(x,"Menu","Modules");}
     else if(app.error_line>0)x=key(x,"Enter","Go to line");
     else x=key(x,"Up/Dn","Scroll");
     key(x,"Esc",shell?"Files":"Editor");
 }
 static void modal(void){
     int x=17,w=286;
-    if(app.page==NAME)files();else editor();
+    if(app.page==NAME || (app.page==ACTIONS && app.symbols && app.origin==NAME))files();
+    else if(app.page==ACTIONS && app.symbols && app.origin==SHELL)console();else editor();
     /* Dim the underlying workspace while keeping the current location visible. */
     for(int i=0;i<320*240;i++)fb[i]=blend(BG,fb[i],2);
     int top=app.page==ACTIONS?39:55,bottom=app.page==ACTIONS?212:181;
     panel(x,top,w,bottom-top,LINE,BAR);box(x+2,top+2,3,22,GREEN);
-    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Insert symbol":"Editor tools";
+    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Marks and symbols":"Editor tools";
     text(x+13,top+7,TITLE,WHITE,title,294);box(x+12,top+34,w-24,1,LINE);
     if(app.page==ACTIONS){
         if(app.symbols){
-            for(int i=0;ep_symbols[i];i++){
+            for(int i=0;i<ep_symbol_count;i++){
                 int cx=x+11+22*(i%12),cy=top+43+23*(i/12);
                 if(i==app.action)panel(cx,cy,20,20,GREEN,DEEP);
-                letter(cx+6,cy+2,CODE,WHITE,ep_symbols[i],cx+20);
+                text(cx+6,cy+2,CODE,WHITE,ep_symbols[i],cx+20);
             }
+            text(31,161,BODY,MUTED,"Book opens TI catalog input",290);
         }else{
             int first=app.action>5?app.action-5:0;
             for(int i=first;ep_actions[i] && i<first+6;i++){
@@ -237,9 +247,9 @@ static void modal(void){
         text(32,129,BODY,MUTED,"Esc keeps the editor open.",291);
     }else{
         const char *s=app.page==FIND?app.query:app.name;
-        int n=strlen(s),from=n>34?n-34:0;
+        int n=strlen(s),from=utf_advance(s,0,n,utf_columns(s,n)-34);
         panel(29,101,262,26,GREEN,CARD);
-        text(37,106,CODE,WHITE,s+from,284);box(37+7*(n-from),108,1,12,GREEN);
+        text(37,106,CODE,WHITE,s+from,284);box(37+7*utf_columns(s+from,n-from),108,1,12,GREEN);
         fitted(30,139,BODY,app.status[0]?GOLD:MUTED,app.status[0]?app.status:app.page==FIND?
                "Enter finds the next match and wraps.":"Leave blank for the Hello World example.",292);
     }
