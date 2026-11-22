@@ -33,6 +33,15 @@
  
  	if(!Screen::init())
  		return 1;
+@@ -193,7 +177,7 @@
+ 				v->display();
+ 			}
+ 		}
+-		sleep(10);
++		msleep(10);
+ 	}
+ 
+ 	Screen::deinit();
 --- a/Viewer.cpp
 +++ b/Viewer.cpp
 @@ -34,7 +34,7 @@
