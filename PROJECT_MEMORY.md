@@ -50,3 +50,6 @@ Record the owner’s first physical Run029 result in the [EndraHome project memo
 Branch feature/endragba-run013-cheats; Projects/EndraGBA/RUN013.md documents ARv3 import for GBA/GBZ and the Shining Soul II US Chaos Ring test. Hardware feedback pending; Run012 rollback.
 
 Run013 verified delivery: source 0d37fed53325e3d5bbf750c2d94f743ac641699d, Actions 45227242374 success, artifact 14845171669, draft PR #48. EndraGBA_Run013_Cheats.tns is 481627 bytes, SHA-256 d970aa023a40340279bff358cec54182742a3f5d3b0e82365a5992e3c642c05c. Pinned CI binary matches local Ndless build byte for byte. Nine baseline loading frames passed host validation. Sample Shining_Soul_II.cht.tns (133 bytes) SHA-256 2c1356ea5e7ad3d732bef00162cf343fc48fd9f5bbc894eec4d3204eaa383587. Pending: Brandon tests file import, one-shot inventory and normal save/reload on CX II CAS. Rollback Run012.
+
+## EndraGBA Run014
+Brandon confirmed Run013 and the imported codes work on hardware. Run014 removes the hard-coded AU2E Chaos Ring entry. All ten slots now come from the matching file. Existing Run013 cheat files work as-is. Rollback Run013. Next physical check: load the same game and file in Run014.

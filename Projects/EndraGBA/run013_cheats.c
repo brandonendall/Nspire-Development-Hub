@@ -57,7 +57,6 @@ static void load_ar3(const char *rom, const char *id)
   FILE *fp;
   memset(cheats, 0, sizeof(cheats));
   num_cheats = 0;
-  if (!strcmp(id, "AU2E")) add_code("Chaos Ring", 0xcbd43a43u, 0x720490c7u, 1);
   size_t n = strlen(rom);
   if (n >= sizeof(current_rom)) { current_rom[0] = 0; return; }
   if (rom != current_rom) memcpy(current_rom, rom, n + 1);

@@ -17,15 +17,18 @@ int main(void) {
   fputs("GAME AU2E\n!Power Ring=47E97FBD E485E4F3\nAlways=CBD43A43 720490C7\n%bad=CBD43A43 720490C7\nMaster=B7E107A8 DBBDA17A\n",f);
   fclose(f);
   load_ar3("Game.gbz.tns","AU2E");
-  assert(num_cheats==3 && !strcmp(cheats[1].cheat_name,"Power Ring"));
+  assert(num_cheats==2 && !strcmp(cheats[0].cheat_name,"Power Ring"));
   apply_ar3(); assert(!writes);
   cheats[0].cheat_active=1; apply_ar3(); apply_ar3();
-  assert(writes==1 && last_width==4 && last_address==0x02003d6c && last_value==0xc0006);
-  cheats[2].cheat_active=1; apply_ar3(); apply_ar3(); assert(writes==3);
-  cheats[2].cheat_active=0; apply_ar3(); assert(writes==3);
+  assert(writes==1 && last_width==4 && last_address==0x02003d6c && last_value==0x90006);
+  cheats[1].cheat_active=1; apply_ar3(); apply_ar3(); assert(writes==3);
+  cheats[1].cheat_active=0; apply_ar3(); assert(writes==3);
   load_ar3("Game.gba.tns","AU2J"); assert(num_cheats==0);
   apply_ar3(); assert(writes==3);
-  load_ar3("Game.gba.tns","AU2E"); assert(num_cheats==3);
-  load_ar3(current_rom,"AU2E"); assert(num_cheats==3 && !cheats[2].cheat_active);
+  load_ar3("Game.gba.tns","AU2E"); assert(num_cheats==2);
+  load_ar3(current_rom,"AU2E"); assert(num_cheats==2 && !cheats[1].cheat_active);
+  assert(remove("Game.cht.tns")==0);
+  load_ar3(current_rom,"AU2E"); assert(num_cheats==0);
+  load_ar3("Game.gbz.tns","AU2E"); assert(num_cheats==0);
   return 0;
 }
