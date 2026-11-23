@@ -45,3 +45,6 @@ Projects/EndraGBA, Projects/UltraGBA, Projects/UltraZip, Projects/UltimateComman
 
 ## Current next action
 Record the owner’s first physical Run029 result in the [EndraHome project memory](https://github.com/brandonendall/Nspire-Development-Hub/blob/feature/endrahome-run001/Projects/EndraHome/PROJECT_MEMORY.md). Keep the latest compiled build and the owner’s installed version as separate entries.
+
+## EndraGBA Run013
+Branch feature/endragba-run013-cheats; Projects/EndraGBA/RUN013.md documents ARv3 import for GBA/GBZ and the Shining Soul II US Chaos Ring test. Hardware feedback pending; Run012 rollback.

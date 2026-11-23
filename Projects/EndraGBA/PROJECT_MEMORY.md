@@ -72,3 +72,6 @@ Next: verify CI and checksum, provide direct TNS, test both menus on hardware, l
 
 ## Run011 verified delivery — 2026-11-21
 CI run 44862054240 completed SUCCESS at source f899c4ff9bddb6d5eac70be49570d18b45f89da2. Artifact 14690386825 retrieved and extracted. EndraGBA_Run011_NightMode.tns: 480480 bytes, SHA-256 33ddfd84b70b917540df199a390bf3a68d28b4c6e9d484d004f78bb9cf7883bd, matches bundled SHA256SUMS.txt. Physical test pending. Run010 rollback. No claim of on-device verification.
+
+## Run013 — cheat files
+Branch feature/endragba-run013-cheats builds from Run012 (141c929f). Added per-ROM .cht.tns import/reload and ten menu toggles, including a US-only one-shot Chaos Ring. See RUN013.md and test_run013.c. Host RAM-write fixture passed. Rollback Run012; test on CX II CAS with an empty first inventory slot. No hardware test yet.
