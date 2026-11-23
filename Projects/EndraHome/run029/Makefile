@@ -1,4 +1,4 @@
-APP := EndraHome_Run049_Desktop
+APP := EndraHome_Run050_Desktop
 CC := nspire-gcc
 LD := nspire-ld
 GENZEHN := genzehn
@@ -15,7 +15,7 @@ NATIVE := archive main platform app_target art art_data render display caption o
           session picker picker_render config_save edit manager text_input text_edit files file_ops file_icons \
           files_render image_viewer image_keys
 OBJECTS := $(addprefix build/,$(addsuffix .o,$(NATIVE))) build/logic7.o $(patsubst $(ZIPDIR)/%.c,build/%.o,$(ZIP_SRC))
-TESTS := caption registry return picker files image ops preferences display
+TESTS := clock caption registry return picker files image ops preferences display
 .PHONY: all test preview clean
 all: $(APP).tns
 
@@ -33,9 +33,10 @@ build/logic7.o: ../run005/logic7.c | build
 build/$(APP).elf: $(OBJECTS)
 	$(LD) -marm $^ -o $@ -lm
 $(APP).tns: build/$(APP).elf
-	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Desktop 049" --input $< --output $@
+	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Desktop 050" --input $< --output $@
 
 HEADERS := $(wildcard *.h) ../run005/logic7.h ../gba-ui/logic.h
+build/test_clock: test_clock.c
 build/test_caption: test_caption.c caption.c
 build/test_registry: test.c $(DESKTOP)
 build/test_return: test_return.c session.c $(DESKTOP)

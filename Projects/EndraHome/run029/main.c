@@ -3,6 +3,7 @@
 #include "preferences.h"
 #include "desktop.h"
 #include "platform029.h"
+#include "clock.h"
 #include "ui.h"
 #include "render.h"
 #include "overlay.h"
@@ -23,10 +24,11 @@ void __attribute__((weak)) _fini(void){}
 /* BSS, not stack: 4KiB bounded text preview */
 static Eh17Files built_files;
 static int desktop_second;
+static EhClock clock_source;
 static int read_second(int offset){
  /* nClock stores local wall time in the CX II RTC seconds register. */
  uint32_t seconds=*(const volatile uint32_t *)0x90090000u;
- return seconds<1325376000u || seconds==UINT32_MAX ? -1 : (int)((seconds%86400u+(unsigned)offset)%86400u);
+ return (eh_clock_sample(&clock_source,seconds,eh_platform_ticks())+(unsigned)offset)%86400u;
 }
 static void paint(const EhUniversalUI *s,const Eh13Picker *picker){
  uint16_t *fb=eh_framebuffer();
@@ -79,6 +81,7 @@ int main(int argc,char **argv){
  Eh13Picker picker;memset(&picker,0,sizeof(picker));
  for(;;){
   if(!eh_platform_start())return 1;
+   clock_source.anchor=eh_platform_ticks();
   uint32_t clock_tick=eh_platform_ticks();
   paint(&ui,&picker);
   while(!ui.page.should_exit&&!ui.request){
@@ -91,6 +94,7 @@ int main(int argc,char **argv){
     if(!built_files.text_edit.confirm_discard)key=EH_KEY_ESC;
    }
    uint32_t now=eh_platform_ticks();
+   read_second(0); /* Keep elapsed time across timer wrap in any view. */
    int expired=eh_toast_tick(&ui.notice,now);
    expired|=eh_toast_tick(&built_files.status,now);
    if(!built_files.active&&!picker.active&&ui.page.page==EH_PAGE_HOME &&
@@ -131,6 +135,7 @@ int main(int argc,char **argv){
       eh_platform_stop();
       int result=nl_exec(reader,1,args);
       if(!eh_platform_start())return 1;
+   clock_source.anchor=eh_platform_ticks();
       if(result)eh_toast_set(&built_files.status,"PDF READER RETURNED AN ERROR");
      }
     }
@@ -187,8 +192,7 @@ int main(int argc,char **argv){
       int slot=ui.page.selected,ok=0;
       if(action==EH_CLOCK_OPEN||action==EH_CLOCK_SAVE){
        int raw=read_second(0);
-       if(raw<0)eh_toast_set(&ui.notice,"CLOCK SOURCE UNAVAILABLE");
-       else if(action==EH_CLOCK_OPEN){
+       if(action==EH_CLOCK_OPEN){
         ui.clock_draft=(raw+apps.clock_offset_seconds)%86400;
         ui.clock_edited=0;ui.hide_seconds=apps.hide_seconds;ui.clock_field=0;ui.subview=2;
        }else if(shortcuts_writable && eh_save_clock(&apps,!ui.clock_edited?apps.clock_offset_seconds:(86400+ui.clock_draft-raw)%86400,ui.hide_seconds,cfg,&diag)){

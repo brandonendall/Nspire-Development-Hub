@@ -1,4 +1,6 @@
-# EndraHome Run049 Desktop
+# EndraHome Run050 Desktop
+
+Set clock accepts a restarted RTC counter, including zero. If the counter is unavailable or stalls, the desktop timer advances local time while EndraHome runs. Set local time again after a reset if needed. The PDF companion is reused from Run049.
 
 Place Legimet's nPDF.tns beside EndraHome. In Files, select a PDF or PDF.TNS
 and press Enter. Esc closes nPDF and returns to the same folder. This launch
