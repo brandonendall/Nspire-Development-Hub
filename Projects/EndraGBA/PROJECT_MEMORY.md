@@ -80,3 +80,5 @@ Run013 verified delivery: source 0d37fed53325e3d5bbf750c2d94f743ac641699d, Actio
 
 ## EndraGBA Run014
 Brandon confirmed Run013 and the imported codes work on hardware. Run014 removes the hard-coded AU2E Chaos Ring entry. All ten slots now come from the matching file. Existing Run013 cheat files work as-is. Rollback Run013. Next physical check: load the same game and file in Run014.
+
+Run014 verified: source e3db1fb0f73a72d0f0578be9e2ee6aa9ea6ef6e0, Actions 45272377538 passed, artifact 14865552666, PR #49. EndraGBA_Run014_Cheats.tns is 481567 bytes, SHA-256 6086d3d06a950921889f9c0d41f5bd8bb0c2b7bff5e95ea100745ea48dee141f. Missing-file load/reload and imported codes passed host tests. Physical Run014 check pending.
