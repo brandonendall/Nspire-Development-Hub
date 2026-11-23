@@ -1,0 +1,34 @@
+name: EndraGBA Run014 - Cheat files
+on:
+  push:
+    branches: [feature/endragba-run014-file-cheats]
+    paths:
+      - 'Projects/EndraGBA/run013*'
+      - 'Projects/EndraGBA/run014*'
+      - 'Projects/EndraGBA/test_run013.c'
+      - '.github/workflows/endragba-run014-file-cheats.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NSPIRE_BUILD_IMAGE: bensuperpc/ndless@sha256:fb11585d8f6aa43e69692911b713b41958fcf83aa465729210a2be5906e04093
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test cheat handling and build
+        run: |
+          set -eu
+          cc -Wall -Wextra -Werror Projects/EndraGBA/test_run013.c -o "$RUNNER_TEMP/test-cheats"
+          (cd "$RUNNER_TEMP" && ./test-cheats)
+          cp -a vendor/upstream-gpsp upstream-gpsp
+          python3 Projects/EndraGBA/run014_file_cheats.py
+          bash toolchain/build.sh upstream-gpsp
+          mkdir dist
+          cp upstream-gpsp/gpsp_libretro.tns dist/EndraGBA_Run014_Cheats.tns
+          (cd dist && sha256sum *.tns > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EndraGBA_Run014_Cheats
+          path: dist/
