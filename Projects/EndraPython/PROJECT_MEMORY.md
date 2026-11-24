@@ -1,5 +1,11 @@
 # EndraPython project memory
 
+## Run007 multi-file projects, 2026-11-24
+
+Run007 adds imports between same-folder `.py.tns` and `.py` scripts in the IDE and shell. Ctrl+R starts with fresh module contents. Enter on an error opens the innermost source file and line. [Build 45498336683](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45498336683) passed at `9232d74197f4e5035e780e6afb5b4225c210c355`. [EndraPython_Run007.tns](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45498336683/artifacts/14969326828) is 182383 bytes, SHA-256 `c3a3f02511439649f135c53a903c943caddb50e5515d327bf20c2bec36ab1571`. The standalone upload digest matches the executable hash. The [build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45498336683/artifacts/14969766516) contains the hand-held executable, checksums, previews and licenses. Run006 is the hardware-confirmed rollback. Run007 physical acceptance is pending.
+
+Host tests exercised nested imports, native suffix priority, plain Python sources, CRLF, changed helper values on rerun, syntax and runtime traceback navigation, missing modules, and rejected malformed source. CI generated framebuffer previews and checked the ARM executable and Zehn header. Next, run the two-file walkthrough in WORK_HANDOFF.md on the CX II CAS.
+
 ## Stage 1 hardware result, 2026-11-24
 
 Brandon confirmed that Stage 1 passed on his TI-Nspire CX II CAS with EndraPython_Run006.tns. Run006 is the hardware-confirmed baseline for Stage 2. Multi-file imports are planned for Run007.
