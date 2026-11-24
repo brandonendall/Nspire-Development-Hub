@@ -8,9 +8,9 @@
 CatalogEntry catalog_entries[CATALOG_CAP];
 int catalog_count,catalog_index,catalog_group;
 char catalog_filter[40];
-const char *const catalog_groups[]={"Common","builtins","math","random","cmath","array","struct","collections","gc"};
+const char *const catalog_groups[]={"Common","builtins","math","random","cmath","array","struct","collections","gc","os","json","io"};
 static const struct {const char *name,*syntax;} common[]={
-    {"print","print(value, ...)"},{"input","input([prompt])"},{"len","len(obj)"},
+    {"print","print(value, ...)"},{"input","input([prompt])"},{"open","open(file[, mode])"},{"len","len(obj)"},
     {"range","range(start, stop[, step])"},{"int","int(value)"},{"float","float(value)"},
     {"str","str(value)"},{"list","list(iterable)"},{"dict","dict(...)"},{"sum","sum(iterable)"},
     {"min","min(iterable)"},{"max","max(iterable)"},{"abs","abs(number)"},

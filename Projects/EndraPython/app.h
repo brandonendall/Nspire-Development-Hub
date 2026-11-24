@@ -43,6 +43,7 @@ int resolve_module_file(const char *requested, char name[NAME_CAP]);
 int read_script_source(const char *name, const char **source);
 int load_script(const char *name);
 int save_script(void);
+int ensure_scripts_folder(void);
 
 void edit_reset_history(void);
 void edit_find(Editor *d,const char *query);

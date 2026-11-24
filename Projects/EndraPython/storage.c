@@ -140,7 +140,7 @@ int load_script(const char *name) {
 }
 /* An existing scripts folder is reusable. Only the .saving lock below
  * requires exclusive creation. Verify the root by the operation we need. */
-static int ensure_scripts_folder(void) {
+int ensure_scripts_folder(void) {
     DIR *dir=opendir(app.root);
     if(!dir){
         if(strcmp(app.root,app.home))return fail("Original folder is unavailable");

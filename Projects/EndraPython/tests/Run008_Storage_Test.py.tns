@@ -1,0 +1,14 @@
+import json
+import os
+
+name = "Run008_counter.json.tns"
+count = 0
+if name in os.listdir():
+  with open(name) as saved:
+    count = json.load(saved)["runs"]
+
+with open(name, "w") as saved:
+  json.dump({"runs": count + 1}, saved)
+
+with open(name) as saved:
+  print("Saved runs:", json.load(saved)["runs"])

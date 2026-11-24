@@ -75,7 +75,7 @@ static void catalog_checks(const char *root,void *stack){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));
     }
-    for(int i=1;i<=8;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
+    for(int i=1;i<=11;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
     app_key(RIGHT);app_key(RIGHT);type("input");
     assert(!strcmp(catalog_entries[catalog_index].name,"input"));app_key(ESC);
     type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);app_key(RIGHT);app_key(RIGHT);
@@ -233,6 +233,69 @@ static void project_import_checks(const char *documents, void *stack) {
     assert(!rmdir(project));
 }
 
+static void storage_io_checks(const char *documents, void *stack) {
+    char project[PATH_CAP], moved[PATH_CAP], home[PATH_CAP], path[PATH_CAP + NAME_CAP];
+    snprintf(project, sizeof project, "%s/original", documents);
+    snprintf(moved, sizeof moved, "%s/moved", documents);
+    snprintf(home, sizeof home, "%s/EndraPython", documents);
+    assert(mkdir(project, 0700) == 0);
+    app_init(home, stack);
+    assert(browse_folder(project));
+
+    FILE *test = fopen("tests/Run008_Storage_Test.py.tns", "rb");
+    assert(test);
+    char source[SOURCE_CAP + 1];
+    size_t bytes = fread(source, 1, sizeof source, test);
+    assert(bytes < sizeof source && !ferror(test) && !fclose(test));
+    source[bytes] = 0;
+    write_file(project, "storage.py.tns", source);
+    assert(load_script("storage.py.tns"));
+    app.page = EDITOR;
+    app_key(RUN);
+    if (app.error) for (int i=0; i<app.rows; i++) fprintf(stderr,"%s\n", app.output[(app.first+i)%OUT_LINES]);
+    assert(app.page == OUTPUT && !app.error && output_has("Saved runs: 1"));
+    preview("storage_result");
+    assert(rename(project, moved) == 0);
+    app_init(home, stack);
+    assert(browse_folder(moved) && load_script("storage.py.tns"));
+    app.page = EDITOR;
+    app_key(RUN);
+    assert(!app.error && output_has("Saved runs: 2"));
+
+    runtime_start(stack);
+    assert(runtime_exec("<io>", "import os, json, io\n"
+        "assert os.getcwd() == '/'\nos.mkdir('data')\nos.chdir('data')\n"
+        "assert os.getcwd() == '/data' and 'data' in os.listdir('..')\n"
+        "with open('bytes.tns', 'wb') as f:\n  f.write(bytes([0, 128, 255]))\n"
+        "with open('bytes.tns', 'ab') as f:\n  f.write(b'!')\n"
+        "with open('/data/bytes.tns', 'rb') as f:\n"
+        "  assert f.read(2) == bytes([0, 128])\n  assert f.tell() == 2\n"
+        "  f.seek(1)\n  assert f.read() == bytes([128, 255, 33])\n"
+        "with open('note.tns', 'w') as f:\n  f.write('abc\\n')\n  f.flush()\n"
+        "with open('note.tns', 'a') as f:\n  f.write('def')\n"
+        "with open('note.tns') as f:\n  assert f.readline() == 'abc\\n'\n  assert f.read() == 'def'\n"
+        "g = open('pending.tns', 'w')\ng.write('persist')\n"
+        "assert json.loads(json.dumps([1, True, None])) == [1, True, None]", 0));
+    assert(!runtime_exec("<bad>", "open('../..' + '/escape', 'w')", 0));
+    assert(!runtime_exec("<bad>", "open('bytes.tns', 'bad')", 0));
+    assert(!runtime_exec("<bad>", "open('missing.tns')", 0));
+    assert(!runtime_exec("<bad>", "f.read()", 0));
+    runtime_end();
+    runtime_start(stack);
+    assert(runtime_exec("<io>", "import os\nassert os.getcwd() == '/'\n"
+        "with open('data/pending.tns') as f:\n  assert f.read() == 'persist'\n", 0));
+    runtime_end();
+    puts("PASS: JSON across launches and project move, text and binary I/O, virtual directories, stream cleanup and file errors.");
+    const char *files[] = {"storage.py.tns", "Run008_counter.json.tns", "data/bytes.tns",
+        "data/note.tns", "data/pending.tns"};
+    for (size_t i=0; i<sizeof files/sizeof files[0]; i++) {
+        snprintf(path, sizeof path, "%s/%s", moved, files[i]);
+        assert(!unlink(path));
+    }
+    snprintf(path, sizeof path, "%s/data", moved);
+    assert(!rmdir(path) && !rmdir(moved));
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
@@ -262,8 +325,8 @@ int main(void){
     assert(!runtime_exec("<test>","a = [0] * 2000000",0));assert(output_has("MemoryError"));
     cancel=1;assert(!runtime_exec("<test>","while True:\n pass\n",0));cancel=0;assert(output_has("KeyboardInterrupt"));
     assert(runtime_exec("<test>","print(6*7)",0));assert(output_has("42"));
-    assert(!runtime_exec("<test>","import os",0));
-    assert(!runtime_exec("<test>","import json",0));
+    assert(runtime_exec("<test>","import os",0));
+    assert(runtime_exec("<test>","import json, io",0));
     assert(!runtime_exec("<test>","import time",0));
     app_key(ESC);assert(app.page==FILES);
     for(int i=0;i<24;i++){assert(load_script("Hello_World.py.tns"));app.page=EDITOR;app_key(RUN);assert(!app.error && output_has("45"));app_key(ESC);}
@@ -287,6 +350,7 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    storage_io_checks(root,&stack);
     project_import_checks(root,&stack);
     catalog_checks(scripts,&stack);
     ide_checks(scripts,&stack);
@@ -294,5 +358,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 16 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 18 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

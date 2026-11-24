@@ -1,6 +1,7 @@
 #include "runtime.h"
 #include "app.h"
 #include "py/builtin.h"
+#include "py/gc.h"
 #include <stdlib.h>
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -38,10 +39,14 @@ mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
 
 int runtime_error_line(void){return error_line;}
 void runtime_start(void *stack_top) {
+    project_io_start();
     mp_embed_init(heap, sizeof heap, stack_top);
     mp_stack_set_limit(16 * 1024);
 }
-void runtime_end(void) { mp_embed_deinit(); }
+void runtime_end(void) {
+    gc_sweep_all();
+    mp_embed_deinit();
+}
 
 void ep_vm_poll(void) {
     if ((++polls & 63u) == 0 && cancel_pressed())

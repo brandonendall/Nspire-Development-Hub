@@ -1,13 +1,17 @@
-# Run007 handheld check
+# Run008 handheld check
 
-Run006 passed Stage 1 on Brandon’s TI-Nspire CX II CAS and is the rollback build.
+Run007 passed Stage 2 on Brandon’s TI-Nspire CX II CAS, including the jump to the helper’s line 2. Keep Run007 for rollback.
+
+Transfer the application and separate test script.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run007.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run008.tns /upload
+push /storage/emulated/0/Download/Run008_Storage_Test.py.tns /upload
 ```
 
-1. In Files choose Menu > Browse Documents and open a project folder. Create `helper` there. Enter `value = 6` and save with Ctrl+S.
-2. Create `main` in the same folder. Enter `from helper import value` on line 1 and `print(value)` on line 2. Ctrl+R should print 6.
-3. Save `value = 7` in the helper. Run main again and check for 7.
-4. Add `1 // 0` on line 2 of the helper and save it. Run main. Check that the traceback names helper.py.tns and line 2. Press Enter to open that line. Remove the test error and save.
+1. Launch Run008. Open Run008_Storage_Test.py.tns from the upload folder and press Ctrl+R. A fresh project prints “Saved runs: 1” and creates Run008_counter.json.tns next to the script.
+2. Exit EndraPython completely, reopen it and run the same script. Check for “Saved runs: 2”.
+3. To test portability, move the script and its counter together into another folder. Run the script there. The count should advance to 3.
+
+The test writes only its named counter. Repeating it advances the stored count. The executable starts new scripts blank.

@@ -7,7 +7,7 @@ if [ ! -d "$src/.git" ]; then
 fi
 test "$(git -C "$src" rev-parse HEAD)" = "$pin"
 make -f embed.mk MICROPYTHON_TOP="$src"
-cp "$src/extmod/modrandom.c" micropython_embed/extmod/
+cp "$src/extmod/modrandom.c" "$src/extmod/modjson.c" micropython_embed/extmod/
 # Two 18-character columns fit our on-calculator console without wrapping.
 sed -i 's/#define NUM_COLUMNS (4)/#define NUM_COLUMNS (2)/' micropython_embed/py/builtinhelp.c
 mkdir -p micropython_embed/shared/readline
