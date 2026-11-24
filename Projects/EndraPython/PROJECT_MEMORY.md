@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Stage 1 hardware result, 2026-11-24
+
+Brandon confirmed that Stage 1 passed on his TI-Nspire CX II CAS with EndraPython_Run006.tns. Run006 is the hardware-confirmed baseline for Stage 2. Multi-file imports are planned for Run007.
+
 ## Run006 indentation, command catalog and interactive input, 2026-11-22
 
 Brandon requested two-space indentation and removal of samples in favor of a PythonUltra-style command catalog. Run005 was delivered but Brandon had not installed it. Run004 is the most recent owner-confirmed working rollback.
