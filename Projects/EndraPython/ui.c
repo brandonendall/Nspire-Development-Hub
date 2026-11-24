@@ -192,7 +192,11 @@ void app_key(int k) {
         if(k==ESC)app.page=EDITOR;
         else if(k==RUN)run();
         else if(k==ENTER && app.error_line>0){
-            app.page=EDITOR;edit_goto_line(&app.doc,app.error_line);
+            const char *file = runtime_error_file();
+            if (!strcmp(file, app.doc.name) || load_script(file)) {
+                app.page=EDITOR;
+                edit_goto_line(&app.doc,app.error_line);
+            }
         }
         else if(k==UP && app.offset+12<app.rows)app.offset++;
         else if(k==DOWN && app.offset)app.offset--;

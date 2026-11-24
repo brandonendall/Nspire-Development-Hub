@@ -86,7 +86,31 @@ static int read_bytes(const char *path,char *dst) {
     dst[n]=0;
     return (int)n;
 }
-int load_script(const char *name) {
+/* MicroPython probes a bare module and then its .py path. Resolve only
+ * sibling source files, using the native transfer suffix first. */
+int resolve_module_file(const char *requested, char name[NAME_CAP]) {
+    size_t len = strlen(requested);
+    if (len <= 3 || strcmp(requested + len - 3, ".py") || !valid_script(requested))
+        return 0;
+    for (size_t i = 0; i < len - 3; i++)
+        if (requested[i] == '.') return 0;
+    const char *suffixes[] = {".tns", ""};
+    for (size_t i = 0; i < 2; i++) {
+        char path[PATH_CAP];
+        struct stat st;
+        if (snprintf(name, NAME_CAP, "%s%s", requested, suffixes[i]) >= NAME_CAP ||
+            !join(path, name)) continue;
+#ifdef __arm__
+        if (stat(path, &st) == 0 && S_ISREG(st.st_mode)) return 1;
+#else
+        if (lstat(path, &st) == 0 && S_ISREG(st.st_mode)) return 1;
+#endif
+    }
+    return 0;
+}
+
+/* The returned bytes remain valid until the next script read. */
+int read_script_source(const char *name, const char **source) {
     char path[PATH_CAP];
     if(!valid_script(name)||!join(path,name))return fail("Invalid script name");
     int n=read_bytes(path,raw);
@@ -95,14 +119,22 @@ int load_script(const char *name) {
         int step,c=utf_decode(raw+i,&step);i+=step;
         if((c<32 && c!='\r' && c!='\n' && c!='\t')||c==127)return fail("Invalid UTF-8 or binary source");
     }
+    *source = raw;
+    return 1;
+}
+
+int load_script(const char *name) {
+    const char *source;
+    if (!read_script_source(name, &source)) return 0;
+    int n = (int)strlen(source);
     Editor *d=&app.doc;
     edit_reset_history();
-    memset(d,0,sizeof *d);strcpy(d->name,name);strcpy(d->original,raw);
-    d->existing=1;d->crlf=strstr(raw,"\r\n")!=NULL;
+    memset(d,0,sizeof *d);strcpy(d->name,name);strcpy(d->original,source);
+    d->existing=1;d->crlf=strstr(source,"\r\n")!=NULL;
     int j=0;
     for(int i=0;i<n;i++){
-        if(raw[i]=='\r'){if(raw[i+1]=='\n')i++; d->text[j++]='\n';}
-        else d->text[j++]=raw[i];
+        if(source[i]=='\r'){if(source[i+1]=='\n')i++; d->text[j++]='\n';}
+        else d->text[j++]=source[i];
     }
     return 1;
 }

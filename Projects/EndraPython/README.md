@@ -1,6 +1,6 @@
-# EndraPython Run006
+# EndraPython Run007
 
-Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run004 working and its physical punctuation key on his calculator. Run006 needs a handheld check of the catalog, two-space Tab and interactive input.
+Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Run006 passed Stage 1 on Brandon’s calculator. Run007 adds imports between scripts in the selected folder.
 
 The editor keeps the Run002 save fix. It opens the existing scripts folder before saving. On first use it tries to create the folder, then checks that it can open it. Open your existing Hello_World.py.tns from Files to resume editing.
 
@@ -19,6 +19,12 @@ The physical **?▸** key opens Marks and symbols directly in the editor, shell,
 For TI's own keyboard interface, press **Catalog (book)** to open a native TI text field. Use **?▸** inside it for TI punctuation or **Ctrl+Catalog** for the broader TI symbol palette. Confirm the field to insert its text. Esc cancels. Technical notes: the Ndless SDK exports a TI Request text dialog and EndraPython reads its UTF-16 result, converts it to UTF-8, and inserts the whole result as one undoable edit. This two-stage route requires hardware verification. EndraPython stores actual characters, including mathematical symbols. Executable expressions must follow MicroPython syntax. Uncovered font characters use a replacement glyph while retaining the original text.
 
 In Files, **Menu > Browse Documents** opens Documents. Enter opens a folder or a Python script. Esc goes up one folder and returns to the usual EndraPython view from Documents. Save and Run use the opened file's own directory. New script also uses the displayed directory. Tab cycles 96-entry pages in large folders. Browsing reads directory listings only.
+
+## Multi-file projects
+
+Create `main.py.tns` and `helper.py.tns` in the same folder. In the main script use `import helper` or `from helper import f`. Imports also work between helpers. The current folder supplies shell imports. Ctrl+R starts a fresh interpreter and reads saved helpers again. A shell session caches imports until you exit it. When both filenames exist, `helper.py.tns` takes precedence over `helper.py`. Each source file uses the editor’s 8 KiB limit and UTF-8 rules. Run007 handles sibling files. Package directories are outside this milestone.
+
+On a script error, Enter opens the innermost source file and line shown in the traceback. Esc from Output returns to the script you ran.
 
 ## First use
 
@@ -54,18 +60,18 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run006 scope |
+| Area | Run007 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Nine registered modules: array, builtins, __main__, cmath, collections, gc, math, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
-| Scripts and files | Editor handles file access. No Python open, os, or user modules exposed |
+| Scripts and files | Sibling source imports from the selected folder. General file I/O and os remain future work |
 | Console | print, line-numbered exceptions, single-line REPL, previous-command recall |
 | Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
 | Other modules | JSON, time, display, keys, pygame, pip and desktop packages unavailable |
 
 ## PythonUltra parity and the IDE roadmap
 
-The reference is Brandon's Casio PythonUltra at commit `865e4b5e94280c12a405b3752ec2bd2231236e77`. Run003 adds four upstream MicroPython modules and the editor tools above. Multi-file projects and imports between saved scripts are the next IDE milestone. Search and replace, go to line, and a function outline would make longer scripts easier to navigate.
+The reference is Brandon's Casio PythonUltra at commit `865e4b5e94280c12a405b3752ec2bd2231236e77`. Run003 adds four upstream MicroPython modules and the editor tools above. Run007 adds multi-file projects. General file I/O is the next milestone. Search and replace, go to line, and a function outline would make longer scripts easier to navigate.
 
 The reference manifest includes pyeditor, pyfiles, pyterm, pyperm, zipfile, pythonultra, pygame, py3d and numpy. The TI port needs its own file, display, keyboard and timing interfaces before those packages can work here. Check dependencies and exercise each port on the handheld. Numerical extensions also need a memory and speed check on the target.
 

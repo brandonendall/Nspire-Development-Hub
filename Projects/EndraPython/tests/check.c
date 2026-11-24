@@ -179,6 +179,60 @@ static void ide_checks(const char *root,void *stack){
     for(int i=0;i<2;i++){snprintf(path,sizeof path,"%s/%s",root,samples[i]);assert(!unlink(path));}
 }
 
+static void project_import_checks(const char *documents, void *stack) {
+    char project[PATH_CAP];
+    snprintf(project, sizeof project, "%s/project", documents);
+    assert(mkdir(project, 0700) == 0);
+    write_file(project, "main.py.tns", "from helper import twice\nprint(twice(6))\n");
+    write_file(project, "helper.py.tns", "import factor\ndef twice(x):\n  return x * factor.value\n");
+    write_file(project, "helper.py", "def twice(x):\n  return -1\n");
+    write_file(project, "factor.py", "value = 2\r\n");
+    app_init(documents, stack);
+    assert(browse_folder(project));
+    assert(load_script("main.py.tns"));
+    app.page = EDITOR;
+    app_key(RUN);
+    assert(!app.error && output_has("12"));
+    write_file(project, "factor.py", "value = 3\n");
+    app_key(RUN);
+    assert(!app.error && output_has("18"));
+    write_file(project, "factor.py", "# nested failure\nvalue = 1 // 0\n");
+    app_key(RUN);
+    assert(app.error && app.error_line == 2 && output_has("factor.py"));
+    preview("import_error");
+    app_key(ENTER);
+    assert(app.page == EDITOR && !strcmp(app.doc.name, "factor.py"));
+    assert(app.doc.cursor == (int)strlen("# nested failure\n"));
+    write_file(project, "helper.py.tns", "# syntax failure\nif :\n");
+    assert(load_script("main.py.tns"));
+    app_key(RUN);
+    assert(app.error && app.error_line == 2 && output_has("SyntaxError"));
+    app_key(ENTER);
+    assert(app.page == EDITOR && !strcmp(app.doc.name, "helper.py.tns"));
+    char path[PATH_CAP + NAME_CAP];
+    snprintf(path, sizeof path, "%s/helper.py.tns", project);
+    assert(!unlink(path));
+    assert(load_script("main.py.tns"));
+    app_key(RUN);
+    assert(!app.error && output_has("-1"));
+    snprintf(path, sizeof path, "%s/helper.py", project);
+    assert(!unlink(path));
+    app_key(RUN);
+    assert(app.error && output_has("ImportError"));
+    app_key(ENTER);
+    assert(app.page == EDITOR && !strcmp(app.doc.name, "main.py.tns"));
+    write_file(project, "helper.py", "\xc0\xaf");
+    app_key(RUN);
+    assert(app.error && output_has("ImportError"));
+    char resolved[NAME_CAP];
+    assert(!resolve_module_file("../other.py", resolved));
+    for (const char **name = (const char *[]){"main.py.tns", "factor.py", "helper.py", NULL}; *name; name++) {
+        snprintf(path, sizeof path, "%s/%s", project, *name);
+        assert(!unlink(path));
+    }
+    assert(!rmdir(project));
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
@@ -233,6 +287,7 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    project_import_checks(root,&stack);
     catalog_checks(scripts,&stack);
     ide_checks(scripts,&stack);
     browse_checks(scripts,&stack);

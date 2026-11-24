@@ -13,6 +13,29 @@
 static uintptr_t heap[128 * 1024 / sizeof(uintptr_t)];
 static unsigned polls;
 static int error_line;
+static char error_file[NAME_CAP];
+
+const char *runtime_error_file(void) { return error_file; }
+
+mp_import_stat_t mp_import_stat(const char *path) {
+    char name[NAME_CAP];
+    return resolve_module_file(path, name) ? MP_IMPORT_STAT_FILE : MP_IMPORT_STAT_NO_EXIST;
+}
+
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
+    char name[NAME_CAP];
+    const char *source;
+    if (!resolve_module_file(qstr_str(filename), name))
+        mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("cannot find %q"), filename);
+    qstr label = qstr_from_str(name);
+    if (!read_script_source(name, &source))
+        mp_raise_msg_varg(&mp_type_ImportError, MP_ERROR_TEXT("%q: %s"), label, app.status);
+    size_t len = strlen(source);
+    char *copy = m_new(char, len + 1);
+    memcpy(copy, source, len + 1);
+    return mp_lexer_new_from_str_len(label, copy, len, len + 1);
+}
+
 int runtime_error_line(void){return error_line;}
 void runtime_start(void *stack_top) {
     mp_embed_init(heap, sizeof heap, stack_top);
@@ -29,6 +52,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *data, size_t size) {
 }
 int runtime_exec(const char *name, const char *src, int interactive) {
     error_line=0;
+    error_file[0]=0;
     nlr_buf_t handler;
     if (nlr_push(&handler) == 0) {
         qstr label = qstr_from_str(name);
@@ -43,8 +67,11 @@ int runtime_exec(const char *name, const char *src, int interactive) {
         size_t n,*frames;
         mp_obj_exception_get_traceback(exc,&n,&frames);
         for(size_t i=0;i+2<n;i+=3){
-            if(!strcmp(qstr_str(frames[i]),name) && frames[i+1]>0){
-                error_line=(int)frames[i+1];break;
+            const char *file = qstr_str(frames[i]);
+            if (valid_script(file) && frames[i+1] > 0) {
+                strcpy(error_file, file);
+                error_line = (int)frames[i+1];
+                break;
             }
         }
     }

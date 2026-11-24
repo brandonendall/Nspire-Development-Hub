@@ -8,6 +8,7 @@ void console_write(const char *data, size_t size);
 int cancel_pressed(void);
 
 int runtime_error_line(void);
+const char *runtime_error_file(void);
 
 void platform_wait_input(void);
 int runtime_catalog(const char *module);
