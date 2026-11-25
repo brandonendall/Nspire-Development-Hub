@@ -1,4 +1,4 @@
-# EndraPython Run022
+# EndraPython Run023
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -95,7 +95,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run022 scope |
+| Area | Run023 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
@@ -117,6 +117,8 @@ Use `import display as d` for the 320 × 240 RGB565 canvas. Draw with `set_pixel
 The `keys` module exposes held Up, Down, Left, Right, Enter, Menu and Esc states via `keydown`. `time.ticks_ms()` and `time.ticks_diff(a,b)` measure elapsed time with wrap handling. `time.sleep_ms(ms)` and `time.sleep(seconds)` pause while keeping Esc cancellation available. Script completion returns to the regular output view.
 
 Run012 bounds Python sleep using the existing free-running timer. A stalled counter raises RuntimeError. The frame probe exercises one show and one delay before the separate animation test.
+Run023 expands Pygame with circle, ellipse, polygon, and connected-line drawing for display and off-screen surfaces. `pygame.transform` supports scale, scale_by, flip, rotate, and rotozoom. Like PythonUltra, smoothscale currently uses nearest-neighbor sampling. Transforms preserve RGB565 color keys. See `tests/Run023_Pygame_Draw.py.tns` for the full-screen handheld check.
+
 Run022 adds Gint key waits and events. `getkey()` waits for a press or arrow repeat. `getkey_opt(options, timeout_ms)` returns an event with `type == KEYEV_NONE` on timeout. `pollevent()` samples immediately and returns the oldest queued event. Poll regularly in interactive code to capture short taps. Events have `type`, `key`, `time` in milliseconds, `mod`, `shift`, `ctrl`, and `alpha` (false on TI). Use Gint constants for navigation, Enter, Menu, digits, modifiers, and supported punctuation. Use lowercase ASCII codes, such as `ord("a")`, for letters. Read `keypressed()` and `keyreleased()` after consuming events, and clear their flags with `cleareventflips()`. Esc remains the script interrupt. Gint options support Shift as a modifier and arrow/all-key repeat. Casio OS menu and power actions are outside the TI key API.
 
 Run021 adds native RGB565 Gint drawing with `dline`, `dhline`, `dvline`, `dtriangle`, `dpoly`, `dcircle` and `dellipse`. The functions draw into the existing script canvas. Call `dupdate()` to present the full 320 × 240 script canvas. The test script controls any title or border shown in graphics mode. Polygons take a flat list or tuple of 3 to 128 coordinate pairs and use even-odd fill. Circle, ellipse and polygon fill or outline accept `C_NONE` for transparency. The rasterizer clips to the visible canvas and uses the Casio calling conventions, with EndraPython's own pixel rasterization. See `tests/Run021_Gint_Drawing.py.tns` for a handheld smoke test.

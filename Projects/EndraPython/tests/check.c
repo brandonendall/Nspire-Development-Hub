@@ -624,6 +624,46 @@ static void graphics_checks(const char *root, void *stack) {
     puts("PASS: canvas, held arrows and release, Esc and rerun, compatibility adapters and wrap-safe timing.");
 }
 
+static void pygame_draw_checks(const char *root, void *stack) {
+    const char *name="Run023_Pygame_Draw.py.tns";
+    char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
+    FILE *fixture=fopen("tests/Run023_Pygame_Draw.py.tns","rb");
+    assert(fixture);
+    size_t len=fread(source,1,sizeof source,fixture);
+    assert(len<sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len]=0;
+    write_file(root,name,source);
+    app_init(root,stack);
+    assert(load_script(name));
+    app.page=EDITOR;
+    choose_command(OPEN_CATALOG);type("pygame");app_key(ENTER);type("transform.rotate");
+    assert(catalog_signature() && !strcmp(catalog_signature(),"pygame.transform.rotate(surface,angle)"));
+    app_key(ESC);app_key(ESC);
+    frames=0;
+    app_key(RUN);
+    if(app.error)for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[i]);
+    assert(app.page==OUTPUT && !app.error && frames==1 && output_has("Pygame drawing checks passed"));
+    assert(script_pixels[0]==script_pixels[EP_WIDTH*EP_HEIGHT-1]);
+    save_script_pixels("build/pygame_draw.ppm");
+    runtime_start(stack);
+    assert(runtime_exec("<pygame-draw>",
+        "import pygame as p\n"
+        "s=p.Surface((8,8)); s.fill('black'); s.set_clip((0,0,4,4))\n"
+        "r=p.draw.circle(s,'red',(3,3),2,draw_top_left=True)\n"
+        "assert r==p.Rect(1,1,3,3) and s.get_at((3,1))==p.Color('red')\n"
+        "assert s.get_at((4,3))==p.Color('black')\n"
+        "assert not p.draw.ellipse(s,'red',(100,100,4,4))\n"
+        "out=p.Surface((2,2)); assert p.transform.smoothscale(s,(2,2),out) is out\n"
+        "assert p.transform.scale(s,s.get_size(),s) is s\n"
+        "try: p.transform.scale(s,(3,3),out)\n"
+        "except ValueError: pass\n"
+        "else: raise AssertionError('wrong destination accepted')\n",0));
+    runtime_end();
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+    puts("PASS: Pygame primitives, clipped drawing, RGB565 transforms and color keys.");
+}
+
 static void pygame_checks(const char *root, void *stack) {
     char source[SOURCE_CAP + 1], path[PATH_CAP + NAME_CAP];
     const char *name = "Run014_Pygame_Test.py.tns";
@@ -887,6 +927,7 @@ int main(void){
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
     file_manager_checks(scripts,&stack);
     pygame_checks(scripts,&stack);
+    pygame_draw_checks(scripts,&stack);
     assets_checks(scripts,&stack);
     indentation_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
@@ -902,5 +943,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 37 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 38 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

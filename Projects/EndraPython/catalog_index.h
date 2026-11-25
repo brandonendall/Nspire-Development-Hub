@@ -352,7 +352,11 @@ static const CatalogEntry catalog_members[] = {
     {"display.set_mode", 1},
     {"display.update", 1},
     {"draw", 0},
+    {"draw.circle", 1},
+    {"draw.ellipse", 1},
     {"draw.line", 1},
+    {"draw.lines", 1},
+    {"draw.polygon", 1},
     {"draw.rect", 1},
     {"event", 0},
     {"Event", 1},
@@ -409,6 +413,13 @@ static const CatalogEntry catalog_members[] = {
     {"time.delay", 1},
     {"time.get_ticks", 1},
     {"time.wait", 1},
+    {"transform", 0},
+    {"transform.flip", 1},
+    {"transform.rotate", 1},
+    {"transform.rotozoom", 1},
+    {"transform.scale", 1},
+    {"transform.scale_by", 1},
+    {"transform.smoothscale", 1},
     /* random */
     {"choice", 1},
     {"getrandbits", 1},
@@ -458,9 +469,9 @@ static const struct { int offset, count; } catalog_ranges[] = {
     {228, 27}, /* math */
     {255, 41}, /* numpy */
     {296, 4}, /* os */
-    {300, 65}, /* pygame */
-    {365, 7}, /* random */
-    {372, 5}, /* struct */
-    {377, 9}, /* sys */
-    {386, 4}, /* time */
+    {300, 76}, /* pygame */
+    {376, 7}, /* random */
+    {383, 5}, /* struct */
+    {388, 9}, /* sys */
+    {397, 4}, /* time */
 };

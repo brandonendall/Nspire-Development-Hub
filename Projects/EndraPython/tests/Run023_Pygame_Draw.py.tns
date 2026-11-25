@@ -1,0 +1,51 @@
+import pygame as pg
+import pygame.transform as tf
+import time
+
+screen = pg.display.set_mode()
+screen.fill((8, 16, 24))
+blue = pg.Color("blue")
+red = pg.Color("red")
+yellow = pg.Color("yellow")
+green = pg.Color("green")
+bg = screen.get_at((0, 0))
+
+pg.draw.circle(screen, red, (54, 62), 32, 3)
+assert screen.get_at((54, 62)) == bg
+assert screen.get_at((54, 30)) == red
+pg.draw.ellipse(screen, blue, (111, 37, 86, 51))
+assert screen.get_at((154, 62)) == blue
+pg.draw.polygon(screen, green, [(217, 31), (302, 31), (302, 53),
+                               (246, 53), (246, 94), (217, 94)])
+assert screen.get_at((227, 70)) == green
+assert screen.get_at((273, 70)) == bg
+pg.draw.lines(screen, yellow, True, [(16, 101), (44, 133), (92, 107)], 2)
+pg.draw.ellipse(screen, yellow, (297, 164, 50, 47), 3)
+assert screen.get_at((319, 165)) == yellow
+
+sprite = pg.Surface((14, 10))
+sprite.fill("magenta")
+sprite.set_colorkey("magenta")
+sprite.fill("white", (2, 1, 3, 8))
+sprite.fill("white", (5, 6, 6, 3))
+sprite.set_at((11, 2), "green")
+scaled = tf.scale_by(sprite, 4)
+flipped = tf.flip(scaled, True, False)
+rotated = tf.rotate(scaled, 90)
+zoomed = tf.rotozoom(sprite, 30, 3)
+
+assert scaled.get_size() == (56, 40)
+assert flipped.get_at((55 - 44, 8)) == green
+assert rotated.get_size() == (40, 56)
+assert rotated.get_at((8, 55 - 44)) == green
+assert zoomed.get_colorkey() == pg.Color("magenta")
+screen.blit(scaled, (18, 163))
+screen.blit(flipped, (90, 163))
+screen.blit(rotated, (164, 155))
+screen.blit(zoomed, (223, 152))
+assert screen.get_at((18, 163)) == bg
+assert screen.get_at((26, 167)) == pg.Color("white")
+
+pg.display.flip()
+time.sleep_ms(4500)
+print("Pygame drawing checks passed")

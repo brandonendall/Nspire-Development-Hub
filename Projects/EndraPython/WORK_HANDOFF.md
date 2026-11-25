@@ -1,11 +1,11 @@
-# Run022 handheld check
+# Run023 handheld check
 
-Run021 passed the Gint drawing check on the CX II CAS and is the rollback. Run022 adds sampled Gint input while keeping Esc as the script interrupt.
+Run022 passed the Gint key test on the CX II CAS and remains the rollback. Run023 adds Pygame drawing and transforms.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run022.tns /upload
-push /storage/emulated/0/Download/Run022_Gint_Keys.py.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run023.tns /upload
+push /storage/emulated/0/Download/Run023_Pygame_Draw.py.tns /upload
 ```
 
-Open the test in EndraPython. The prompt uses the full screen with an edge-to-edge background. Tap Right and release it, then tap A when prompted. Leave the keypad untouched for the short timeout check. The console should display `Gint key checks passed`. On a second run, press Esc at the first wait to check that the script returns with a KeyboardInterrupt.
+Open the test in EndraPython. It should show full-screen shapes and four versions of a sprite for about five seconds, then print `Pygame drawing checks passed`. The red circle is hollow, the far-right outline clips at the screen edge, and all four sprites have transparent backgrounds.

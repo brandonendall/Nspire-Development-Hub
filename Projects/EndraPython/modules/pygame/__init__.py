@@ -2,7 +2,7 @@
 import display as _screen
 import keys as _keys
 from ._geometry import Color, Rect, _color565, _color_from_565
-from . import sprite, time, image, font
+from . import sprite, time, image, font, transform
 
 __version__ = "0.1.2-endrapython"
 
@@ -207,6 +207,117 @@ class _Draw:
                 y0 += sy
         return result.clip(surface.get_clip())
 
+
+    def lines(self, surface, color, closed, points, width=1):
+        points = [tuple(map(int, point)) for point in points]
+        if len(points) < 2:
+            raise ValueError("lines require at least two points")
+        result = Rect(points[0][0], points[0][1], 0, 0)
+        for index in range(1, len(points)):
+            part = self.line(surface, color, points[index - 1], points[index], width)
+            if part:
+                result = result.union(part) if result else part
+        if closed:
+            part = self.line(surface, color, points[-1], points[0], width)
+            if part:
+                result = result.union(part) if result else part
+        return result
+
+    def ellipse(self, surface, color, rect, width=0):
+        rect = Rect(rect)
+        return self._ellipse(surface, _color565(color), rect, int(width))
+
+    def circle(self, surface, color, center, radius, width=0, draw_top_right=None,
+               draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None):
+        cx, cy = map(int, center)
+        radius = int(radius)
+        if radius < 0:
+            raise ValueError("radius must be nonnegative")
+        rect = Rect(cx - radius, cy - radius, 2 * radius + 1, 2 * radius + 1)
+        corners = (draw_top_left, draw_top_right, draw_bottom_left, draw_bottom_right)
+        if all(value is None for value in corners):
+            corners = None
+        return self._ellipse(surface, _color565(color), rect, int(width), corners)
+
+    def _ellipse(self, surface, color, rect, width, corners=None):
+        area = rect.clip(surface.get_clip())
+        if not area or width < 0:
+            return Rect(rect.x, rect.y, 0, 0)
+        inner = rect.inflate(-2 * width, -2 * width) if width else None
+        if inner is not None and (inner.w <= 0 or inner.h <= 0):
+            inner = None
+        result = Rect(rect.x, rect.y, 0, 0)
+        for y in range(area.top, area.bottom):
+            left, right = _ellipse_span(rect, y)
+            if inner is not None and inner.top <= y < inner.bottom:
+                inner_left, inner_right = _ellipse_span(inner, y)
+                spans = ((left, inner_left), (inner_right, right))
+            else:
+                spans = ((left, right),)
+            if corners is None:
+                windows = ((area.left, area.right),)
+            else:
+                cx, cy = rect.center
+                upper = y <= cy
+                lower = y >= cy
+                windows = []
+                if (upper and corners[0]) or (lower and corners[2]):
+                    windows.append((area.left, min(cx + 1, area.right)))
+                if (upper and corners[1]) or (lower and corners[3]):
+                    windows.append((max(cx, area.left), area.right))
+            for low, high in spans:
+                for clip_left, clip_right in windows:
+                    start, end = max(low, clip_left), min(high, clip_right)
+                    if start < end:
+                        part = surface.fill(color, (start, y, end - start, 1))
+                        result = result.union(part) if result else part
+        return result
+
+    def polygon(self, surface, color, points, width=0):
+        points = [tuple(map(int, point)) for point in points]
+        if not 3 <= len(points) <= 128:
+            raise ValueError("polygon requires 3 to 128 points")
+        if not all(-4096 <= coordinate <= 4096 for point in points for coordinate in point):
+            raise ValueError("polygon coordinates out of range")
+        width = int(width)
+        if width < 0:
+            return Rect(points[0][0], points[0][1], 0, 0)
+        if width:
+            return self.lines(surface, color, True, points, width)
+        color = _color565(color)
+        ys = [point[1] for point in points]
+        clip = surface.get_clip()
+        result = self.lines(surface, color, True, points)
+        for y in range(max(clip.top, min(ys)), min(clip.bottom, max(ys))):
+            intersections = []
+            x1, y1 = points[-1]
+            for x2, y2 in points:
+                if y1 <= y < y2 or y2 <= y < y1:
+                    intersections.append(x1 + (y - y1) * (x2 - x1) // (y2 - y1))
+                x1, y1 = x2, y2
+            intersections.sort()
+            for i in range(0, len(intersections) - 1, 2):
+                left, right = intersections[i], intersections[i + 1]
+                part = surface.fill(color, (left, y, right - left + 1, 1))
+                if part:
+                    result = result.union(part) if result else part
+        return result
+
+
+def _ellipse_span(rect, y):
+    w2, h2 = (rect.w - 1) ** 2, (rect.h - 1) ** 2
+    if not h2:
+        return rect.left, rect.right
+    cx, cy = rect.left + rect.right - 1, rect.top + rect.bottom - 1
+    limit = w2 * (h2 - (2 * y - cy) ** 2)
+    lo, hi = rect.left, cx // 2
+    while lo < hi:
+        x = (lo + hi) // 2
+        if (2 * x - cx) ** 2 * h2 <= limit:
+            hi = x
+        else:
+            lo = x + 1
+    return lo, cx - lo + 1
 
 draw = _Draw()
 
