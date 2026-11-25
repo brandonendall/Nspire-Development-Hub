@@ -1,5 +1,11 @@
 # EndraPython project memory
 
+## Run019 plain menus, 2026-11-25
+
+Brandon showed the Run017 Files menu filtering on `print` and requested removal of the type-to-filter palette from regular menus. Run019 replaces the palette with arrow-driven options in Files, Editor, Shell and Output. Open Settings with the arrows and Enter. The separate Command Catalog retains prefix search and remains accessible through Menu. The physical Catalog shortcut remains disabled. Brandon reported transferring Run018 but had not yet reported a handheld test result. Run016 remains the last confirmed rollback.
+
+Source `4c4b1e45b7db89bd50f9b3845c428a89a9b57613` on `feature/endrapython-run001`. Local host checks, ARM build and 35 framebuffer renders passed. Regression checks cover the Files menu ignoring `print`, arrow navigation, Settings changes, and Catalog search. `EndraPython_Run019.tns` is 216318 bytes, SHA-256 `f104aed3e73d95db936067b40c03ce58cefb1b5cc3fc412e3f6357a8a999411a`. [CI 45705143055](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45705143055). CI passed and the standalone artifact matches the local SHA-256. [Standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45705143055/artifacts/15063623981) · [Build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45705143055/artifacts/15063514096). Run019 handheld test pending.
+
 ## Run018 Catalog reboot mitigation, 2026-11-25
 
 Run018 disables the physical Catalog shortcut, including its Ctrl combination, inside EndraPython. Open **Menu > Command catalog** in the editor or shell. A native read-only index retains the bundled modules, members and signature hints without querying or starting MicroPython while browsing. Project scripts are unaffected. The exact cause of the Run017 reboot is unconfirmed. Run016 is the owner-confirmed rollback.
