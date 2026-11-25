@@ -11,3 +11,6 @@ void device_present(const uint16_t *pixels);
 int device_key_held(int key);
 uint32_t device_ticks(void);
 int device_delay(unsigned ms);
+void device_measure_text(const char *text, int font, int *width, int *height);
+void device_rasterize_text(uint8_t *pixels, int width, int height, const char *text,
+                           int font, uint16_t color, int antialias, int transparent);

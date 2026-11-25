@@ -136,6 +136,44 @@ static mp_obj_t blit565(size_t n, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(blit565_obj, 9, 9, blit565);
 
+static int text_face(mp_obj_t value){
+    mp_int_t face=mp_obj_get_int(value);
+    if(face<0 || face>2)mp_raise_ValueError(MP_ERROR_TEXT("invalid font face"));
+    return (int)face;
+}
+
+static const char *font_text(mp_obj_t value){
+    size_t length;
+    const char *text=mp_obj_str_get_data(value,&length);
+    if(length>256 || memchr(text,0,length) || memchr(text,'\n',length) || memchr(text,'\r',length))
+        mp_raise_ValueError(MP_ERROR_TEXT("font text must be a short single line"));
+    return text;
+}
+
+static mp_obj_t text_size(mp_obj_t value,mp_obj_t face){
+    int w,h;
+    device_measure_text(font_text(value),text_face(face),&w,&h);
+    mp_obj_t size[]={MP_OBJ_NEW_SMALL_INT(w),MP_OBJ_NEW_SMALL_INT(h)};
+    return mp_obj_new_tuple(2,size);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(text_size_obj,text_size);
+
+static mp_obj_t rasterize_text(size_t n,const mp_obj_t *args){
+    (void)n;
+    mp_buffer_info_t buffer;
+    mp_get_buffer_raise(args[0],&buffer,MP_BUFFER_WRITE);
+    int w=coordinate(args[1]),h=coordinate(args[2]);
+    const char *text=font_text(args[3]);
+    int face=text_face(args[4]);
+    mp_int_t color=mp_obj_get_int(args[5]);
+    if(w<1 || h<1 || (size_t)w*h>buffer.len/2 || color<0 || color>65535)
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid text surface"));
+    device_rasterize_text(buffer.buf,w,h,text,face,(uint16_t)color,
+        mp_obj_is_true(args[6]),mp_obj_is_true(args[7]));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rasterize_text_obj,8,8,rasterize_text);
+
 static mp_obj_t show_screen(void) {
     init_canvas();
     device_present(canvas);
@@ -195,7 +233,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sleep_obj, sleep_seconds);
 #define FUNC(q, f) {MP_ROM_QSTR(MP_QSTR_##q), MP_ROM_PTR(&f)}
 #define INTEGER(q, n) {MP_ROM_QSTR(MP_QSTR_##q), MP_ROM_INT(n)}
 static const mp_rom_map_elem_t display_table[] = {
-    NAME(display), FUNC(_blit565, blit565_obj), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),
+    NAME(display), FUNC(_blit565, blit565_obj),
+    FUNC(_text_size,text_size_obj), FUNC(_rasterize_text,rasterize_text_obj), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),
     FUNC(fill_rect, fill_rect_obj), FUNC(clear_screen, clear_screen_obj),
     FUNC(draw_string, draw_string_obj), FUNC(show_screen, show_screen_obj),
     INTEGER(WIDTH, EP_WIDTH), INTEGER(HEIGHT, EP_HEIGHT),

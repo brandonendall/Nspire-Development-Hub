@@ -534,6 +534,59 @@ static void pygame_checks(const char *root, void *stack) {
     puts("PASS: Pygame surfaces, clipping, color-key blit, overlap, sprites, events and clock.");
 }
 
+static void assets_checks(const char *root, void *stack) {
+    char path[PATH_CAP + NAME_CAP], source[SOURCE_CAP + 1];
+    unsigned char bytes[256];
+    FILE *f = fopen("build/Run015_Badge.bmp.tns", "rb");
+    assert(f);
+    snprintf(path,sizeof path,"%s/Run015_Badge.bmp.tns",root);
+    FILE *dest=fopen(path,"wb");
+    assert(dest);
+    size_t n;
+    while((n=fread(bytes,1,sizeof bytes,f))>0)assert(fwrite(bytes,1,n,dest)==n);
+    assert(!ferror(f) && !fclose(f) && !fclose(dest));
+    f=fopen("tests/Run015_Assets_Test.py.tns","rb");
+    assert(f);
+    n=fread(source,1,sizeof source,f);
+    assert(n<sizeof source && !ferror(f) && !fclose(f));
+    source[n]=0;
+    app_init(root,stack);
+    runtime_start(stack);
+    frames=0;
+    if(!runtime_exec("<assets>",source,0)){
+        for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[(app.first+i)%OUT_LINES]);
+        assert(0);
+    }
+    assert(frames==1 && output_has("Bitmap fonts rendered"));
+    assert(script_pixels[101*EP_WIDTH+160]!=script_pixels[78*EP_WIDTH+137]);
+    f=fopen("build/pygame_assets.ppm","wb");
+    assert(f);
+    fprintf(f,"P6\n%d %d\n255\n",EP_WIDTH,EP_HEIGHT);
+    for(int i=0;i<EP_WIDTH*EP_HEIGHT;i++){
+        unsigned c=script_pixels[i];
+        fputc(((c>>11)&31)*255/31,f);
+        fputc(((c>>5)&63)*255/63,f);
+        fputc((c&31)*255/31,f);
+    }
+    assert(!fclose(f));
+    assert(runtime_exec("<assets-checks>",
+        "from io import BytesIO\n"
+        "import pygame as p\n"
+        "ppm=p.image.load(BytesIO(b'P6\\n# test\\n1 1\\n255\\n \\n\\xff'))\n"
+        "assert ppm.get_at((0,0)).b==255 and ppm.get_at((0,0)).r>0\n"
+        "assert p.image.load(BytesIO(b'P6\\n1 1\\n15\\n\\x0f\\x00\\x00')).get_at((0,0))==p.Color('red')\n"
+        "f=p.font.Font(None,14)\n"
+        "assert f.render('é',False,'white').get_size()==f.size('é')\n"
+        "assert f.render('I',True,'white','blue').get_colorkey() is None\n"
+        "assert f.render('I',False,'black').get_colorkey()==p.Color('white')",0));
+    assert(!runtime_exec("<truncated>","p.image.load(BytesIO(b'P6\\n1 1\\n255\\n\\x00'))",0));
+    assert(!runtime_exec("<oversized>","p.image.load(BytesIO(b'P6\\n1000 1000\\n255\\n'))",0));
+    assert(!runtime_exec("<truncated-bmp>","p.image.load(BytesIO(b'BM'))",0));
+    runtime_end();
+    assert(!unlink(path));
+    puts("PASS: Pygame loaded a BMP from project storage, rendered fonts, preserved PPM bytes, and rejected malformed images.");
+}
+
 static void file_manager_checks(const char *home, void *stack) {
     char folder[PATH_CAP], path[PATH_CAP + NAME_CAP];
     snprintf(folder,sizeof folder,"%s/Examples",home);
@@ -636,6 +689,7 @@ int main(void){
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
     file_manager_checks(scripts,&stack);
     pygame_checks(scripts,&stack);
+    assets_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
     numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
@@ -647,5 +701,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 28 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 29 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

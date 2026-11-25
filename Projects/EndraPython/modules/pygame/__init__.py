@@ -2,9 +2,9 @@
 import display as _screen
 import keys as _keys
 from ._geometry import Color, Rect, _color565, _color_from_565
-from . import sprite, time
+from . import sprite, time, image, font
 
-__version__ = "0.1.1-endrapython"
+__version__ = "0.1.2-endrapython"
 
 NOEVENT, QUIT, KEYDOWN, KEYUP = 0, 0x100, 0x300, 0x301
 K_UP, K_DOWN, K_LEFT, K_RIGHT = _keys.KEY_UP, _keys.KEY_DOWN, _keys.KEY_LEFT, _keys.KEY_RIGHT
@@ -289,12 +289,14 @@ _initialized = False
 
 def init():
     global _initialized
+    font.init()
     _initialized = True
     return 3, 0
 
 
 def quit():
     global _initialized
+    font.quit()
     _initialized = False
     display.surface = None
     event._held.clear()

@@ -1,4 +1,4 @@
-# EndraPython Run014
+# EndraPython Run015
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -46,7 +46,13 @@ The app starts in the EndraPython folder. Enter runs the selected Python script 
 
 ## Pygame on the calculator
 
-`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 128 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Image decoding, fonts and 3D are later milestones.
+`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 128 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Run015 adds image loading and bitmap fonts. The next graphics milestone is 3D.
+
+## Pygame assets
+
+Use `pygame.image.load(path)` with an uncompressed 24- or 32-bit BMP or a binary P6 PPM. Image paths are relative to the project. File objects must be opened in binary mode and support seek and tell. For calculator transfer, keep the data file’s final `.tns` suffix. Decoding streams one row at a time and limits each image to 16,384 pixels. The surface uses RGB565. Use `Surface.set_colorkey` for transparency.
+
+`pygame.font.Font(None, size)` selects the nearest built-in bitmap face from three size ranges. Use `size(text)` to measure a single line and `render(text, antialias, color[, background])` to create a surface. Solid backgrounds support antialiasing, and transparent text uses a color key.
 
 ## First use
 
@@ -83,7 +89,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run014 scope |
+| Area | Run015 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |

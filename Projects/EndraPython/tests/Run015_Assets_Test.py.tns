@@ -1,0 +1,32 @@
+import pygame as pg
+
+pg.init()
+screen = pg.display.set_mode((320, 240))
+badge = pg.image.load("Run015_Badge.bmp.tns")
+assert badge.get_size() == (47, 47)
+assert badge.get_at((0, 0)) == pg.Color("magenta")
+badge.set_colorkey("magenta")
+
+header = pg.font.Font(None, 20)
+body = pg.font.Font(None, 14)
+small = pg.font.Font(None, 12)
+screen.fill((16, 27, 40))
+title = header.render("Pygame assets", True, (219, 252, 242))
+screen.blit(title, (17, 11))
+panel = pg.Rect(16, 50, 288, 163)
+pg.draw.rect(screen, (26, 47, 61), panel)
+pg.draw.rect(screen, (74, 128, 139), panel, 1)
+screen.blit(badge, badge.get_rect(center=(160, 101)))
+label = body.render("IMAGE LOADED", True, (255, 231, 157), (26, 47, 61))
+screen.blit(label, label.get_rect(center=(160, 151)))
+caption = small.render("RGB565 badge / bitmap text", False, (189, 218, 223))
+screen.blit(caption, caption.get_rect(center=(160, 179)))
+pg.display.flip()
+
+try:
+  pg.time.wait(2300)
+except KeyboardInterrupt:
+  pass
+pg.quit()
+print("BMP loaded:", badge.get_size())
+print("Bitmap fonts rendered")

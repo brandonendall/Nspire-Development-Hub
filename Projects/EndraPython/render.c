@@ -52,6 +52,9 @@ static const unsigned char *glyph(int f,int c){
 static int width(int f,const char *s){
     int w=0;while(*s){int n,c=utf_decode(s,&n);w+=*glyph(c>126?CODE:f,c);s+=n;}return w;
 }
+static int glyph_alpha(const Font *font,const unsigned char *bitmap,unsigned row,unsigned col){
+    return (bitmap[row*font->stride+col/4]>>(2*(col%4)))&3;
+}
 static int letter(int x,int y,int f,int color,int ch,int limit){
     if(ch>126)f=CODE;
     const Font *font=&fonts[f];const unsigned char *g=glyph(f,ch);
@@ -59,7 +62,7 @@ static int letter(int x,int y,int f,int color,int ch,int limit){
     for(unsigned row=0;row<font->height;row++)
         for(unsigned col=0;col<font->stride*4;col++){
             int px=x+(int)col, py=y+(int)row;
-            int a=(g[row*font->stride+col/4]>>(2*(col%4)))&3;
+            int a=glyph_alpha(font,g,row,col);
             if(a && px>=0 && px<limit && px<320 && py>=0 && py<240){
                 uint16_t *p=fb+py*320+px;*p=blend(color,*p,a);
             }
@@ -362,4 +365,33 @@ void device_draw_text(uint16_t *pixels, int x, int y, int size, uint16_t color, 
     fb = pixels;
     text(x, y, size, color, value, EP_WIDTH);
     fb = previous;
+}
+
+
+void device_measure_text(const char *value, int font, int *w, int *h){
+    *w=width(font,value);
+    *h=fonts[font].height>fonts[CODE].height?fonts[font].height:fonts[CODE].height;
+}
+
+void device_rasterize_text(uint8_t *pixels,int w,int h,const char *value,
+                           int font,uint16_t color,int antialias,int transparent){
+    int x=0;
+    while(*value && x<w){
+        int length,ch=utf_decode(value,&length);
+        int face=ch>126?CODE:font;
+        const Font *layout=&fonts[face];
+        const unsigned char *g=glyph(face,ch);
+        for(unsigned row=0;row<layout->height && (int)row<h;row++){
+            for(unsigned col=0;col<layout->stride*4 && x+(int)col<w;col++){
+                int coverage=glyph_alpha(layout,g+1,row,col);
+                if(!coverage || ((!antialias||transparent) && coverage<2))continue;
+                uint8_t *p=pixels+2*(row*w+x+col);
+                uint16_t result=antialias&&!transparent?blend(color,(p[0]<<8)|p[1],coverage):color;
+                p[0]=(uint8_t)(result>>8);
+                p[1]=(uint8_t)result;
+            }
+        }
+        x+=*g;
+        value+=length;
+    }
 }
