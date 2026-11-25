@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run011 handheld freeze, 2026-11-25
+
+Brandon reported the entire CX II CAS stopped responding, including Esc, with the Run011 graphics banner and square visible. The first frame reached the LCD. The exact hang location is unverified. The first frame is followed by time.sleep_ms(18); the new device delay calls Ndless msleep, whose CX interrupt wait has no timeout. Repeated touchpad scans and LCD buffer presentation are other paths to isolate. Stop Run011 handheld testing and use Run009 after recovery. TI KB 40455 recommends the rear reset button for an unresponsive CX II CAS and warns about unsaved and Scratchpad data. Recovery has not yet been confirmed. A subsequent diagnostic should isolate display, input and timing in bounded steps before restoring continuous animation.
+
 ## Run010 calculator numerics failure, 2026-11-25
 
 The calculator photo shows an AssertionError at line 8 of Run010_Numerics_Test.py.tns. The integer dot-product check on line 7 passed; parsing, float operations or math.sqrt must be isolated before changing tolerances or the numerical module. Run010 is not hardware-confirmed. The standalone Run010_Numerics_Diag.py.tns prints the module version, literal, division, square root, dot, norm and normalized values. Run011 inherits the numerical module and can be checked independently for graphics.
