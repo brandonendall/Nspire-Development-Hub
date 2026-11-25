@@ -62,6 +62,7 @@ void platform_wait_input(void){
 }
 static void catalog_checks(const char *root,void *stack){
     app_init(root,stack);help_check(HELP_FILES);
+    app_key(CATALOG_KEY);assert(app.page==FILES && !app.request_input);
     app_key(MENU);assert(app.page==ACTIONS && app.action==0);
     type("print");app_key(8);assert(app.page==ACTIONS && app.action==0);
     app_key(UP);assert(page_commands(FILES)[app.action].key==OPEN_GUIDE);
@@ -71,8 +72,8 @@ static void catalog_checks(const char *root,void *stack){
     app_key(INDENT);assert(!strcmp(app.doc.text,"  "));app_key(ENTER);assert(!strcmp(app.doc.text,"  \n  "));
     app_key('x');app_key(INDENT);assert(strstr(app.doc.text,"  x "));
     app_key(SELECT_ALL);type("name=");
-    app_key(CATALOG_KEY);assert(app.page==EDITOR && !app.request_input);
-    choose_command(OPEN_CATALOG);assert(app.page==CATALOG && catalog_browsing_modules);preview("catalog_modules");
+    app_key(CATALOG_KEY);assert(app.page==CATALOG && app.origin==EDITOR && catalog_browsing_modules && !app.request_input);
+    preview("catalog_modules");
     app_key(ENTER);type("in");preview("catalog");
     app_key(ENTER);assert(!strcmp(app.doc.text,"name=input("));type("'Name? ')");app_key(ENTER);
     choose_command(OPEN_CATALOG);app_key(ENTER);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
@@ -87,8 +88,10 @@ static void catalog_checks(const char *root,void *stack){
     app_key(ESC);assert(app.auto_indent && app.indent_guides && app.line_numbers);
     answer="Brandon";app_key(RUN);assert(!app.error && output_has("Brandon"));help_check(HELP_OUTPUT);
     app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);assert(app.page==SHELL);
-    type("keep=27");app_key(ENTER);app_key(CATALOG_KEY);assert(app.page==SHELL && !app.request_input);
-    choose_command(OPEN_CATALOG);app_key(ENTER);
+    type("keep=27");app_key(ENTER);type("ke");
+    app_key(CATALOG_KEY);assert(app.page==CATALOG && app.origin==SHELL && !app.request_input);
+    app_key(ESC);assert(app.page==SHELL && !strcmp(app.command,"ke"));
+    app_key(8);app_key(8);app_key(CATALOG_KEY);app_key(ENTER);
     for(int i=0;i<catalog_count;i++){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));

@@ -1,12 +1,14 @@
-# Run019 handheld check
+# Run020 handheld check
 
-The regular Menu uses arrows and Enter. The separate Python Command Catalog keeps typing shortcuts. The physical Catalog shortcut remains disabled after the Run017 reboot. Run016 is the confirmed fallback.
+Brandon confirmed the Run019 menu catalog on the handheld. Run020 maps the unmodified physical Catalog key to that same built-in catalog action in the Python shell and Python script editor. Run019 is the rollback for this change.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run019.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run020.tns /upload
 ```
 
-1. On Files, press Menu. Check that New Python script, New text file, Python shell, Browse Documents, Settings, and Help appear as a plain list. Typing `print` should leave the selection in place.
-2. Use the arrows to reach Settings, then press Enter and check that arrow navigation and Enter still work. Press Esc to return.
-3. From Python shell, use Menu > Command catalog. Type `math`, open it, and type `sqrt`. Verify the `math.sqrt(x)` hint and press Esc twice to return to the shell.
+1. In Run020, open the Python shell and tap the physical Catalog key once. Expect the Python modules list.
+2. Press Esc and confirm the shell returns to the same prompt. Verify the shortcut from a Python script editor after the shell check.
+3. If the shortcut causes a freeze or reboot, return to Run019 and use Menu > Command catalog.
+
+Gint input is a separate milestone. It includes `gint.getkey()`, polling, and key state and events.

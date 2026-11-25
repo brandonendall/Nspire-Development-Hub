@@ -62,7 +62,7 @@ int eh16_key_event(int k,int ch,int ctrl){
     int modified=ctrl || ctrl_latched;
     if(k || ch)ctrl_latched=0;
     if(!k){
-        if(ch==CATALOG_KEY)k=0;
+        if(ch==CATALOG_KEY)k=modified?0:CATALOG_KEY;
         else if(ch==TI_INPUT || ch==MARKS)k=ch;
         else if(modified)
             switch(ch){
