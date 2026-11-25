@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run013 graphics hardware confirmation, 2026-11-25
+
+Brandon confirmed on the CX II CAS that the Run012 graphics fixture inside Run013 moved the square and returned on its own, consistent with the 120-frame cap. Manual Esc and stopping on arrow release were not explicitly reported. Run013 is the hardware-verified baseline for numerics, graphics presentation, movement, and automatic return.
+
 ## Run013 handheld results, 2026-11-25
 
 Calculator photos confirm Run013's exact decimal and vector/matrix checks passed, including 8, 16, 24 and 32 square multiplication, with 112976 bytes of free Python heap reported after the test. The two graphics photos appear to show return to Run complete output, but blur prevents reliable transcription of elapsed milliseconds or frame count. Arrow movement, release and whether Esc or the frame limit ended animation are not established by the photos. Run013 is hardware-confirmed for the numerics suite.
