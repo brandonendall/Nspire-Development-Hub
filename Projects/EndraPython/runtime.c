@@ -3,6 +3,7 @@
 #include "app.h"
 #include "py/builtin.h"
 #include "py/gc.h"
+#include "py/objmodule.h"
 #include <stdlib.h>
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -107,21 +108,67 @@ int readline(vstr_t *line,const char *prompt){
     return 0;
 }
 
-/* Copy names before closing a temporary editor VM. Shell browsing keeps its VM. */
-int runtime_catalog(const char *module){
-    nlr_buf_t handler;
-    if(nlr_push(&handler)!=0)return 0;
-    mp_obj_t obj=mp_import_name(qstr_from_str(module),mp_const_none,MP_OBJ_NEW_SMALL_INT(0));
-    mp_obj_module_t *mod=MP_OBJ_TO_PTR(obj);
-    const mp_map_t *map=&mod->globals->map;
-    int count=0;
-    for(size_t i=0;i<map->alloc && count<CATALOG_CAP;i++){
-        if(!mp_map_slot_is_filled(map,i))continue;
-        const mp_map_elem_t *e=map->table+i;
-        const char *name=mp_obj_str_get_str(e->key);
-        if(*name=='_' || strlen(name)>=sizeof catalog_entries[0].name)continue;
-        strcpy(catalog_entries[count].name,name);
-        catalog_entries[count++].callable=mp_obj_is_callable(e->value);
+static void catalog_add_module(const char *name, size_t len) {
+    if (!len || len >= sizeof catalog_groups[0] || catalog_group_count >= CATALOG_GROUP_CAP) return;
+    for (int i = 1; i < catalog_group_count; i++)
+        if (!strncmp(catalog_groups[i], name, len) && !catalog_groups[i][len]) return;
+    memcpy(catalog_groups[catalog_group_count], name, len);
+    catalog_groups[catalog_group_count++][len] = 0;
+}
+
+void runtime_catalog_modules(void) {
+    const mp_map_t *maps[] = { &mp_builtin_module_map, &mp_builtin_extensible_module_map };
+    catalog_group_count = 1;
+    strcpy(catalog_groups[0], "Common");
+    for (size_t i = 0; i < sizeof maps / sizeof maps[0]; i++)
+        for (size_t j = 0; j < maps[i]->alloc; j++) {
+            if (!mp_map_slot_is_filled(maps[i], j)) continue;
+            const char *name = mp_obj_str_get_str(maps[i]->table[j].key);
+            catalog_add_module(name, strlen(name));
+        }
+    extern const char mp_frozen_names[];
+    for (const char *name = mp_frozen_names; *name; name += strlen(name) + 1)
+        catalog_add_module(name, strcspn(name, "/."));
+}
+
+static int catalog_copy_members(const mp_map_t *map, const char *prefix, int count) {
+    for (size_t i = 0; i < map->alloc && count < CATALOG_CAP; i++) {
+        if (!mp_map_slot_is_filled(map, i)) continue;
+        const mp_map_elem_t *entry = &map->table[i];
+        const char *name = mp_obj_str_get_str(entry->key);
+        if (*name == '_' || strlen(prefix)+strlen(name) >= sizeof catalog_entries[0].name) continue;
+        strcpy(catalog_entries[count].name, prefix);
+        strcat(catalog_entries[count].name, name);
+        catalog_entries[count++].callable = mp_obj_is_callable(entry->value);
     }
-    nlr_pop();return count;
+    return count;
+}
+
+/* Copy names before closing a temporary editor VM. Shell browsing keeps its VM. */
+int runtime_catalog(const char *module) {
+    nlr_buf_t handler;
+    if (nlr_push(&handler) != 0) return 0;
+    mp_obj_t obj = mp_import_name(qstr_from_str(module), mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
+    if (!mp_obj_is_type(obj, &mp_type_module)) { nlr_pop(); return 0; }
+    const mp_map_t *map = &mp_obj_module_get_globals(obj)->map;
+    int count = catalog_copy_members(map, "", 0);
+    if (!strcmp(module, "pygame")) {
+        const char *const namespaces[] = {"display","draw","event","key","sprite","font","image","time"};
+        for (size_t i = 0; i < sizeof namespaces / sizeof namespaces[0]; i++) {
+            const mp_map_elem_t *entry = mp_map_lookup((mp_map_t *)map,
+                MP_OBJ_NEW_QSTR(qstr_from_str(namespaces[i])), MP_MAP_LOOKUP);
+            if (!entry) continue;
+            const mp_obj_type_t *type = mp_obj_get_type(entry->value);
+            const mp_map_t *members;
+            if (type == &mp_type_module) members = &mp_obj_module_get_globals(entry->value)->map;
+            else if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict))
+                members = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
+            else continue;
+            char prefix[16];
+            strcpy(prefix, namespaces[i]); strcat(prefix, ".");
+            count = catalog_copy_members(members, prefix, count);
+        }
+    }
+    nlr_pop();
+    return count;
 }

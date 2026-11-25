@@ -23,8 +23,8 @@ static int press(int k){key=-1;eh16_textkey();key=k;return eh16_textkey();}
 int main(void){
     assert(press(KEY_NSPIRE_QUESEXCL)==MARKS);
     assert(!eh16_textkey());
-    assert(press(KEY_NSPIRE_CAT)==TI_INPUT);
-    assert(eh16_key_event(0,TI_INPUT,1)==TI_INPUT);
+    assert(eh16_key_event(0,press(KEY_NSPIRE_CAT),0)==CATALOG_KEY);
+    assert(eh16_key_event(0,press(KEY_NSPIRE_CAT),1)==TI_INPUT);
     assert(eh16_key_event(0,0,0)==0);
     assert(eh16_key_event(0,press(KEY_NSPIRE_LP),1)=='[');
     eh16_key_event(0,0,0);eh16_key_event(0,0,1);eh16_key_event(0,0,0);

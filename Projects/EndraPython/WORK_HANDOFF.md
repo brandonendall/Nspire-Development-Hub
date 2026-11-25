@@ -1,10 +1,15 @@
-# Run016 handheld check
+# Run017 handheld check
 
-Run015 passed the BMP and bitmap-font demo on Brandon’s calculator.
+Transfer the standalone executable from Android.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run016.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run017.tns /upload
 ```
 
-Open a new Python script. Type `for i in range(1, 10):` and press Enter. The caret should go two spaces in. Type `print(i)` and press Ctrl+R. The output should list 1 through 9. Press Esc to return to the editor. Try a nested header and check that a colon inside a string doesn’t increase indentation.
+1. Open the Python shell. Press the physical Catalog key, type `math`, and press Enter. Select `sqrt` and check that the syntax says `math.sqrt(x)`. Back out, execute `import math`, then use the Catalog to insert `math.sqrt(`. Type `9)` and press Enter. Expect `3.0`.
+2. Check that Ctrl+Catalog still opens TI symbols. Esc returns without inserting text.
+3. Open a Python script. Press Menu and type `settings`. Change Indent guides or Line numbers and observe the editor. Return settings to On and check that Enter after a block header adds two spaces.
+4. In the shell, `import casioplot` should report ImportError. `import display, gint, pygame` should succeed.
+
+Run016 is the owner-confirmed fallback. Existing script files can be reused.

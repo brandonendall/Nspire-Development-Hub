@@ -154,9 +154,9 @@ void edit_key(Editor *d,int k){
     else if(k==8 || k==CUT){if(a==b){if(!a)return;a=utf_prev(d->text,a);}}
     else if(k==ENTER){
         insert[n++]='\n';
-        int block=valid_script(d->name)?block_header(d->text,a):-1;
+        int block=app.auto_indent && valid_script(d->name)?block_header(d->text,a):-1;
         start=block>=0?block:line_start(d->text,a);
-        while(start<a && (d->text[start]==' ' || d->text[start]=='\t'))
+        while(app.auto_indent && start<a && (d->text[start]==' ' || d->text[start]=='\t'))
             insert[n++]=d->text[start++];
         if(block>=0 && n<=SOURCE_CAP-1){
             insert[n++]=' ';

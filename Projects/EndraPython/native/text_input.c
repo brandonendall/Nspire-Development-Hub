@@ -46,7 +46,7 @@ int eh16_textkey(void){
  if(!scan&&isKeyPressed(KEY_NSPIRE_RET)){scan=50;ascii=ENTER;}
  if(!scan&&isKeyPressed(KEY_NSPIRE_COLON)){scan=51;ascii=':';}
  if(!scan&&isKeyPressed(KEY_NSPIRE_QUOTE)){scan=52;ascii='"';}
- if(!scan&&isKeyPressed(KEY_NSPIRE_CAT)){scan=53;ascii=TI_INPUT;}
+ if(!scan&&isKeyPressed(KEY_NSPIRE_CAT)){scan=53;ascii=CATALOG_KEY;}
  if(!scan&&isKeyPressed(KEY_NSPIRE_QUESEXCL)){scan=54;ascii=MARKS;}
  if(!scan&&isKeyPressed(KEY_NSPIRE_PI)){scan=55;ascii=TI_INPUT;}
  if(!scan){last_scan=0;return 0;}
@@ -62,7 +62,8 @@ int eh16_key_event(int k,int ch,int ctrl){
     int modified=ctrl || ctrl_latched;
     if(k || ch)ctrl_latched=0;
     if(!k){
-        if(ch==TI_INPUT || ch==MARKS)k=ch;
+        if(ch==CATALOG_KEY)k=modified?TI_INPUT:CATALOG_KEY;
+        else if(ch==TI_INPUT || ch==MARKS)k=ch;
         else if(modified)
             switch(ch){
             case '=': k=TI_INPUT; break;

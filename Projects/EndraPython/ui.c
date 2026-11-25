@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 
 App app;
@@ -10,27 +11,34 @@ const char *const ep_symbols[]={"\"","?","'","!","$","°","%",":","_","\\","[","
 const int ep_symbol_count=sizeof ep_symbols/sizeof ep_symbols[0];
 const Command *page_commands(Page page){
     static const Command files[]={{"New Python script",NEW_SCRIPT},{"New text file",NEW_TEXT},
-        {"Python shell",OPEN_SHELL},{"Browse Documents",BROWSE},{"Help",OPEN_GUIDE},{NULL,0}};
+        {"Python shell",OPEN_SHELL},{"Browse Documents",BROWSE},{"Settings",OPEN_SETTINGS},{"Help",OPEN_GUIDE},{NULL,0}};
     static const Command editor[]={
-        {"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"Run script",RUN},{"Save",SAVE},{"Find text",SEARCH},
+        {"Settings",OPEN_SETTINGS},{"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"Run script",RUN},{"Save",SAVE},{"Find text",SEARCH},
         {"Replace all",REPLACE},{"Go to line",GO_LINE},{"Outline",SHOW_OUTLINE},
-        {"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},{"Undo",UNDO},
+        {"Marks and symbols",MARKS},{"TI symbols",TI_INPUT},{"Undo",UNDO},
         {"Redo",REDO},{"Copy",COPY},{"Cut",CUT},{"Paste",PASTE},
         {"Select all",SELECT_ALL},{"Files",ESC},{NULL,0}
     };
     static const Command text_editor[]={
-        {"Help",OPEN_GUIDE},{"Save",SAVE},{"Find text",SEARCH},{"Replace all",REPLACE},
-        {"Go to line",GO_LINE},{"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},
+        {"Settings",OPEN_SETTINGS},{"Help",OPEN_GUIDE},{"Save",SAVE},{"Find text",SEARCH},{"Replace all",REPLACE},
+        {"Go to line",GO_LINE},{"Marks and symbols",MARKS},{"TI symbols",TI_INPUT},
         {"Undo",UNDO},{"Redo",REDO},{"Copy",COPY},{"Cut",CUT},{"Paste",PASTE},
         {"Select all",SELECT_ALL},{"Files",ESC},{NULL,0}
     };
-    static const Command shell[]={{"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"List modules",LIST_MODULES},
-        {"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},{"Files",ESC},{NULL,0}};
-    static const Command output[]={{"Help",OPEN_GUIDE},{"Run again",RUN},{"Editor",ESC},{NULL,0}};
+    static const Command shell[]={{"Settings",OPEN_SETTINGS},{"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"List modules",LIST_MODULES},
+        {"Marks and symbols",MARKS},{"TI symbols",TI_INPUT},{"Files",ESC},{NULL,0}};
+    static const Command output[]={{"Settings",OPEN_SETTINGS},{"Help",OPEN_GUIDE},{"Run again",RUN},{"Editor",ESC},{NULL,0}};
     if(page==FILES)return files;
     if(page==SHELL)return shell;
     if(page==OUTPUT)return output;
     return valid_text(app.doc.name)?text_editor:editor;
+}
+int palette_matches(const Command *command) {
+    size_t len = strlen(app.command_filter);
+    if (!len) return 1;
+    for (const char *p = command->label; *p; p++)
+        if (!strncasecmp(p, app.command_filter, len)) return 1;
+    return 0;
 }
 static void reset_output(void) {
     memset(app.output,0,sizeof app.output);
@@ -57,6 +65,7 @@ void console_write(const char *s,size_t n) {
 void app_init(const char *root,void *stack) {
     memset(&app,0,sizeof app);
     app.home=root;app.stack=stack;
+    app.auto_indent=app.indent_guides=app.line_numbers=1;
     if(strlen(root)>=sizeof app.folder){app.quit=1;return;}
     strcpy(app.folder,root);app.root=app.folder;strcpy(app.documents,root);
     char *end=strrchr(app.documents,'/');if(end && end!=app.documents)*end=0;
@@ -144,7 +153,19 @@ void app_key(int k) {
     if(!k)return;
     app.status[0]=0;
     if(k==MENU && (app.page==FILES || app.page==EDITOR || app.page==SHELL || app.page==OUTPUT)){
-        app.origin=app.page;app.page=ACTIONS;app.action=app.symbols=0;return;
+        app.origin=app.page;app.page=ACTIONS;app.action=app.symbols=0;app.command_filter[0]=0;return;
+    }
+    if(app.page==SETTINGS){
+        if(k==ESC || k==MENU)app.page=app.origin;
+        else if(k==UP || k==DOWN)app.action=(app.action+(k==UP?2:1))%3;
+        else if(k==ENTER || k==LEFT || k==RIGHT){
+            int *values[]={&app.auto_indent,&app.indent_guides,&app.line_numbers};
+            *values[app.action]=!*values[app.action];
+        }
+        return;
+    }
+    if(k==OPEN_SETTINGS){
+        app.origin=app.page;app.page=SETTINGS;app.action=0;return;
     }
     if(k==OPEN_GUIDE){
         app.help_topic=app.page==FILES?HELP_FILES:app.page==SHELL?HELP_SHELL:app.page==OUTPUT?HELP_OUTPUT:HELP_EDITOR;
@@ -157,6 +178,8 @@ void app_key(int k) {
         return;
     }
     if(app.page==CATALOG){catalog_key(k);return;}
+    if(k==CATALOG_KEY)
+        k=(app.page==SHELL || (app.page==EDITOR && valid_script(app.doc.name)))?OPEN_CATALOG:TI_INPUT;
     if(k==OPEN_CATALOG && (app.page==SHELL || app.page==EDITOR)){catalog_open();return;}
     if(k==MARKS && (app.page==EDITOR || app.page==SHELL || app.page==NAME || app.page==FIND || app.page==REPLACE_FIND || app.page==REPLACE_WITH || app.page==READ_INPUT)){
         app.origin=app.page;app.page=ACTIONS;app.action=0;app.symbols=1;return;
@@ -265,16 +288,24 @@ void app_key(int k) {
         const Command *commands=page_commands(app.origin);
         int count=0;
         if(app.symbols)count=ep_symbol_count;else while(commands[count].label)count++;
-        if(k==ESC)app.page=app.origin;
+        if(k==ESC || k==MENU)app.page=app.origin;
         else if(k==TI_INPUT && app.symbols){app.page=app.origin;app_key(TI_INPUT);}
         else if(app.symbols && k==DOWN){if(app.action+12<count)app.action+=12;}
         else if(app.symbols && k==UP){if(app.action>=12)app.action-=12;}
-        else if(k==DOWN||k==RIGHT)app.action=(app.action+1)%count;
-        else if(k==UP||k==LEFT)app.action=(app.action+count-1)%count;
-        else if(k==ENTER){
+        else if(k==DOWN||k==RIGHT||k==UP||k==LEFT){
+            int step=(k==DOWN||k==RIGHT)?1:count-1;
+            int next=app.action<0?(step==1?0:count-1):(app.action+step)%count;
+            for(int i=0;i<count;i++,next=(next+step)%count){
+                if(app.symbols || palette_matches(&commands[next])){app.action=next;break;}
+            }
+        }else if(k==ENTER && app.action>=0){
             app.page=app.origin;
             if(app.symbols)app_insert_text(ep_symbols[app.action]);
             else app_key(commands[app.action].key);
+        }else if(!app.symbols && (k==8 || (k>=32 && k<127))){
+            text_field(app.command_filter,sizeof app.command_filter,k);
+            app.action=-1;
+            for(int i=0;i<count;i++)if(palette_matches(&commands[i])){app.action=i;break;}
         }
     }else if(app.page==OUTPUT){
         if(k==ESC)app.page=EDITOR;

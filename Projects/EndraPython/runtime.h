@@ -14,3 +14,4 @@ const char *runtime_error_file(void);
 
 void platform_wait_input(void);
 int runtime_catalog(const char *module);
+void runtime_catalog_modules(void);

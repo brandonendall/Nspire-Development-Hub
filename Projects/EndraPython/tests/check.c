@@ -66,21 +66,45 @@ static void catalog_checks(const char *root,void *stack){
     app_key(INDENT);assert(!strcmp(app.doc.text,"  "));app_key(ENTER);assert(!strcmp(app.doc.text,"  \n  "));
     app_key('x');app_key(INDENT);assert(strstr(app.doc.text,"  x "));
     app_key(SELECT_ALL);type("name=");
-    choose_command(OPEN_CATALOG);assert(app.page==CATALOG);type("in");preview("catalog");
+    app_key(CATALOG_KEY);assert(app.page==CATALOG && catalog_browsing_modules);preview("catalog_modules");
+    app_key(ENTER);type("in");preview("catalog");
     app_key(ENTER);assert(!strcmp(app.doc.text,"name=input("));type("'Name? ')");app_key(ENTER);
-    choose_command(OPEN_CATALOG);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
+    choose_command(OPEN_CATALOG);app_key(ENTER);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
+    app_key(MENU);type("settings");preview("focus_palette");app_key(ENTER);
+    assert(app.page==SETTINGS);preview("focus_settings");
+    app_key(ENTER);assert(!app.auto_indent);app_key(DOWN);
+    app_key(ENTER);assert(!app.indent_guides);app_key(DOWN);
+    app_key(ENTER);assert(!app.line_numbers);app_key(ESC);
+    assert(app.page==EDITOR);
+    choose_command(OPEN_SETTINGS);
+    for(int i=0;i<3;i++){app_key(ENTER);app_key(DOWN);}
+    app_key(ESC);assert(app.auto_indent && app.indent_guides && app.line_numbers);
     answer="Brandon";app_key(RUN);assert(!app.error && output_has("Brandon"));help_check(HELP_OUTPUT);
     app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);assert(app.page==SHELL);
-    type("keep=27");app_key(ENTER);choose_command(OPEN_CATALOG);
+    type("keep=27");app_key(ENTER);app_key(CATALOG_KEY);app_key(ENTER);
     for(int i=0;i<catalog_count;i++){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));
     }
-    for(int i=1;i<=20;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
-    app_key(RIGHT);app_key(RIGHT);type("input");
-    assert(!strcmp(catalog_entries[catalog_index].name,"input"));app_key(ESC);
-    type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);app_key(RIGHT);app_key(RIGHT);
-    type("sqrt");app_key(ENTER);assert(!strcmp(app.command,"math.sqrt("));type("9)");app_key(ENTER);assert(output_has("3.0"));
+    app_key(LEFT);
+    assert(catalog_browsing_modules && catalog_group_count > 18);
+    for(int i=0;i<catalog_group_count;i++){
+        assert(strcmp(catalog_groups[i],"casioplot"));
+        app_key(ENTER);
+        if(strcmp(catalog_groups[i],"__main__"))assert(catalog_count>0 && catalog_count<CATALOG_CAP);
+        app_key(LEFT);app_key(DOWN);
+    }
+    type("pygame");app_key(ENTER);type("draw.rect");
+    assert(!strcmp(catalog_entries[catalog_index].name,"draw.rect"));
+    assert(!strcmp(catalog_signature(),"pygame.draw.rect(surface,color,rect[,width])"));
+    app_key(LEFT);
+    type("builtins");app_key(ENTER);type("input");
+    assert(!strcmp(catalog_entries[catalog_index].name,"input"));
+    app_key(ESC);assert(catalog_browsing_modules);app_key(ESC);
+    type("import math");app_key(ENTER);app_key(CATALOG_KEY);type("math");app_key(ENTER);
+    type("sqrt");assert(!strcmp(catalog_signature(),"math.sqrt(x)"));
+    app_key(ENTER);assert(!strcmp(app.command,"math.sqrt("));type("9)");app_key(ENTER);assert(output_has("3.0"));
+    type("import casioplot");app_key(ENTER);assert(output_has("ImportError"));
     type("keep");app_key(ENTER);assert(output_has("27"));
     answer="";type("len(input())");app_key(ENTER);assert(output_has("0"));
     answer=NULL;type("input()");app_key(ENTER);assert(output_has("KeyboardInterrupt"));
@@ -336,7 +360,7 @@ static void workbench_checks(const char *root, void *stack) {
     app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);
     assert(app.page==SHELL);
     type(":edit Demo Script.py.tns");app_key(ENTER);assert(app.page==EDITOR);
-    choose_command(OPEN_CATALOG);app_key(LEFT);app_key(LEFT);type("load");
+    choose_command(OPEN_CATALOG);type("json");app_key(ENTER);type("load");
     assert(!strcmp(catalog_signature(),"json.load(file)"));
     preview("catalog_signatures");
     app_key(INDENT);assert(app.page==EDITOR && !strncmp(app.doc.text,"import json",11));
@@ -437,11 +461,11 @@ static void graphics_checks(const char *root, void *stack) {
     raw_ticks=UINT32_MAX-20;
     runtime_start(stack);
     assert(runtime_exec("<graphics>",
-        "import display as d, time, keys, casioplot, kandinsky, gint, ion\n"
+        "import display as d, time, keys, kandinsky, gint, ion\n"
         "assert d.get_pixel(0,0)==(255,255,255)\n"
         "assert d.get_pixel(-1,0) is None\n"
         "d.fill_rect(-3,-2,4,3,(255,0,0))\n"
-        "assert casioplot.get_pixel(0,0)==(255,0,0)\n"
+        "assert d.get_pixel(0,0)==(255,0,0)\n"
         "assert d.get_pixel(1,0)==(255,255,255)\n"
         "assert not ion.keydown(keys.KEY_UP)\n"
         "gint.dpixel(1,0,0x07e0)\n"
@@ -749,5 +773,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 32 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 35 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

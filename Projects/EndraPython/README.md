@@ -1,4 +1,4 @@
-# EndraPython Run016
+# EndraPython Run017
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -8,7 +8,9 @@ The editor keeps the Run002 save fix. It opens the existing scripts folder befor
 
 Press **Menu** from Files, Editor, Shell or Output. **Help** is highlighted. Press **Enter** to see controls for the current screen. Left and Right cycle through Files, Editing and running, Selection and clipboard, Python shell, and Script output. Esc returns directly to the same work, including a partially typed shell command.
 
-In the editor or shell choose **Menu > Command catalog**. Common opens with print and input. Use Left/Right to switch to builtins or a compiled module, Up/Down to select a member, or type a name prefix to jump. Del shortens the prefix. Enter inserts the name and an opening parenthesis for callables. Import a module before using its qualified entries. The module and builtins groups read public names directly from the embedded runtime. This follows PythonUltra’s module/member grouping and uses the TI build's own inventory.
+Press **Catalog (book)** in the Python editor or shell, or choose **Menu > Command catalog**. The module list comes from the shipped interpreter. Start with Common for frequently used builtins, or choose a module to browse public names. Up/Down moves, Enter or Right opens a module, Left or Esc goes back. Type a prefix to jump and use Del to shorten it. The selected command displays its syntax when available. Enter inserts the qualified name and an opening parenthesis for callables. Tab inserts the selected module's import statement. Pygame includes public names in its bundled draw, event, image, and other namespaces.
+
+**Menu** opens the searchable command palette. **Settings** controls auto-indent, guides and line numbers for the current session. Tab advances to two-space stops.
 
 The built-in input([prompt]) reads a line in the IDE and returns a string in scripts and the shell. Enter accepts an empty or filled reply, Esc raises KeyboardInterrupt, and the punctuation key opens the existing symbol picker. Each reply holds up to 511 UTF-8 bytes.
 
@@ -16,7 +18,7 @@ The built-in input([prompt]) reads a line in the IDE and returns a string in scr
 
 The physical **?▸** key opens Marks and symbols directly in the editor, shell, Find field or filename. Select a character with the arrows and press Enter. It includes every mark listed in the TI guide plus programming punctuation and brackets. The same popup is an editor Menu item. Ctrl with the parenthesis keys enters the corresponding square bracket; a tapped Ctrl applies to the next key. The original Shift shortcuts still work.
 
-For TI's own keyboard interface, press **Catalog (book)** to open a native TI text field. Use **?▸** inside it for TI punctuation or **Ctrl+Catalog** for the broader TI symbol palette. Confirm the field to insert its text. Esc cancels. Technical notes: the Ndless SDK exports a TI Request text dialog and EndraPython reads its UTF-16 result, converts it to UTF-8, and inserts the whole result as one undoable edit. This two-stage route requires hardware verification. EndraPython stores actual characters, including mathematical symbols. Executable expressions must follow MicroPython syntax. Uncovered font characters use a replacement glyph while retaining the original text.
+For TI's own keyboard interface, press **Ctrl+Catalog** or select **TI symbols** from the command palette to open a native TI text field. Use **?▸** inside it for TI punctuation or **Ctrl+Catalog** for the broader TI symbol palette. Confirm the field to insert its text. Esc cancels. Technical notes: the Ndless SDK exports a TI Request text dialog and EndraPython reads its UTF-16 result, converts it to UTF-8, and inserts the whole result as one undoable edit. This two-stage route requires hardware verification. EndraPython stores actual characters, including mathematical symbols. Executable expressions must follow MicroPython syntax. Uncovered font characters use a replacement glyph while retaining the original text.
 
 In Files, **Menu > Browse Documents** opens Documents. Enter opens a folder or runs the highlighted Python script. Right opens a highlighted script for editing. Esc goes up one folder and returns to the usual EndraPython view from Documents. Save and Run use the opened file's own directory. New script also uses the displayed directory. Tab cycles 96-entry pages in large folders. Browsing reads directory listings only.
 
@@ -46,7 +48,7 @@ The app starts in the EndraPython folder. Enter runs the selected Python script 
 
 ## Pygame on the calculator
 
-`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 128 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Run015 adds image loading and bitmap fonts. The next graphics milestone is 3D.
+`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 128 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Run015 adds image loading and bitmap fonts. The next graphics milestones are Gint drawing, Gint keyboard events, and Pygame parity with PythonUltra, followed by py3d.
 
 ## Pygame assets
 
@@ -93,7 +95,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run016 scope |
+| Area | Run017 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
@@ -115,7 +117,7 @@ Use `import display as d` for the 320 × 240 RGB565 canvas. Draw with `set_pixel
 The `keys` module exposes held Up, Down, Left, Right, Enter, Menu and Esc states via `keydown`. `time.ticks_ms()` and `time.ticks_diff(a,b)` measure elapsed time with wrap handling. `time.sleep_ms(ms)` and `time.sleep(seconds)` pause while keeping Esc cancellation available. Script completion returns to the regular output view.
 
 Run012 bounds Python sleep using the existing free-running timer. A stalled counter raises RuntimeError. The frame probe exercises one show and one delay before the separate animation test.
-Stage 6 includes a subset of the Casio `casioplot` drawing functions, `ion.keydown` with navigation constants, immediate-mode `kandinsky` pixel, rectangle and text functions, and selected `gint` RGB565 functions (`dclear`, `dpixel`, `drect`, `dtext`, `dupdate`). Use the calculator-provided constants rather than numeric key codes. Run011_Graphics_Test.py.tns exercises drawing, held arrows, release, Esc and rerun.
+Run017 removes the bundled `casioplot` adapter. Use `display` for native drawing. The current graphics libraries include `ion.keydown` with navigation constants, immediate-mode `kandinsky` pixel, rectangle and text functions, and selected `gint` RGB565 functions (`dclear`, `dpixel`, `drect`, `dtext`, `dupdate`). Use the calculator-provided constants rather than numeric key codes. Run011_Graphics_Test.py.tns exercises drawing, held arrows, release, Esc and rerun.
 
 ## PythonUltra parity and the IDE roadmap
 
