@@ -1,5 +1,11 @@
 # EndraPython project memory
 
+## Run022 Gint key input and full-screen test, 2026-11-25
+
+Run022 adds Gint `getkey()`, `getkey_opt()`, `pollevent()`, key state and transition flags, and repeat for the mapped keypad. Script polling samples the arrows, Enter, Menu, letters, digits, Shift, Ctrl and common punctuation. Esc stays the script interrupt. The handheld test draws only its prompts onto an edge-to-edge 320 × 240 background, honoring Brandon’s request for a graphics screen without a title or border. Run021 drew its title in the demo itself.
+
+Source `db3ae48f74f4d9a456c047cc97a76fb451527eaa` on `feature/endrapython-run001`. Host checks passed input wait, press/release, timeouts, repeat, modifiers, Esc, timer stall, physical scanner simulation and all four framebuffer corners. The native ARM Zehn build `EndraPython_Run022.tns` is 221181 bytes, SHA-256 `83ac897d86e6c41134a3e0801a1961c6c8a6e87c09b3ce56575b2a375714279f`. [CI 45713950888](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45713950888). CI passed and the standalone artifact matches the local SHA-256. [Standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45713950888/artifacts/15067978572) · [Build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45713950888/artifacts/15069336197). Handheld check pending. Run `Run022_Gint_Keys.py.tns`, tap Right and release, tap A when prompted, and wait for the pass line. Run021 is the confirmed rollback.
+
 ## Run021 native Gint drawing, 2026-11-25
 
 Run021 adds native Gint RGB565 lines, full-screen horizontal and vertical lines, filled triangles, even-odd polygons, circles and ellipses on the existing script canvas. Polygon, circle and ellipse fill/outline support `C_NONE`. The rasterizer uses Casio calling conventions and EndraPython pixels, clips work to the visible canvas, and accepts up to 128 polygon vertices. The built-in Catalog lists the additions. The redundant shell startup `Menu > Command catalog` line is removed.
