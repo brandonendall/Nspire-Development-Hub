@@ -1,0 +1,43 @@
+import display
+import gint
+import time
+
+BLACK = 0
+WHITE = 0xffff
+RED = 0xf800
+GREEN = 0x07e0
+BLUE = 0x001f
+YELLOW = 0xffe0
+CYAN = 0x07ff
+PINK = 0xf81f
+
+gint.dclear(BLACK)
+gint.dline(-1000, 31, 319, 31, WHITE)
+gint.dtriangle(10, 124, 60, 51, 107, 124, GREEN)
+gint.dpoly([119, 52, 210, 52, 210, 73, 157, 73, 157, 123,
+            119, 123], BLUE, CYAN)
+gint.dcircle(258, 85, 33, RED, YELLOW)
+gint.dellipse(31, 142, 126, 195, gint.C_NONE, PINK)
+gint.dellipse(218, 179, 142, 146, BLUE, gint.C_NONE)
+gint.dellipse(275, 145, 347, 190, GREEN, WHITE)
+gint.dtriangle(-32768, 223, 32767, 223, 0, 223, WHITE)
+gint.dcircle(239, 165, 0, YELLOW, gint.C_NONE)
+
+assert display.get_pixel(0, 31) == (255, 255, 255)
+assert display.get_pixel(61, 101) == (0, 255, 0)
+assert display.get_pixel(130, 110) == (0, 0, 255)
+assert display.get_pixel(119, 110) == (0, 255, 255)
+assert display.get_pixel(190, 99) == (0, 0, 0)
+assert display.get_pixel(258, 85) == (255, 0, 0)
+assert display.get_pixel(258, 52) == (255, 255, 0)
+assert display.get_pixel(78, 166) == (0, 0, 0)
+assert display.get_pixel(78, 142) == (255, 0, 255)
+assert display.get_pixel(180, 164) == (0, 0, 255)
+assert display.get_pixel(319, 168) == (0, 255, 0)
+assert display.get_pixel(0, 223) == (255, 255, 255)
+assert display.get_pixel(239, 165) == (255, 255, 0)
+
+gint.dtext(12, 8, WHITE, "Run021 Gint drawing")
+gint.dupdate()
+time.sleep_ms(4500)
+print("Gint drawing checks passed")
