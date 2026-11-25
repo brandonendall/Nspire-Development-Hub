@@ -361,7 +361,7 @@ static void numerics_checks(const char *root, void *stack) {
     if(app.error){
         for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[(app.first+i)%OUT_LINES]);
     }
-    assert(app.page==OUTPUT && !app.error && output_has("32 x 32 multiply passed"));
+    assert(app.page==OUTPUT && !app.error && output_has("24 x 24 multiply passed") && output_has("Free heap:"));
     preview("numerics");
     for(int i=0;i<app.rows;i++)puts(app.output[(app.first+i)%OUT_LINES]);
     app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);

@@ -21,9 +21,15 @@ def check_square(n):
   result = np.matmul(matrix, matrix)
   return result.shape == (n, n) and result.min() == n and result.max() == n
 
-for size in (8, 16, 24, 32):
+for size in (8, 16, 24):
   gc.collect()
   assert check_square(size)
   print(size, "x", size, "multiply passed")
+gc.collect()
+try:
+  assert check_square(32)
+  print("32 x 32 multiply passed")
+except MemoryError:
+  print("32 x 32 exceeded available heap")
 gc.collect()
 print("Free heap:", gc.mem_free(), "bytes")

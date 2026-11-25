@@ -65,10 +65,10 @@ def _unflatten(data, shape, offset=0):
 
 
 class ndarray:
-    def __init__(self, value, shape=None, dtype=None, _flat=False):
+    def __init__(self, value, shape=None, dtype=None, _flat=False, _owned=False):
         self.dtype = dtype
         if _flat:
-            self._data = list(value)
+            self._data = value if _owned else list(value)
             self.shape = _normalize_shape(shape)
         elif isinstance(value, ndarray):
             self._data = list(value._data)
@@ -247,14 +247,14 @@ class matrix(ndarray):
     is an array/matrix.  Scalar multiplication remains element-wise.
     """
 
-    def __init__(self, value, dtype=None, copy=True, shape=None, _flat=False):
+    def __init__(self, value, dtype=None, copy=True, shape=None, _flat=False, _owned=False):
         if _flat:
             final_shape = _normalize_shape(shape)
             if len(final_shape) == 1:
                 final_shape = (1, final_shape[0])
             if len(final_shape) != 2:
                 raise ValueError("matrix must be 2-dimensional")
-            ndarray.__init__(self, value, final_shape, dtype, True)
+            ndarray.__init__(self, value, final_shape, dtype, True, _owned)
             return
 
         if isinstance(value, ndarray):
@@ -596,13 +596,9 @@ def matmul(a, b):
         if a_cols != b_rows:
             raise ValueError("shapes are not aligned")
         output_shape = (a_rows, b_cols)
-        empty = [0] * (a_rows * b_cols)
-        if a_matrix or b_matrix:
-            output = matrix(empty, shape=output_shape, _flat=True)
-        else:
-            output = ndarray(empty, output_shape, _flat=True)
-        del empty
-        result = output._data
+        result = [0] * (a_rows * b_cols)
+        output_type = matrix if (a_matrix or b_matrix) else ndarray
+        output = output_type(result, shape=output_shape, _flat=True, _owned=True)
         for row in range(a_rows):
             a_start = row * a_cols
             out_start = row * b_cols
