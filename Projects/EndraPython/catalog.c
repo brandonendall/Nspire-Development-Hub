@@ -8,7 +8,7 @@
 CatalogEntry catalog_entries[CATALOG_CAP];
 int catalog_count,catalog_index,catalog_group;
 char catalog_filter[40];
-const char *const catalog_groups[]={"Common","builtins","math","random","cmath","array","struct","collections","gc","os","numpy","display","keys","time","casioplot","kandinsky","ion","gint","json","io"};
+const char *const catalog_groups[]={"Common","builtins","math","random","cmath","array","struct","collections","gc","os","numpy","display","keys","time","casioplot","kandinsky","ion","gint","pygame","json","io"};
 static const struct {const char *name,*syntax;} common[]={
     {"print","print(value, ...)"},{"input","input([prompt])"},{"open","open(file[, mode])"},{"len","len(obj)"},
     {"range","range(start, stop[, step])"},{"int","int(value)"},{"float","float(value)"},

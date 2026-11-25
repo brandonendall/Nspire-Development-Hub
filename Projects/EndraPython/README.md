@@ -1,4 +1,4 @@
-# EndraPython Run013
+# EndraPython Run014
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -40,9 +40,17 @@ In the Python shell, type `:help` to list commands. `:ls [path]` lists files, `:
 
 The command catalog shows signatures for common module calls. Press Tab in a module’s group to insert its import statement at the cursor.
 
+## Files startup
+
+The app starts in the EndraPython folder. Enter runs the selected Python script and Right opens it for editing. Either key opens folders and plain text files. The Files menu includes New Python script, New text file, Python shell and Browse Documents. Text files use `.txt` or `.txt.tns` and use the same editor save checks as scripts.
+
+## Pygame on the calculator
+
+`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 128 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Image decoding, fonts and 3D are later milestones.
+
 ## First use
 
-Open EndraPython from Documents. Choose New script, type a filename and press Enter to create a blank script. Ctrl+R saves and runs it. Esc returns from output to the same caret. Esc in Files exits to TI Documents.
+Open EndraPython from Documents. Choose Menu > New Python script, type a filename and press Enter to create a blank script. Ctrl+R saves and runs it. Esc returns from output to the same caret. Esc in Files exits to TI Documents.
 
 | Control | Effect |
 | --- | --- |
@@ -75,14 +83,14 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run013 scope |
+| Area | Run014 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
 | Scripts and files | Sibling source imports from the selected folder. Project-relative text and binary file I/O, directory operations and JSON |
 | Console | print, line-numbered exceptions, single-line REPL, previous-command recall |
 | Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
-| Other modules | display, keys, time and selected compatibility helpers. Pygame, pip and desktop extension modules are future work |
+| Other modules | display, keys, time and selected compatibility helpers. a compact Pygame subset supports 2D scripts |
 
 ## Calculator numerics
 

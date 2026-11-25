@@ -18,7 +18,9 @@ from pathlib import Path
 from makemanifest import generate_frozen_str_content
 
 names = ("numpy", "casioplot", "ion", "kandinsky", "gint")
-output = generate_frozen_str_content([(f"modules/{name}.py", f"{name}.py") for name in names])
+paths = [f"{name}.py" for name in names]
+paths += [f"pygame/{name}.py" for name in ("__init__", "_geometry", "sprite", "time")]
+output = generate_frozen_str_content([(f"modules/{path}", path) for path in paths])
 output += b'const char mp_frozen_names[] = MP_FROZEN_STR_NAMES "\\0";\n'
 Path("micropython_embed/port/frozen_modules.c").write_bytes(output)
 PY

@@ -9,12 +9,19 @@ App app;
 const char *const ep_symbols[]={"\"","?","'","!","$","°","%",":","_","\\","[","]","(",")","{","}","=",",",".",";","#","+","-","*","/","<",">","@","&","|","^","~","`","¡","¿"};
 const int ep_symbol_count=sizeof ep_symbols/sizeof ep_symbols[0];
 const Command *page_commands(Page page){
-    static const Command files[]={{"Help",OPEN_GUIDE},{"Browse Documents",BROWSE},{NULL,0}};
+    static const Command files[]={{"New Python script",NEW_SCRIPT},{"New text file",NEW_TEXT},
+        {"Python shell",OPEN_SHELL},{"Browse Documents",BROWSE},{"Help",OPEN_GUIDE},{NULL,0}};
     static const Command editor[]={
         {"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"Run script",RUN},{"Save",SAVE},{"Find text",SEARCH},
         {"Replace all",REPLACE},{"Go to line",GO_LINE},{"Outline",SHOW_OUTLINE},
         {"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},{"Undo",UNDO},
         {"Redo",REDO},{"Copy",COPY},{"Cut",CUT},{"Paste",PASTE},
+        {"Select all",SELECT_ALL},{"Files",ESC},{NULL,0}
+    };
+    static const Command text_editor[]={
+        {"Help",OPEN_GUIDE},{"Save",SAVE},{"Find text",SEARCH},{"Replace all",REPLACE},
+        {"Go to line",GO_LINE},{"Marks and symbols",MARKS},{"TI catalog input",TI_INPUT},
+        {"Undo",UNDO},{"Redo",REDO},{"Copy",COPY},{"Cut",CUT},{"Paste",PASTE},
         {"Select all",SELECT_ALL},{"Files",ESC},{NULL,0}
     };
     static const Command shell[]={{"Help",OPEN_GUIDE},{"Command catalog",OPEN_CATALOG},{"List modules",LIST_MODULES},
@@ -23,7 +30,7 @@ const Command *page_commands(Page page){
     if(page==FILES)return files;
     if(page==SHELL)return shell;
     if(page==OUTPUT)return output;
-    return editor;
+    return valid_text(app.doc.name)?text_editor:editor;
 }
 static void reset_output(void) {
     memset(app.output,0,sizeof app.output);
@@ -58,6 +65,7 @@ void app_init(const char *root,void *stack) {
 static void show_files(void){app.page=FILES;files_refresh();}
 static void leave_doc(void){if(app.doc.dirty)app.page=DISCARD;else show_files();}
 static void run(void){
+    if(!valid_script(app.doc.name)){strcpy(app.status,"Open a Python script to run");return;}
     if((app.doc.dirty||!app.doc.existing)&&!save_script())return;
     app.status[0]=0;reset_output();runtime_start(app.stack);
     app.error=!runtime_exec(app.doc.name,app.doc.text,0);
@@ -89,10 +97,12 @@ static void start_shell(void){
 }
 static void create_doc(void){
     char name[NAME_CAP];
-    if(!app.name[0]){strcpy(app.status,"Enter a script name");return;}
+    if(!app.name[0]){strcpy(app.status,"Enter a file name");return;}
     const char *base=app.name;
-    int n=snprintf(name,sizeof name,"%s%s",base,valid_script(base)?"":".py.tns");
-    if(n>=(int)sizeof name||!valid_script(name)){strcpy(app.status,"Choose a shorter plain filename");return;}
+    int (*valid)(const char *) = app.new_text ? valid_text : valid_script;
+    const char *suffix = app.new_text ? ".txt.tns" : ".py.tns";
+    int n=snprintf(name,sizeof name,"%s%s",base,valid(base)?"":suffix);
+    if(n>=(int)sizeof name||!valid(name)){strcpy(app.status,"Choose a shorter plain filename");return;}
     edit_reset_history();
     memset(&app.doc,0,sizeof app.doc);strcpy(app.doc.name,name);
     app.doc.dirty=1;
@@ -163,33 +173,26 @@ void app_key(int k) {
         return;
     }
     if(app.page==FILES){
-        int last=app.count+1;
-        if(k==RIGHT && app.selected==0)app.selected=1;
-        else if(k==LEFT && app.selected==1)app.selected=0;
-        else if(k==DOWN && app.selected<2 && app.count)app.selected=2;
-        else if(k==UP && app.selected)app.selected--;
-        else if(k==DOWN && app.selected<last)app.selected++;
+        if(k==UP && app.selected>0)app.selected--;
+        else if(k==DOWN && app.selected+1<app.count)app.selected++;
         else if(k==INDENT && (app.more_files || app.file_page)){
             app.file_page=app.more_files?app.file_page+1:0;files_refresh();
-            if(app.count)app.selected=2;
         }
+        else if(k==NEW_SCRIPT || k==NEW_TEXT){app.new_text=k==NEW_TEXT;begin_name();}
+        else if(k==OPEN_SHELL)start_shell();
         else if(k==BROWSE)browse_folder(app.documents);
         else if((k==ESC || k==LEFT) && app.browsing)browse_parent();
         else if(k==ESC)app.quit=1;
-        else if(k==ENTER || (k==RIGHT && app.selected>=2 && !app.entries[app.selected-2].folder)){
-            if(app.selected==0)begin_name();
-            else if(app.selected==1)start_shell();
-            else {
-                struct FileEntry *item=&app.entries[app.selected-2];
-                if(item->folder){
-                    char path[PATH_CAP];
-                    if(snprintf(path,sizeof path,"%s/%s",app.root,item->name)>=(int)sizeof path)
-                        strcpy(app.status,"Folder path too long");
-                    else browse_folder(path);
-                }else if(load_script(item->name)){
-                    app.page=EDITOR;
-                    if(k==ENTER)run();
-                }
+        else if((k==ENTER || k==RIGHT) && app.count){
+            struct FileEntry *item=&app.entries[app.selected];
+            if(item->folder){
+                char path[PATH_CAP];
+                if(snprintf(path,sizeof path,"%s/%s",app.root,item->name)>=(int)sizeof path)
+                    strcpy(app.status,"Folder path too long");
+                else browse_folder(path);
+            }else if(load_script(item->name)){
+                app.page=EDITOR;
+                if(k==ENTER && valid_script(app.doc.name))run();
             }
         }
     }else if(app.page==NAME){

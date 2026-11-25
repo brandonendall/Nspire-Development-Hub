@@ -104,38 +104,39 @@ static void status(const char *s,int c){
     if(!*s)return;
     box(0,200,320,18,BAR);fitted(9,201,BODY,c,s,311);
 }
-static void tile(int x,int which,const char *name){
-    int selected=app.selected==which;
-    int fill=selected?GREEN:CARD, fg=selected?INK:WHITE;
-    panel(x,41,147,45,selected?GREEN:LINE,fill);
-    if(which==0){box(x+12,55,15,3,fg);box(x+18,49,3,15,fg);}
-    else terminal_icon(x+12,52,selected?INK:AQUA);
-    text(x+36,53,BODY,fg,name,x+141);
-}
 static void files(void){
-    char count[32];header("FILES");tile(9,0,"New script");tile(164,1,"Python shell");
-    box(10,103,13,8,GOLD);box(11,100,6,4,GOLD);
-    const char *leaf=strrchr(app.root,'/');
-    fitted(29,95,TITLE,WHITE,app.browsing?(leaf?leaf+1:app.root):"Scripts",238);
-    if(app.file_page || app.more_files)snprintf(count,sizeof count,"Page %d / Tab",1+app.file_page);
-    else snprintf(count,sizeof count,"%d %s",app.count,app.count==1?"entry":"entries");right(310,99,BODY,MUTED,count);
-    box(10,118,300,1,LINE);
-    int first=app.selected>5?app.selected-5:0;
-    for(int i=first;i<app.count && i<first+4;i++){
-        int y=122+(i-first)*19,sel=app.selected==i+2;
-        if(sel){panel(8,y,304,19,GREEN,DEEP);box(10,y+3,2,13,GREEN);}
-        if(app.entries[i].folder){box(17,y+7,13,8,GOLD);box(18,y+4,6,4,GOLD);}
-        else page_icon(17,y+3,sel?GREEN:GOLD);
-        fitted(38,y+1,BODY,sel?WHITE:MUTED,app.entries[i].name,290);
-        if(sel)text(298,y+2,BODY,GREEN,">",311);
-    }
-    if(!app.count)text(12,133,BODY,MUTED,"No folders or Python scripts here.",306);
-    char location[PATH_CAP+16];
+    char location[PATH_CAP+16], count[32];
+    header("FILES");
     snprintf(location,sizeof location,"Documents%s",app.root+strlen(app.documents));
-    status(app.status[0]?app.status:location,app.status[0]?GOLD:FAINT);
-    if(app.selected>=2 && !app.entries[app.selected-2].folder){
-        footer();int x=key(8,"Enter","Run");key(x,"Right","Edit");
-    }else workspace_footer();
+    fitted(10,35,BODY,WHITE,location,310);
+    box(0,55,320,19,CARD);
+    text(13,56,SMALL,MUTED,"Name",231);
+    text(258,56,SMALL,MUTED,"Type",307);
+    int first=app.selected>5?app.selected-5:0;
+    for(int i=first;i<app.count && i<first+6;i++){
+        int y=76+(i-first)*20,sel=app.selected==i;
+        const struct FileEntry *entry=&app.entries[i];
+        int py=valid_script(entry->name);
+        if(sel){panel(7,y,306,19,GREEN,DEEP);box(8,y+3,2,13,GREEN);}
+        else box(11,y+19,297,1,LINE);
+        if(entry->folder){box(15,y+7,13,8,GOLD);box(16,y+4,6,4,GOLD);}
+        else page_icon(16,y+3,py?AQUA:MUTED);
+        fitted(37,y+1,BODY,sel?WHITE:MUTED,entry->name,247);
+        text(258,y+2,SMALL,sel?GREEN:FAINT,entry->folder?"Folder":py?"Python":"Text",306);
+    }
+    if(!app.count)text(12,90,BODY,MUTED,"This folder has no scripts or text files.",307);
+    if(app.file_page || app.more_files)snprintf(count,sizeof count,"Page %d / Tab",1+app.file_page);
+    else snprintf(count,sizeof count,"%d %s",app.count,app.count==1?"item":"items");
+    status(app.status[0]?app.status:count,app.status[0]?GOLD:MUTED);
+    footer();
+    int x=8;
+    if(app.count){
+        const struct FileEntry *entry=&app.entries[app.selected];
+        int python=!entry->folder && valid_script(entry->name);
+        x=key(x,"Enter",python?"Run":"Open");
+        if(python)x=key(x,"Right","Edit");
+    }
+    key(x,"Menu","Actions");
 }
 static int token(const char *s,int n){
     static const char *const words[]={"and","as","assert","break","class","continue","def","del",
@@ -229,7 +230,7 @@ static void modal(void){
     int list=app.page==ACTIONS;
     int top=list?39:55,bottom=list?212:181;
     panel(x,top,w,bottom-top,LINE,BAR);box(x+2,top+2,3,22,GREEN);
-    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":
+    const char *title=app.page==NAME?(app.new_text?"New text file":"New Python script"):app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":
         app.page==GOTO_LINE?"Go to line":app.page==REPLACE_FIND?"Replace all":
         app.page==REPLACE_WITH?"Replacement text":app.symbols?"Marks and symbols":"Commands";
     text(x+13,top+7,TITLE,WHITE,title,294);box(x+12,top+34,w-24,1,LINE);
@@ -263,7 +264,7 @@ static void modal(void){
             app.page==GOTO_LINE?"Enter a line number.":
             app.page==REPLACE_FIND?"Find all exact matches.":
             app.page==REPLACE_WITH?"Enter replaces all. Blank deletes.":
-            "Enter a name to create a blank script.";
+            "Enter a name to create a blank file.";
         int n=strlen(s),from=utf_advance(s,0,n,utf_columns(s,n)-34);
         panel(29,101,262,26,GREEN,CARD);
         text(37,106,CODE,WHITE,s+from,284);box(37+7*utf_columns(s+from,n-from),108,1,12,GREEN);
@@ -276,8 +277,8 @@ static void modal(void){
 typedef struct {const char *key,*action;} HelpRow;
 typedef struct {const char *title;HelpRow rows[7];} HelpTopic;
 static const HelpTopic topics[HELP_COUNT]={
-    [HELP_FILES]={"Files",{{"New script","Create a blank script"},
-        {"Enter","Run script or open folder"},{"Right on script","Open script for editing"},{"Menu > Browse","Browse Documents"},
+    [HELP_FILES]={"Files",{{"Menu","New file, shell or browse"},
+        {"Enter","Run script or open item"},{"Right on script","Open script for editing"},{"Menu > Browse","Browse Documents"},
         {"Tab","Next page in a large folder"},{"Esc","Parent folder or exit"}}},
     [HELP_EDITOR]={"Editing and running",{{"Ctrl+R","Save and run this script"},
         {"Ctrl+S","Save changes"},{"Ctrl+F","Find text or find next"},

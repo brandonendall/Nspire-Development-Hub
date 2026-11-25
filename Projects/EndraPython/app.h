@@ -10,7 +10,7 @@
 #define OUT_WIDTH 40
 #define OUT_LINES 96
 typedef enum { FILES, EDITOR, OUTPUT, SHELL, NAME, ACTIONS, DISCARD, FIND, GUIDE, CATALOG, READ_INPUT, GOTO_LINE, REPLACE_FIND, REPLACE_WITH, OUTLINE } Page;
-typedef enum { UP=256, DOWN, LEFT, RIGHT, ENTER, ESC, MENU, SAVE, RUN, INDENT, UNDO, REDO, COPY, CUT, PASTE, SELECT_ALL, SEARCH, EXT_UP, EXT_DOWN, EXT_LEFT, EXT_RIGHT, TI_INPUT, MARKS, OPEN_GUIDE, OPEN_CATALOG, BROWSE, LIST_MODULES, GO_LINE, REPLACE, SHOW_OUTLINE } Key;
+typedef enum { UP=256, DOWN, LEFT, RIGHT, ENTER, ESC, MENU, SAVE, RUN, INDENT, UNDO, REDO, COPY, CUT, PASTE, SELECT_ALL, SEARCH, EXT_UP, EXT_DOWN, EXT_LEFT, EXT_RIGHT, TI_INPUT, MARKS, OPEN_GUIDE, OPEN_CATALOG, BROWSE, LIST_MODULES, GO_LINE, REPLACE, SHOW_OUTLINE, NEW_SCRIPT, NEW_TEXT, OPEN_SHELL } Key;
 typedef struct {
     char name[NAME_CAP], text[SOURCE_CAP+1], original[SOURCE_CAP+1];
     int cursor, top, left, dirty, existing, crlf, anchor, selecting;
@@ -24,7 +24,7 @@ typedef struct {
     char name[NAME_CAP], status[80], folder[PATH_CAP], documents[PATH_CAP];
     int help_topic, input_result;
     char reply[512];
-    int browsing, request_input, file_page, more_files;
+    int new_text, browsing, request_input, file_page, more_files;
     int count, selected, action, quit, error, error_line, symbols;
     char output[OUT_LINES][4*OUT_WIDTH+1], command[128], history[128];
     int first, rows, col, offset, output_bytes;
@@ -39,6 +39,7 @@ void edit_key(Editor *d,int k);
 int line_start(const char *s,int pos);
 int line_number(const char *s,int pos);
 int valid_script(const char *s);
+int valid_text(const char *s);
 void files_refresh(void);
 int resolve_module_file(const char *requested, char name[NAME_CAP]);
 int read_script_source(const char *name, const char **source);

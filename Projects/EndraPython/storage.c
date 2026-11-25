@@ -14,14 +14,22 @@ static int fail(const char *msg){ snprintf(app.status,sizeof app.status,"%s",msg
 static int join(char *p,const char *name) {
     return snprintf(p,PATH_CAP,"%s/%s",app.root,name)<PATH_CAP;
 }
-int valid_script(const char *s) {
+static int valid_name(const char *s) {
     size_t n=strlen(s);
     if(!n || s[0]=='.' || n>=NAME_CAP)return 0;
     for(size_t i=0;i<n;i++){
         unsigned char c=s[i];
         if(c<32 || c==127 || c=='/' || c=='\\')return 0;
     }
-    return (n>3&&!strcasecmp(s+n-3,".py"))||(n>7&&!strcasecmp(s+n-7,".py.tns"));
+    return 1;
+}
+int valid_script(const char *s) {
+    size_t n=strlen(s);
+    return valid_name(s) && ((n>3&&!strcasecmp(s+n-3,".py"))||(n>7&&!strcasecmp(s+n-7,".py.tns")));
+}
+int valid_text(const char *s) {
+    size_t n=strlen(s);
+    return valid_name(s) && ((n>4&&!strcasecmp(s+n-4,".txt")) || (n>8&&!strcasecmp(s+n-8,".txt.tns")));
 }
 static int compare_entries(const void *a,const void *b){
     const struct FileEntry *x=a,*y=b;
@@ -42,7 +50,7 @@ static void enumerate(DIR *d){
         if(lstat(path,&st))continue;
 #endif
         int folder=S_ISDIR(st.st_mode);
-        if(!folder && !(S_ISREG(st.st_mode) && valid_script(name)))continue;
+        if(!folder && !(S_ISREG(st.st_mode) && (valid_script(name) || valid_text(name))))continue;
         if(skip>0){skip--;continue;}
         if(app.count==FILE_CAP){app.more_files=1;break;}
         struct FileEntry *item=&app.entries[app.count++];
@@ -62,7 +70,6 @@ int browse_folder(const char *path){
     DIR *d=opendir(path);
     if(!d)return fail("Cannot open folder");
     strcpy(app.folder,path);app.browsing=1;app.file_page=0;enumerate(d);
-    if(app.count)app.selected=2;
     return 1;
 }
 void browse_parent(void){
@@ -74,7 +81,7 @@ void browse_parent(void){
     if(!slash)return;
     const char *old=slash+1;*slash=0;
     if(browse_folder(parent)){
-        for(int i=0;i<app.count;i++)if(!strcmp(app.entries[i].name,old)){app.selected=i+2;break;}
+        for(int i=0;i<app.count;i++)if(!strcmp(app.entries[i].name,old)){app.selected=i;break;}
     }
 }
 static int read_bytes(const char *path,char *dst) {
@@ -110,9 +117,9 @@ int resolve_module_file(const char *requested, char name[NAME_CAP]) {
 }
 
 /* The returned bytes remain valid until the next script read. */
-int read_script_source(const char *name, const char **source) {
+static int read_document_source(const char *name, const char **source) {
     char path[PATH_CAP];
-    if(!valid_script(name)||!join(path,name))return fail("Invalid script name");
+    if(!(valid_script(name)||valid_text(name))||!join(path,name))return fail("Invalid file name");
     int n=read_bytes(path,raw);
     if(n<0)return fail("Unreadable, binary or over 8 KiB");
     for(int i=0;i<n;){
@@ -123,9 +130,13 @@ int read_script_source(const char *name, const char **source) {
     return 1;
 }
 
+int read_script_source(const char *name, const char **source) {
+    return valid_script(name) && read_document_source(name, source);
+}
+
 int load_script(const char *name) {
     const char *source;
-    if (!read_script_source(name, &source)) return 0;
+    if (!read_document_source(name, &source)) return 0;
     int n = (int)strlen(source);
     Editor *d=&app.doc;
     edit_reset_history();
@@ -157,7 +168,7 @@ int ensure_scripts_folder(void) {
 int save_script(void) {
     Editor *d=&app.doc;
     char dst[PATH_CAP], lock[PATH_CAP], tmp[PATH_CAP], backup[PATH_CAP];
-    if(!valid_script(d->name)||!join(dst,d->name)||!join(lock,".saving")||!join(tmp,".saving/source")||!join(backup,".saving/original.py.tns"))
+    if(!(valid_script(d->name)||valid_text(d->name))||!join(dst,d->name)||!join(lock,".saving")||!join(tmp,".saving/source")||!join(backup,".saving/original.py.tns"))
         return fail("Invalid save path");
     if(!ensure_scripts_folder())return 0;
     if(mkdir(lock,0700))return fail("Save busy - original preserved");

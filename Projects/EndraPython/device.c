@@ -107,6 +107,35 @@ static mp_obj_t draw_string(size_t n, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(draw_string_obj, 3, 5, draw_string);
 
+/* Copy a validated big-endian RGB565 rectangle into the script canvas. */
+static mp_obj_t blit565(size_t n, const mp_obj_t *args) {
+    (void)n;
+    mp_buffer_info_t source;
+    mp_get_buffer_raise(args[0], &source, MP_BUFFER_READ);
+    int stride = coordinate(args[1]);
+    int sx = coordinate(args[2]), sy = coordinate(args[3]);
+    int x = coordinate(args[4]), y = coordinate(args[5]);
+    int w = coordinate(args[6]), h = coordinate(args[7]);
+    if (stride <= 0 || sx < 0 || sy < 0 || x < 0 || y < 0 ||
+        w <= 0 || h <= 0 || sx + w > stride ||
+        x + w > EP_WIDTH || y + h > EP_HEIGHT ||
+        (size_t)((sy + h - 1) * stride + sx + w) > source.len / 2)
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid blit bounds"));
+    bool transparent = args[8] != mp_const_none;
+    uint16_t key = transparent ? (uint16_t)mp_obj_get_int(args[8]) : 0;
+    init_canvas();
+    for (int row = 0; row < h; row++) {
+        const uint8_t *src = (const uint8_t *)source.buf + 2 * ((size_t)(sy + row) * stride + sx);
+        uint16_t *dst = canvas + (y + row) * EP_WIDTH + x;
+        for (int col = 0; col < w; col++, src += 2) {
+            uint16_t color = (uint16_t)src[0] << 8 | src[1];
+            if (!transparent || color != key) dst[col] = color;
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(blit565_obj, 9, 9, blit565);
+
 static mp_obj_t show_screen(void) {
     init_canvas();
     device_present(canvas);
@@ -166,7 +195,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sleep_obj, sleep_seconds);
 #define FUNC(q, f) {MP_ROM_QSTR(MP_QSTR_##q), MP_ROM_PTR(&f)}
 #define INTEGER(q, n) {MP_ROM_QSTR(MP_QSTR_##q), MP_ROM_INT(n)}
 static const mp_rom_map_elem_t display_table[] = {
-    NAME(display), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),
+    NAME(display), FUNC(_blit565, blit565_obj), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),
     FUNC(fill_rect, fill_rect_obj), FUNC(clear_screen, clear_screen_obj),
     FUNC(draw_string, draw_string_obj), FUNC(show_screen, show_screen_obj),
     INTEGER(WIDTH, EP_WIDTH), INTEGER(HEIGHT, EP_HEIGHT),

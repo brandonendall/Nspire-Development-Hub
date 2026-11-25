@@ -62,7 +62,7 @@ void platform_wait_input(void){
 }
 static void catalog_checks(const char *root,void *stack){
     app_init(root,stack);help_check(HELP_FILES);
-    app_key(ENTER);type("catalog_test");app_key(ENTER);assert(!app.doc.text[0]);
+    choose_command(NEW_SCRIPT);type("catalog_test");app_key(ENTER);assert(!app.doc.text[0]);
     app_key(INDENT);assert(!strcmp(app.doc.text,"  "));app_key(ENTER);assert(!strcmp(app.doc.text,"  \n  "));
     app_key('x');app_key(INDENT);assert(strstr(app.doc.text,"  x "));
     app_key(SELECT_ALL);type("name=");
@@ -70,13 +70,13 @@ static void catalog_checks(const char *root,void *stack){
     app_key(ENTER);assert(!strcmp(app.doc.text,"name=input("));type("'Name? ')");app_key(ENTER);
     choose_command(OPEN_CATALOG);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
     answer="Brandon";app_key(RUN);assert(!app.error && output_has("Brandon"));help_check(HELP_OUTPUT);
-    app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);
+    app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);assert(app.page==SHELL);
     type("keep=27");app_key(ENTER);choose_command(OPEN_CATALOG);
     for(int i=0;i<catalog_count;i++){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));
     }
-    for(int i=1;i<=19;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
+    for(int i=1;i<=20;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
     app_key(RIGHT);app_key(RIGHT);type("input");
     assert(!strcmp(catalog_entries[catalog_index].name,"input"));app_key(ESC);
     type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);app_key(RIGHT);app_key(RIGHT);
@@ -96,13 +96,13 @@ static void browse_checks(const char *home,void *stack){
     write_file(home,"Lesson (1).PY.TNS","print('home')");
     write_file(nested,"unrelated.tns","leave me");
     choose_command(BROWSE);assert(app.browsing && !strcmp(app.root,app.documents));
-    while(strcmp(app.entries[app.selected-2].name,"Class Notes")){assert(app.selected<app.count+1);app_key(DOWN);}
+    while(strcmp(app.entries[app.selected].name,"Class Notes")){assert(app.selected+1<app.count);app_key(DOWN);}
     app_key(ENTER);assert(!strcmp(app.root,other));app_key(ENTER);assert(!strcmp(app.root,nested));
     assert(app.count==1);preview("browser");
     app_key(ENTER);assert(app.page==OUTPUT && !app.error && output_has("original"));app_key(ESC);
     app_key(SELECT_ALL);type("print(");pick("\"");pick("°");pick("\"");type(")");
     app_key(RUN);assert(!app.error && output_has("°"));
-    app_key(ESC);app_key(ESC);app_key(DOWN);app_key(RIGHT);assert(app.page==EDITOR && !strcmp(app.doc.text,"print(\"°\")"));
+    app_key(ESC);app_key(ESC);app_key(RIGHT);assert(app.page==EDITOR && !strcmp(app.doc.text,"print(\"°\")"));
     app_key(SELECT_ALL);app_key(TI_INPUT);assert(app.request_input);app.request_input=0;
     uint16_t ti[]={'p','r','i','n','t','(','"',0x03c0,0x2264,0x03b8,'"',')'};
     char converted[64];assert(utf16_input(ti,sizeof ti/sizeof ti[0],converted,sizeof converted));
@@ -113,7 +113,7 @@ static void browse_checks(const char *home,void *stack){
     app_key(ESC);app_key(ENTER);app_key(ESC);assert(!strcmp(app.root,other));
     app_key(ESC);assert(!strcmp(app.root,app.documents));app_key(ESC);assert(!strcmp(app.root,home));
     assert(load_script("Lesson (1).PY.TNS") && !strcmp(app.doc.text,"print('home')"));
-    app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);type("print(");pick("[");pick("'");
+    choose_command(OPEN_SHELL);assert(app.page==SHELL);type("print(");pick("[");pick("'");
     type("ok");pick("'");pick("]");type(")");app_key(ENTER);assert(output_has("['ok']"));
     app_key(MARKS);preview("symbols");app_key(ESC);assert(app.page==SHELL && !app.command[0]);
     for(int i=0;i<ep_symbol_count;i++){pick(ep_symbols[i]);assert(!strcmp(app.command,ep_symbols[i]));app_key(8);assert(!app.command[0]);}
@@ -141,7 +141,7 @@ static void ide_checks(const char *root,void *stack){
         size_t n=fread(data,1,sizeof data-1,src);assert(n && n<sizeof data-1 && !fclose(src));
         write_file(root,samples[i],data);
     }
-    app_init(root,stack);app_key(DOWN);assert(app.selected==2);preview("files");
+    app_init(root,stack);assert(app.selected==0);preview("files");
     assert(load_script("Dice_Roller.py.tns"));app.page=EDITOR;app_key(RUN);
     assert(app.page==OUTPUT && !app.error && output_has("Rolling a d20"));
     app_key(ESC);edit_goto_line(&app.doc,4);preview("editor");
@@ -164,7 +164,7 @@ static void ide_checks(const char *root,void *stack){
     for(int i=0;i<16;i++)app_key('x');
     for(int i=0;i<16;i++)app_key(UNDO);
     assert(strlen(app.doc.text)==5);app_key('y');app_key(REDO);assert(!strcmp(app.doc.text,"xxxxxy"));
-    app_init(root,stack);app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);
+    app_init(root,stack);choose_command(OPEN_SHELL);assert(app.page==SHELL);
     type("6*7");help_check(HELP_SHELL);assert(!strcmp(app.command,"6*7"));
     app_key(ENTER);assert(output_has("42"));
     choose_command(LIST_MODULES);assert(output_has("collections") && output_has("random") && output_has("struct"));
@@ -306,7 +306,7 @@ static void workbench_checks(const char *root, void *stack) {
         "def original():\n    return 'marker'\n"
         "class Widget:\n    pass\nprint(original())\n");
     app_init(root,stack);
-    app_key(RIGHT);app_key(ENTER);
+    choose_command(OPEN_SHELL);
     type(":cd Workbench Test");app_key(ENTER);
     type(":pwd");app_key(ENTER);assert(output_has("/Workbench Test"));
     type(":ls");app_key(ENTER);assert(output_has("Demo Script.py.tns"));
@@ -331,9 +331,9 @@ static void workbench_checks(const char *root, void *stack) {
     app_key(REDO);assert(app.doc.dirty);
     app_key(RUN);assert(!app.error && output_has("updated"));
     app_key(ESC);app_key(ESC);
-    assert(app.page==FILES);app_key(DOWN);app_key(ENTER);
+    assert(app.page==FILES);app_key(ENTER);
     assert(app.page==OUTPUT && output_has("updated"));
-    app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);
+    app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);
     assert(app.page==SHELL);
     type(":edit Demo Script.py.tns");app_key(ENTER);assert(app.page==EDITOR);
     choose_command(OPEN_CATALOG);app_key(LEFT);app_key(LEFT);type("load");
@@ -355,9 +355,9 @@ static void numerics_checks(const char *root, void *stack) {
     write_file(root,"Run013_Numerics_Test.py.tns",source);
     app_init(root,stack);
     for(int i=0;i<app.count;i++){
-        if(!strcmp(app.entries[i].name,"Run013_Numerics_Test.py.tns"))app.selected=i+2;
+        if(!strcmp(app.entries[i].name,"Run013_Numerics_Test.py.tns"))app.selected=i;
     }
-    assert(app.selected>=2);
+    assert(!strcmp(app.entries[app.selected].name,"Run013_Numerics_Test.py.tns"));
     app_key(ENTER);
     if(app.error){
         for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[(app.first+i)%OUT_LINES]);
@@ -365,7 +365,7 @@ static void numerics_checks(const char *root, void *stack) {
     assert(app.page==OUTPUT && !app.error && output_has("Decimal checks passed") && output_has("24 x 24 multiply passed") && output_has("Free heap:"));
     preview("numerics");
     for(int i=0;i<app.rows;i++)puts(app.output[(app.first+i)%OUT_LINES]);
-    app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);
+    app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);
     assert(app.page==SHELL);
     choose_command(LIST_MODULES);assert(output_has("numpy"));
     assert(runtime_exec("<test>","import numpy as np\n"
@@ -473,28 +473,135 @@ static void graphics_checks(const char *root, void *stack) {
     puts("PASS: canvas, held arrows and release, Esc and rerun, compatibility adapters and wrap-safe timing.");
 }
 
+static void pygame_checks(const char *root, void *stack) {
+    char source[SOURCE_CAP + 1], path[PATH_CAP + NAME_CAP];
+    const char *name = "Run014_Pygame_Test.py.tns";
+    FILE *f = fopen("tests/Run014_Pygame_Test.py.tns", "rb");
+    assert(f);
+    size_t n = fread(source, 1, sizeof source, f);
+    assert(n < sizeof source && !ferror(f) && !fclose(f));
+    source[n] = 0;
+    write_file(root, name, source);
+    app_init(root, stack);
+    assert(load_script(name));
+    app.page = EDITOR;
+    frames = 0;
+    control_fixture = 1;
+    app_key(RUN);
+    control_fixture = 0;
+    if (app.error) {
+        for (int i = 0; i < app.rows; i++) puts(app.output[(app.first + i) % OUT_LINES]);
+        fflush(stdout);
+    }
+    assert(app.page == OUTPUT && !app.error && frames == 2 && output_has("Pygame frames: 2"));
+    preview("pygame_exit");
+    f = fopen("build/pygame.ppm", "wb");
+    assert(f);
+    fprintf(f, "P6\n%d %d\n255\n", EP_WIDTH, EP_HEIGHT);
+    for (int i = 0; i < EP_WIDTH * EP_HEIGHT; i++) {
+        unsigned c = script_pixels[i];
+        fputc(((c >> 11) & 31) * 255 / 31, f);
+        fputc(((c >> 5) & 63) * 255 / 63, f);
+        fputc((c & 31) * 255 / 31, f);
+    }
+    assert(!fclose(f));
+    runtime_start(stack);
+    assert(runtime_exec("<pygame>",
+        "import pygame as p\n"
+        "screen=p.display.set_mode()\n"
+        "screen.fill('blue')\n"
+        "s=p.Surface((4,3))\n"
+        "s.fill('magenta')\n"
+        "s.set_colorkey('magenta')\n"
+        "s.set_at((1,1),'red')\n"
+        "assert screen.blit(s,(-1,3))==p.Rect(0,3,3,3)\n"
+        "assert screen.get_at((0,4))==p.Color('red')\n"
+        "assert screen.get_at((1,4))==p.Color('blue')\n"
+        "s.blit(s,(2,1),(1,1,2,1))\n"
+        "assert s.get_at((2,1))==p.Color('red')\n"
+        "a=p.sprite.Sprite()\n"
+        "a.rect=p.Rect(0,0,6,6)\n"
+        "b=p.sprite.Sprite()\n"
+        "b.rect=p.Rect(4,4,4,4)\n"
+        "g=p.sprite.Group(b)\n"
+        "assert p.sprite.spritecollide(a,g,True)==[b] and not b.alive()\n"
+        "p.event.post(p.event.Event(p.KEYUP,key=p.K_RIGHT))\n"
+        "assert p.event.poll().key==p.K_RIGHT\n"
+        "assert p.time.Clock().tick(30)>=33", 0));
+    runtime_end();
+    snprintf(path, sizeof path, "%s/%s", root, name);
+    assert(!unlink(path));
+    puts("PASS: Pygame surfaces, clipping, color-key blit, overlap, sprites, events and clock.");
+}
+
+static void file_manager_checks(const char *home, void *stack) {
+    char folder[PATH_CAP], path[PATH_CAP + NAME_CAP];
+    snprintf(folder,sizeof folder,"%s/Examples",home);
+    assert(!mkdir(folder,0700));
+    write_file(home,"Game_Demo.py.tns","print('ready')\n");
+    write_file(home,"Matrix_Test.py.tns","print(32)\n");
+    app_init(home,stack);
+    choose_command(NEW_TEXT);
+    type("Notes");
+    app_key(ENTER);
+    assert(app.page==EDITOR && !strcmp(app.doc.name,"Notes.txt.tns"));
+    type("Plain text stays in the editor.");
+    app_key(SAVE);
+    app_key(RUN);
+    assert(app.page==EDITOR && strstr(app.status,"Python script"));
+    app_key(ESC);
+    assert(app.page==FILES && app.entries[0].folder);
+    app_key(DOWN);
+    preview("file_manager");
+    app_key(MENU);
+    app_key(DOWN);
+    preview("file_menu");
+    app_key(ESC);
+    app_key(ENTER);
+    assert(app.page==OUTPUT && output_has("ready"));
+    app_key(ESC);app_key(ESC);
+    for(int i=0;i<app.count;i++){
+        if(!strcmp(app.entries[i].name,"Notes.txt.tns"))app.selected=i;
+    }
+    app_key(ENTER);
+    assert(app.page==EDITOR && !strcmp(app.doc.text,"Plain text stays in the editor."));
+    app_key(ESC);
+    app.selected=0;
+    app_key(RIGHT);
+    assert(!strcmp(app.root,folder));
+    app_key(ESC);
+    assert(!strcmp(app.root,home));
+    assert(!rmdir(folder));
+    const char *files[]={"Game_Demo.py.tns","Matrix_Test.py.tns","Notes.txt.tns"};
+    for(int i=0;i<3;i++){
+        snprintf(path,sizeof path,"%s/%s",home,files[i]);
+        assert(!unlink(path));
+    }
+    puts("PASS: Files-first startup, open and run, text create and save, and folder navigation.");
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
     char scripts[150];snprintf(scripts,sizeof scripts,"%s/EndraPython",root);
     app_init(scripts,&stack);assert(!app.count && access(scripts,F_OK));
-    app_key(ENTER);app_key(ENTER);assert(app.page==NAME && access(scripts,F_OK));
+    choose_command(NEW_SCRIPT);assert(app.page==NAME && access(scripts,F_OK));
     type("Hello_World");app_key(ENTER);assert(app.page==EDITOR && app.doc.existing && !app.doc.text[0]);
     type("print('Hello from EndraPython')");app_key(ENTER);type("print(sum(range(10)))");app_key(ENTER);app_key(SAVE);
     app.doc.cursor=0;
     assert(!strcmp(app.doc.name,"Hello_World.py.tns"));
     app_key(RUN);assert(app.page==OUTPUT && !app.error && output_has("Hello from EndraPython") && output_has("45"));
     preview("console");app_key(ESC);app_key(ESC);assert(app.count==1);
-    app_key(ENTER);type("Hello_World");app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));app_key(ESC);
-    app_key(DOWN);app_key(RIGHT);assert(app.page==EDITOR);
+    choose_command(NEW_SCRIPT);type("Hello_World");app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));app_key(ESC);
+    app_key(RIGHT);assert(app.page==EDITOR);
     assert(app.doc.cursor==0);app_key(RIGHT);app_key(RIGHT);preview("editor");
     app_key(LEFT);app_key(LEFT);type("#");app_key(RUN);assert(!app.error&&!output_has("Hello from EndraPython")&&output_has("45"));
     app_key(ESC);assert(app.doc.cursor==1);app_key(8);app_key(SAVE);app_key(ESC);preview("files");
-    app_key(ENTER);type("Broken");app_key(ENTER);type("print(42)");app_key(ENTER);type("if :");app_key(RUN);
+    choose_command(NEW_SCRIPT);type("Broken");app_key(ENTER);type("print(42)");app_key(ENTER);type("if :");app_key(RUN);
     assert(app.error && output_has("SyntaxError") && output_has("line 2"));preview("error");
     app_key(ESC);app_key(8);app_key(ESC);assert(app.page==DISCARD);app_key(ESC);assert(app.page==EDITOR);
     app_key(ESC);app_key(ENTER);assert(app.page==FILES);
-    app_key(RIGHT);app_key(ENTER);assert(app.page==SHELL);
+    choose_command(OPEN_SHELL);assert(app.page==SHELL);
     type("x = 7");app_key(ENTER);type("sum(range(x))");app_key(ENTER);
     assert(output_has("21"));app_key(UP);assert(!strcmp(app.command,"sum(range(x))"));preview("repl");
     assert(runtime_exec("<test>","import gc, math, collections\nprint(math.sqrt(81), 2**40)",0));
@@ -527,6 +634,8 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    file_manager_checks(scripts,&stack);
+    pygame_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
     numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
@@ -538,5 +647,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 24 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 28 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }
