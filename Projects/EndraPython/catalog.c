@@ -1,15 +1,15 @@
 #include "app.h"
-#include "runtime.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
-CatalogEntry catalog_entries[CATALOG_CAP];
+#include "catalog_index.h"
+
+const CatalogEntry *catalog_entries;
 int catalog_count,catalog_index,catalog_group;
 char catalog_filter[40];
-char catalog_groups[CATALOG_GROUP_CAP][48];
-int catalog_group_count, catalog_browsing_modules;
+const int catalog_group_count = sizeof catalog_groups / sizeof catalog_groups[0];
+int catalog_browsing_modules;
 static const struct {const char *name,*syntax;} common[]={
     {"print","print(value, ...)"},{"input","input([prompt])"},{"open","open(file[, mode])"},{"len","len(obj)"},
     {"range","range(start, stop[, step])"},{"int","int(value)"},{"float","float(value)"},
@@ -17,29 +17,14 @@ static const struct {const char *name,*syntax;} common[]={
     {"min","min(iterable)"},{"max","max(iterable)"},{"abs","abs(number)"},
     {"type","type(obj)"},{"dir","dir([obj])"},{"help","help([obj])"}
 };
-static int compare_names(const void *a,const void *b){
-    const CatalogEntry *x=a,*y=b;return strcasecmp(x->name,y->name);
-}
-static int compare_groups(const void *a, const void *b) {
-    return strcasecmp(a, b);
-}
 static int qualified(void) {
     return catalog_group && strcmp(catalog_groups[catalog_group], "builtins");
 }
-static void load_group(void){
-    catalog_index=0;catalog_filter[0]=0;
-    if(catalog_group==0){
-        catalog_count=sizeof common/sizeof common[0];
-        for(int i=0;i<catalog_count;i++){
-            strcpy(catalog_entries[i].name,common[i].name);catalog_entries[i].callable=1;
-        }
-        return;
-    }
-    int temporary=app.origin==EDITOR;
-    if(temporary)runtime_start(app.stack);
-    catalog_count=runtime_catalog(catalog_groups[catalog_group]);
-    if(temporary)runtime_end();
-    qsort(catalog_entries,catalog_count,sizeof catalog_entries[0],compare_names);
+static void load_group(void) {
+    catalog_index = 0;
+    catalog_filter[0] = 0;
+    catalog_entries = catalog_members + catalog_ranges[catalog_group].offset;
+    catalog_count = catalog_ranges[catalog_group].count;
 }
 void catalog_open(void){
     app.origin=app.page;
@@ -48,8 +33,6 @@ void catalog_open(void){
     catalog_browsing_modules=1;
     catalog_filter[0]=0;
     catalog_count=0;
-    runtime_catalog_modules();
-    qsort(catalog_groups+1, catalog_group_count-1, sizeof catalog_groups[0], compare_groups);
 }
 void catalog_name(char *out,size_t size){
     const char *name=catalog_entries[catalog_index].name;

@@ -222,7 +222,7 @@ static void console(void){
     box(0,52,320,1,LINE);
     int visible=shell?10:12,last=app.rows-app.offset,first=last>visible?last-visible:0;
     if(shell && !input && app.rows==1 && !app.output[app.first][0]){
-        text(10,62,CODE,MUTED,"Catalog opens Python modules",312);
+        text(10,62,CODE,MUTED,"Menu > Command catalog",312);
         text(10,77,CODE,MUTED,":help for terminal commands",312);
     }
     for(int i=first;i<last;i++){
@@ -264,7 +264,7 @@ static void modal(void){
                 if(i==app.action)panel(cx,cy,20,20,ACCENT,DEEP);
                 text(cx+6,cy+2,CODE,WHITE,ep_symbols[i],cx+20);
             }
-            text(31,161,BODY,MUTED,"Ctrl+Catalog opens TI symbols",290);
+            text(31,161,BODY,MUTED,"Menu also offers TI symbols",290);
         }else{
             panel(x+12,top+39,w-24,21,ACCENT,CARD);
             fitted(x+20,top+42,BODY,app.command_filter[0]?WHITE:FAINT,
@@ -318,7 +318,7 @@ static const HelpTopic topics[HELP_COUNT]={
         {"Ctrl+Z","Undo"},{"Ctrl+Y","Redo"}}},
     [HELP_SHELL]={"Python shell",{{"Enter","Run the command"},{"Up","Recall last command"},
         {"Left / Right","Scroll earlier / later output"},{":help","List terminal commands"},
-        {"? key","Insert a symbol"},{"Catalog","Browse Python modules"},{"Esc","Return to Files"}}},
+        {"? key","Insert a symbol"},{"Menu > Catalog","Browse Python modules"},{"Esc","Return to Files"}}},
     [HELP_OUTPUT]={"Script output",{{"Ctrl+R","Run the script again"},{"Up / Down","Scroll output"},
         {"Enter on error","Go to the failing line"},{"Hold Esc during run","Interrupt Python"},
         {"Esc","Return to editor"}}}

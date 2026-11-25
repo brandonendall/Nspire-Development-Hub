@@ -61,12 +61,12 @@ int palette_matches(const Command *command);
 void catalog_open(void);
 void catalog_key(int key);
 #define CATALOG_CAP 192
-typedef struct {char name[48];int callable;} CatalogEntry;
-extern CatalogEntry catalog_entries[CATALOG_CAP];
+typedef struct {const char *name;int callable;} CatalogEntry;
+extern const CatalogEntry *catalog_entries;
 extern int catalog_count,catalog_index,catalog_group;
-#define CATALOG_GROUP_CAP 64
-extern char catalog_groups[CATALOG_GROUP_CAP][48];
-extern int catalog_group_count, catalog_browsing_modules;
+extern const char *const catalog_groups[];
+extern const int catalog_group_count;
+extern int catalog_browsing_modules;
 extern char catalog_filter[40];
 const char *catalog_signature(void);
 void catalog_name(char *out,size_t size);

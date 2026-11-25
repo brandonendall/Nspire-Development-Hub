@@ -1,15 +1,14 @@
-# Run017 handheld check
+# Run018 handheld check
 
-Transfer the standalone executable from Android.
+Run017 rebooted Brandon's CX II CAS when he pressed Catalog. Keep Run016 as the confirmed rollback. Run018 disables the key inside EndraPython and uses native read-only data for the menu catalog. The immediate cause of the reboot has not been isolated.
+
+After Ndless is working, transfer Run018 as a separate file.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run017.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run018.tns /upload
 ```
 
-1. Open the Python shell. Press the physical Catalog key, type `math`, and press Enter. Select `sqrt` and check that the syntax says `math.sqrt(x)`. Back out, execute `import math`, then use the Catalog to insert `math.sqrt(`. Type `9)` and press Enter. Expect `3.0`.
-2. Check that Ctrl+Catalog still opens TI symbols. Esc returns without inserting text.
-3. Open a Python script. Press Menu and type `settings`. Change Indent guides or Line numbers and observe the editor. Return settings to On and check that Enter after a block header adds two spaces.
-4. In the shell, `import casioplot` should report ImportError. `import display, gint, pygame` should succeed.
-
-Run016 is the owner-confirmed fallback. Existing script files can be reused.
+1. Open Run018 and choose Python shell from the Files menu.
+2. Open **Menu > Command catalog**. Type `math` and press Enter, then find `sqrt`. The syntax line should show `math.sqrt(x)`.
+3. Press Esc to go back to modules and again to return to the shell. First verify this menu path. Stop at any display, input or stability issue and use Run016.

@@ -66,7 +66,8 @@ static void catalog_checks(const char *root,void *stack){
     app_key(INDENT);assert(!strcmp(app.doc.text,"  "));app_key(ENTER);assert(!strcmp(app.doc.text,"  \n  "));
     app_key('x');app_key(INDENT);assert(strstr(app.doc.text,"  x "));
     app_key(SELECT_ALL);type("name=");
-    app_key(CATALOG_KEY);assert(app.page==CATALOG && catalog_browsing_modules);preview("catalog_modules");
+    app_key(CATALOG_KEY);assert(app.page==EDITOR && !app.request_input);
+    choose_command(OPEN_CATALOG);assert(app.page==CATALOG && catalog_browsing_modules);preview("catalog_modules");
     app_key(ENTER);type("in");preview("catalog");
     app_key(ENTER);assert(!strcmp(app.doc.text,"name=input("));type("'Name? ')");app_key(ENTER);
     choose_command(OPEN_CATALOG);app_key(ENTER);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
@@ -81,7 +82,8 @@ static void catalog_checks(const char *root,void *stack){
     app_key(ESC);assert(app.auto_indent && app.indent_guides && app.line_numbers);
     answer="Brandon";app_key(RUN);assert(!app.error && output_has("Brandon"));help_check(HELP_OUTPUT);
     app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);assert(app.page==SHELL);
-    type("keep=27");app_key(ENTER);app_key(CATALOG_KEY);app_key(ENTER);
+    type("keep=27");app_key(ENTER);app_key(CATALOG_KEY);assert(app.page==SHELL && !app.request_input);
+    choose_command(OPEN_CATALOG);app_key(ENTER);
     for(int i=0;i<catalog_count;i++){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));
@@ -101,7 +103,7 @@ static void catalog_checks(const char *root,void *stack){
     type("builtins");app_key(ENTER);type("input");
     assert(!strcmp(catalog_entries[catalog_index].name,"input"));
     app_key(ESC);assert(catalog_browsing_modules);app_key(ESC);
-    type("import math");app_key(ENTER);app_key(CATALOG_KEY);type("math");app_key(ENTER);
+    type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);type("math");app_key(ENTER);
     type("sqrt");assert(!strcmp(catalog_signature(),"math.sqrt(x)"));
     app_key(ENTER);assert(!strcmp(app.command,"math.sqrt("));type("9)");app_key(ENTER);assert(output_has("3.0"));
     type("import casioplot");app_key(ENTER);assert(output_has("ImportError"));

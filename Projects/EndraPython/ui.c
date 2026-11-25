@@ -178,8 +178,6 @@ void app_key(int k) {
         return;
     }
     if(app.page==CATALOG){catalog_key(k);return;}
-    if(k==CATALOG_KEY)
-        k=(app.page==SHELL || (app.page==EDITOR && valid_script(app.doc.name)))?OPEN_CATALOG:TI_INPUT;
     if(k==OPEN_CATALOG && (app.page==SHELL || app.page==EDITOR)){catalog_open();return;}
     if(k==MARKS && (app.page==EDITOR || app.page==SHELL || app.page==NAME || app.page==FIND || app.page==REPLACE_FIND || app.page==REPLACE_WITH || app.page==READ_INPUT)){
         app.origin=app.page;app.page=ACTIONS;app.action=0;app.symbols=1;return;
