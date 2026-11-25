@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run008 hardware result, 2026-11-24
+
+Brandon’s TI-Nspire CX II CAS photo shows `Run008_Storage_Test.py.tns` completed with `Saved runs: 2`, confirming the Stage 3 on-device JSON read and increment. Run008 is the hardware-confirmed baseline. The project move passed host tests and has no reported handheld result. Stage 4 is the workbench.
+
 ## Run008 project files and JSON, 2026-11-24
 
 Brandon confirmed Run007 Stage 2 on his CX II CAS, including the exception and the editor jump to helper line 2. Run007 is the hardware-confirmed rollback. Run008 adds project-relative text and binary streams, virtual working directories, os directory operations, io and json. Source `df943fe7f48b33cb6574a84fd9cfc341907fc009` on feature/endrapython-run001, [CI 45503337612](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45503337612), [standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45503337612/artifacts/14972716131), [build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45503337612/artifacts/14972840955). The downloaded 187244-byte Zehn executable matched the local ARM build, SHA-256 `5e6b8096f3fb26a56d567ca04bf816996915a2c526f2a2c39cd143f54a89180b`. Host regressions passed, including JSON persistence across relaunch and a project move, binary seek/append, text reads, path errors and VM stream cleanup. All 18 rendered frames and the contact sheet matched CI. Run008 hardware acceptance is pending. Run the separate Run008_Storage_Test.py.tns twice across app launches to check 1 then 2.
