@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run009 workbench, 2026-11-24
+
+Run009 adds direct launch with Enter and direct edit with Right in Files, editor line navigation and declaration outline, undoable literal Replace all, colon-prefixed shell commands, and catalog signatures and import insertion. Source `e56a04615ac0b4f55dad6b69b8a9090cca0a9316` on feature/endrapython-run001. [CI 45549338699](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45549338699) passed. [EndraPython_Run009.tns](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45549338699/artifacts/14992198425) is 190693 bytes, SHA-256 `0f8916f413fc09f2ebbe94663e958ca6cba19f8dcec1536f73f398e6e1dd14d2`. The executable from the [build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45549338699/artifacts/14992009359) matches the local ARM build byte for byte. All 21 previews and the contact sheet match CI. Host regression tests passed. Run009 handheld testing is pending. Run008 is the hardware-confirmed rollback. Use WORK_HANDOFF.md to check Enter and Right, the editor tools, and shell commands on-device.
+
 ## Run008 hardware result, 2026-11-24
 
 Brandon’s TI-Nspire CX II CAS photo shows `Run008_Storage_Test.py.tns` completed with `Saved runs: 2`, confirming the Stage 3 on-device JSON read and increment. Run008 is the hardware-confirmed baseline. The project move passed host tests and has no reported handheld result. Stage 4 is the workbench.
