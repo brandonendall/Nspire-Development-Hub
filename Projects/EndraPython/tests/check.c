@@ -155,7 +155,7 @@ static void ide_checks(const char *root,void *stack){
     assert(app.doc.cursor-app.doc.anchor==2);app_key(COPY);app_key(SELECT_ALL);app_key(PASTE);
     assert(!strcmp(app.doc.text,"ra"));app_key(SAVE);assert(!app.doc.dirty);
     app_key(UNDO);assert(app.doc.dirty);app_key(REDO);assert(!app.doc.dirty);
-    app_key(SELECT_ALL);type("def f():");app_key(ENTER);type("    return 1//0");app_key(ENTER);
+    app_key(SELECT_ALL);type("def f():");app_key(ENTER);type("  return 1//0");app_key(ENTER);
     for(int i=0;i<4;i++)app_key(8);
     type("f()");app_key(RUN);assert(app.error && app.error_line==2);app_key(ENTER);
     assert(app.page==EDITOR && app.doc.cursor==9);
@@ -633,6 +633,53 @@ static void file_manager_checks(const char *home, void *stack) {
     puts("PASS: Files-first startup, open and run, text create and save, and folder navigation.");
 }
 
+static void assert_enter(const char *name,const char *before,const char *after){
+    memset(&app.doc,0,sizeof app.doc);
+    strcpy(app.doc.name,name);
+    strcpy(app.doc.text,before);
+    app.doc.cursor=(int)strlen(before);
+    app.page=EDITOR;
+    edit_reset_history();
+    app_key(ENTER);
+    assert(!strcmp(app.doc.text,after));
+    app_key(UNDO);
+    assert(!strcmp(app.doc.text,before));
+}
+
+static void indentation_checks(const char *root,void *stack){
+    app_init(root,stack);
+    const char *python="Loop_Demo.py.tns";
+    assert_enter(python,"for i in range(1, 10):","for i in range(1, 10):\n  ");
+    assert_enter(python,"def total():\n  if True: # comment","def total():\n  if True: # comment\n    ");
+    assert_enter(python,"def total(\n    values\n):","def total(\n    values\n):\n  ");
+    assert_enter(python,"  items = {'one':","  items = {'one':\n  ");
+    assert_enter(python,"  text = 'colon:'","  text = 'colon:'\n  ");
+    assert_enter(python,"  # if True:","  # if True:\n  ");
+    assert_enter(python,"if True: print(4)","if True: print(4)\n");
+    assert_enter(python,"text = \"\"\"\nif True:","text = \"\"\"\nif True:\n");
+    assert_enter("Notes.txt.tns","for i in range(1, 10):","for i in range(1, 10):\n");
+    assert_enter(python,"\tif True:","\tif True:\n\t  ");
+    memset(&app.doc,0,sizeof app.doc);
+    strcpy(app.doc.name,python);
+    app.page=EDITOR;
+    edit_reset_history();
+    type("def print_numbers():");app_key(ENTER);
+    type("for i in range(1, 10):");app_key(ENTER);
+    type("print(i)");app_key(ENTER);
+    assert(!strcmp(app.doc.text,"def print_numbers():\n  for i in range(1, 10):\n    print(i)\n    "));
+    preview("workspace");
+    app_key(MENU);preview("workspace_tools");app_key(ESC);
+    for(int i=0;i<4;i++)app_key(8);
+    type("print_numbers()");
+    app_key(RUN);
+    assert(app.page==OUTPUT && !app.error && output_has("9"));
+    preview("workspace_run");
+    char path[PATH_CAP+NAME_CAP];
+    snprintf(path,sizeof path,"%s/%s",root,python);
+    assert(!unlink(path));
+    puts("PASS: Python block indentation, comments, strings, brackets, plain text, undo and run.");
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
@@ -690,6 +737,7 @@ int main(void){
     file_manager_checks(scripts,&stack);
     pygame_checks(scripts,&stack);
     assets_checks(scripts,&stack);
+    indentation_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
     numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
@@ -701,5 +749,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 29 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 32 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

@@ -151,6 +151,11 @@ static int token(const char *s,int n){
 }
 static void code_line(const Editor *d,int start,int end,int y,int current){
     int quote=0,escaped=0,comment=0,word_end=start,word_color=WHITE;
+    int indent=0;
+    while(start+indent<end && d->text[start+indent]==' ')indent++;
+    for(int col=2;col<=indent;col+=2)
+        if(col>=d->left && col-d->left<EDIT_COLS)
+            box(32+7*(col-d->left)-3,y,1,12,LINE);
     int step=1;
     for(int p=start,col=-d->left;p<end;p+=step,col++){
         int c=utf_decode(d->text+p,&step),color=WHITE;
@@ -176,9 +181,15 @@ static void code_line(const Editor *d,int start,int end,int y,int current){
     if(current)box(32+7*(utf_columns(d->text+start,d->cursor-start)-d->left),y+1,1,12,GREEN);
 }
 static void editor(void){
-    const Editor *d=&app.doc;header("EDITOR");
-    page_icon(11,35,GOLD);fitted(31,34,BODY,WHITE,d->name,255);
-    if(d->dirty)right(308,36,SMALL,GOLD,"MODIFIED");
+    const Editor *d=&app.doc;
+    int python=valid_script(d->name);
+    header("EDITOR");
+    box(0,30,320,22,CARD);
+    box(0,30,3,22,GREEN);
+    page_icon(11,35,python?AQUA:MUTED);
+    fitted(31,34,BODY,WHITE,d->name,239);
+    if(d->dirty)box(245,39,4,4,GOLD);
+    right(308,36,SMALL,MUTED,python?"Python":"Text");
     box(0,52,320,1,LINE);box(0,53,27,147,BAR);
     int start=0,row=0;
     while(row<d->top && d->text[start])if(d->text[start++]=='\n')row++;
@@ -193,7 +204,11 @@ static void editor(void){
     }
     char loc[80];snprintf(loc,sizeof loc,"Line %d    Col %d",1+line_number(d->text,d->cursor),1+utf_columns(d->text+line_start(d->text,d->cursor),d->cursor-line_start(d->text,d->cursor)));
     status(app.status[0]?app.status:loc,app.status[0]?GOLD:MUTED);
-    workspace_footer();
+    if(!app.status[0] && python)right(307,202,SMALL,FAINT,"2 spaces");
+    footer();
+    int x=key(8,"Menu","Tools");
+    if(python)x=key(x,"Ctrl+R","Run");
+    key(x,"Ctrl+S","Save");
 }
 static void console(void){
     int input=app.page==READ_INPUT || (app.page==ACTIONS && app.origin==READ_INPUT);
@@ -286,7 +301,7 @@ static const HelpTopic topics[HELP_COUNT]={
     [HELP_EDITOR]={"Editing and running",{{"Ctrl+R","Save and run this script"},
         {"Ctrl+S","Save changes"},{"Ctrl+F","Find text or find next"},
         {"? key","Insert a symbol"},{"Menu","Replace, go to line, outline"},
-        {"Tab","Indent to a 2-space stop"},{"Esc","Return to Files"}}},
+        {"Enter after :","Indent Python block"},{"Esc","Return to Files"}}},
     [HELP_EDITS]={"Selection and clipboard",{{"Shift + arrows","Extend selection"},
         {"Ctrl+A","Select all"},{"Ctrl+C","Copy"},{"Ctrl+X","Cut"},{"Ctrl+V","Paste"},
         {"Ctrl+Z","Undo"},{"Ctrl+Y","Redo"}}},

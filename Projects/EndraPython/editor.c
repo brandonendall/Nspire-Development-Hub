@@ -70,6 +70,58 @@ void edit_insert(Editor *d,const char *value){
     if(d->selecting){if(d->anchor<a)a=d->anchor;else b=d->anchor;}
     replace_text(d,a,b,value,(int)strlen(value));
 }
+static int identifier(char c){
+    return (c>='a'&&c<='z') || (c>='A'&&c<='Z') || (c>='0'&&c<='9') || c=='_' || (unsigned char)c>=128;
+}
+
+static int header_at(const char *text,int at,int end){
+    static const char *const keywords[]={"def","class","if","elif","else","for","while",
+        "try","except","finally","with","async","match","case"};
+    for(size_t i=0;i<sizeof keywords/sizeof keywords[0];i++){
+        int len=(int)strlen(keywords[i]);
+        if(end-at>=len && !memcmp(text+at,keywords[i],len) &&
+           (at+len==end || !identifier(text[at+len])))return 1;
+    }
+    return 0;
+}
+
+/* Return the start of a completed compound header, ignoring literals,
+ * comments, and colons within brackets. */
+static int block_header(const char *s,int end){
+    int start=0, depth=0, quote=0, triple=0, last=0;
+    for(int i=0;i<end;i++){
+        char c=s[i];
+        if(quote){
+            if(c=='\\' && i+1<end){i++;continue;}
+            if(c==quote && (!triple || (i+2<end && s[i+1]==c && s[i+2]==c))){
+                if(triple)i+=2;
+                quote=triple=0;
+            }else if(c=='\n' && !triple){quote=0;start=i+1;last=0;}
+            continue;
+        }
+        if(c=='#'){
+            while(i+1<end && s[i+1]!='\n')i++;
+        }else if(c=='\'' || c=='"'){
+            quote=c;
+            triple=i+2<end && s[i+1]==c && s[i+2]==c;
+            if(triple)i+=2;
+            last=c;
+        }else if(c=='\\' && i+1<end && s[i+1]=='\n'){
+            i++;
+        }else if(c=='\n'){
+            if(!depth){start=i+1;last=0;}
+        }else if(c!=' ' && c!='\t'){
+            if(c=='(' || c=='[' || c=='{')depth++;
+            else if((c==')' || c==']' || c=='}') && depth)depth--;
+            last=c;
+        }
+    }
+    if(depth || quote || last!=':')return -1;
+    int first=start;
+    while(first<end && (s[first]==' ' || s[first]=='\t'))first++;
+    return header_at(s,first,end)?start:-1;
+}
+
 void edit_key(Editor *d,int k){
     int pos=d->cursor,size=strlen(d->text),start=line_start(d->text,pos);
     int extend=k>=EXT_UP && k<=EXT_RIGHT;
@@ -101,8 +153,15 @@ void edit_key(Editor *d,int k){
     if(k==PASTE){data=clipboard;n=strlen(data);if(!n){strcpy(app.status,"Clipboard empty");return;}}
     else if(k==8 || k==CUT){if(a==b){if(!a)return;a=utf_prev(d->text,a);}}
     else if(k==ENTER){
-        insert[n++]='\n';start=line_start(d->text,a);
-        while(start<a && d->text[start++]==' ')insert[n++]=' ';
+        insert[n++]='\n';
+        int block=valid_script(d->name)?block_header(d->text,a):-1;
+        start=block>=0?block:line_start(d->text,a);
+        while(start<a && (d->text[start]==' ' || d->text[start]=='\t'))
+            insert[n++]=d->text[start++];
+        if(block>=0 && n<=SOURCE_CAP-1){
+            insert[n++]=' ';
+            insert[n++]=' ';
+        }
     }else if(k==INDENT){
         const int indent_width=2;
         start=line_start(d->text,a);

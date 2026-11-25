@@ -1,4 +1,4 @@
-# EndraPython Run015
+# EndraPython Run016
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -54,6 +54,10 @@ Use `pygame.image.load(path)` with an uncompressed 24- or 32-bit BMP or a binary
 
 `pygame.font.Font(None, size)` selects the nearest built-in bitmap face from three size ranges. Use `size(text)` to measure a single line and `render(text, antialias, color[, background])` to create a surface. Solid backgrounds support antialiasing, and transparent text uses a color key.
 
+## Python indentation and editor
+
+Enter preserves the current indentation. A Python block header such as `def`, `for`, or `if` adds two spaces, including when a comment follows the colon. The rule ignores colons inside strings, dictionaries, slices and comments. Plain text carries forward existing whitespace. The editor shows indentation guides and key hints for run and save.
+
 ## First use
 
 Open EndraPython from Documents. Choose Menu > New Python script, type a filename and press Enter to create a blank script. Ctrl+R saves and runs it. Esc returns from output to the same caret. Esc in Files exits to TI Documents.
@@ -61,7 +65,7 @@ Open EndraPython from Documents. Choose Menu > New Python script, type a filenam
 | Control | Effect |
 | --- | --- |
 | Arrows / directional pad | Select a file or menu item, move the caret, scroll console history |
-| Enter / center click | Run a highlighted script, open a folder or confirm. In the editor, insert a newline and copy leading spaces |
+| Enter / center click | Run a highlighted script, open a folder or confirm. In the editor, carry indentation forward and add two spaces after a Python block header |
 | Shift + letter | Uppercase |
 | Tab | Insert spaces up to the next two-column stop |
 | Del | Delete the preceding character |
@@ -89,7 +93,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run015 scope |
+| Area | Run016 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
