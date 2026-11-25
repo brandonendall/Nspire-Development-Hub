@@ -347,22 +347,22 @@ static void workbench_checks(const char *root, void *stack) {
 
 static void numerics_checks(const char *root, void *stack) {
     char path[PATH_CAP + NAME_CAP], source[SOURCE_CAP + 1];
-    FILE *fixture = fopen("tests/Run010_Numerics_Test.py.tns", "rb");
+    FILE *fixture = fopen("tests/Run013_Numerics_Test.py.tns", "rb");
     assert(fixture);
     size_t bytes = fread(source, 1, sizeof source, fixture);
     assert(bytes < sizeof source && !ferror(fixture) && !fclose(fixture));
     source[bytes] = 0;
-    write_file(root,"Run010_Numerics_Test.py.tns",source);
+    write_file(root,"Run013_Numerics_Test.py.tns",source);
     app_init(root,stack);
     for(int i=0;i<app.count;i++){
-        if(!strcmp(app.entries[i].name,"Run010_Numerics_Test.py.tns"))app.selected=i+2;
+        if(!strcmp(app.entries[i].name,"Run013_Numerics_Test.py.tns"))app.selected=i+2;
     }
     assert(app.selected>=2);
     app_key(ENTER);
     if(app.error){
         for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[(app.first+i)%OUT_LINES]);
     }
-    assert(app.page==OUTPUT && !app.error && output_has("24 x 24 multiply passed") && output_has("Free heap:"));
+    assert(app.page==OUTPUT && !app.error && output_has("Decimal checks passed") && output_has("24 x 24 multiply passed") && output_has("Free heap:"));
     preview("numerics");
     for(int i=0;i<app.rows;i++)puts(app.output[(app.first+i)%OUT_LINES]);
     app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);
@@ -376,7 +376,7 @@ static void numerics_checks(const char *root, void *stack) {
     assert(!runtime_exec("<test>","np.normalize([0, 0])",0));
     assert(!runtime_exec("<test>","np.matrix([[1, 2],[2, 4]]).I",0));
     app_key(ESC);
-    snprintf(path,sizeof path,"%s/Run010_Numerics_Test.py.tns",root);
+    snprintf(path,sizeof path,"%s/Run013_Numerics_Test.py.tns",root);
     assert(!unlink(path));
 }
 

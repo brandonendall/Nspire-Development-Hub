@@ -24,3 +24,5 @@ Path("micropython_embed/port/frozen_modules.c").write_bytes(output)
 PY
 # In v1.24.1 the compact string-only build also needs to count string entries.
 sed -i 's/^    #if MICROPY_MODULE_FROZEN_STR \&\& MICROPY_MODULE_FROZEN_MPY$/    #if MICROPY_MODULE_FROZEN_STR/' micropython_embed/py/frozenmod.c
+# Use fixed decimal scaling on the single-precision calculator port.
+patch -s -d micropython_embed -p1 < patches/decimal-float.patch

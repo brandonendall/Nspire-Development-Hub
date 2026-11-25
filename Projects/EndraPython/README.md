@@ -1,4 +1,4 @@
-# EndraPython Run012
+# EndraPython Run013
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -75,7 +75,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run012 scope |
+| Area | Run013 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
@@ -112,3 +112,5 @@ From this folder run `sh prepare.sh`, then `make -j2 check` and `python3 tests/p
 ## Attribution
 
 EndraPython includes GPL-2.0-or-later display/input code derived from EndraHome Run047 (43aa6d5e3074b01736aeace777888e7bff6070a6), in turn derived from gpSP. Native keyboard scanning adapts the same branch. Distribute the complete program under GPL-2.0-or-later with source. The embedded MicroPython code is MIT licensed; the core license is included. The Run003 font atlas uses DejaVu Sans, Sans Bold and Sans Mono. The license travels with the source and build artifact. See licenses/.
+
+Run013 uses a fixed decimal scaling table on the single-precision port to address the handheld literal error observed in Run010. The handheld check prints Decimal checks passed before running the numerical regression.

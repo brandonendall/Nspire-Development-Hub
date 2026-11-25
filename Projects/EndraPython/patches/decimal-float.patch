@@ -1,0 +1,32 @@
+--- a/py/parsenum.c
++++ b/py/parsenum.c
+@@ -352,2 +352,25 @@
+         // of slightly erroneous values.
++        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
++        // Keep decimal literal conversion independent of the target libm powf.
++        static const float powers_of_ten[] = {
++            1e0F, 1e1F, 1e2F, 1e3F, 1e4F, 1e5F, 1e6F,
++            1e7F, 1e8F, 1e9F, 1e10F, 1e11F, 1e12F, 1e13F,
++            1e14F, 1e15F, 1e16F, 1e17F, 1e18F, 1e19F, 1e20F,
++            1e21F, 1e22F, 1e23F, 1e24F, 1e25F, 1e26F, 1e27F,
++            1e28F, 1e29F, 1e30F, 1e31F, 1e32F, 1e33F, 1e34F,
++            1e35F, 1e36F, 1e37F, 1e38F,
++        };
++        if (dec_val != 0) {
++            if (exp_val < -38) {
++                // The preceding small-normal scaling has already run.
++                dec_val = 0;
++            } else if (exp_val > 38) {
++                dec_val = INFINITY;
++            } else if (exp_val < 0) {
++                dec_val /= powers_of_ten[-exp_val];
++            } else {
++                dec_val *= powers_of_ten[exp_val];
++            }
++        }
++        #else
+         if (exp_val < 0 && exp_val >= -EXACT_POWER_OF_10) {
+@@ -357,2 +380,3 @@
+         }
++        #endif
+     }

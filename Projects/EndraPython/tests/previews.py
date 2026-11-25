@@ -14,4 +14,4 @@ sheet = Image.new("RGB", (656, 504), "#273137")
 for i, name in enumerate(["graphics", "graphics_return", "numerics", "catalog_signatures"]):
     with Image.open(out / f"{name}.png") as im:
         sheet.paste(im, (4 + (i % 2) * 328, 6 + (i // 2) * 250))
-sheet.save(out / "EndraPython_Run012_Previews.png")
+sheet.save(out / "EndraPython_Run013_Previews.png")
