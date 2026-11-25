@@ -2,7 +2,7 @@
 
 ## Run013 graphics hardware confirmation, 2026-11-25
 
-Brandon confirmed on the CX II CAS that the Run012 graphics fixture inside Run013 moved the square and returned on its own, consistent with the 120-frame cap. Manual Esc and stopping on arrow release were not explicitly reported. Run013 is the hardware-verified baseline for numerics, graphics presentation, movement, and automatic return.
+Brandon confirmed on the CX II CAS that the Run012 graphics fixture inside Run013 moved the square and returned on its own, consistent with the 120-frame cap. Brandon also confirmed that movement stops when the arrow is released and that pressing Esc exits the animation. Run013 is the hardware-verified baseline for numerics, graphics presentation, held-arrow movement, release, manual Esc, and automatic return.
 
 ## Run013 handheld results, 2026-11-25
 
