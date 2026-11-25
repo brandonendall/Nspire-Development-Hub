@@ -1,0 +1,28 @@
+import display as d
+import keys
+import time
+
+x, y = 146, 108
+frames = 0
+start = time.ticks_ms()
+try:
+  while frames < 120 and not keys.keydown(keys.KEY_ESC):
+    if keys.keydown(keys.KEY_LEFT):
+      x = max(0, x - 3)
+    if keys.keydown(keys.KEY_RIGHT):
+      x = min(296, x + 3)
+    if keys.keydown(keys.KEY_UP):
+      y = max(44, y - 3)
+    if keys.keydown(keys.KEY_DOWN):
+      y = min(216, y + 3)
+    d.clear_screen((15, 24, 38))
+    d.draw_string(10, 8, "Run012 graphics", (154, 255, 219), "large")
+    d.draw_string(10, 34, "Hold arrows to move. Esc exits.", (255, 255, 255), "small")
+    d.fill_rect(x, y, 24, 24, (80, 220, 180))
+    d.fill_rect(x + 4, y + 4, 16, 16, (27, 100, 117))
+    d.show_screen()
+    frames += 1
+    time.sleep_ms(18)
+except KeyboardInterrupt:
+  pass
+print("Frames:", frames, "Elapsed ms:", time.ticks_diff(time.ticks_ms(), start))

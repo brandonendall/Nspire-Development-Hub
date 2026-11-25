@@ -393,16 +393,21 @@ int device_key_held(int key) {
     return (key == RIGHT && frames == 0) || (key == ESC && frames >= 2);
 }
 uint32_t device_ticks(void) { return raw_ticks; }
-void device_delay(unsigned ms) { raw_ticks += (ms * EP_TICKS_PER_SECOND + 500) / 1000; }
+static int timer_stalled;
+int device_delay(unsigned ms) {
+    if (timer_stalled) return 0;
+    raw_ticks += (ms * EP_TICKS_PER_SECOND + 500) / 1000;
+    return 1;
+}
 
 static void graphics_checks(const char *root, void *stack) {
     char source[SOURCE_CAP + 1], path[PATH_CAP + NAME_CAP];
-    FILE *fixture = fopen("tests/Run011_Graphics_Test.py.tns", "rb");
+    FILE *fixture = fopen("tests/Run012_Graphics_Test.py.tns", "rb");
     assert(fixture);
     size_t len = fread(source, 1, sizeof source, fixture);
     assert(len < sizeof source && !ferror(fixture) && !fclose(fixture));
     source[len] = 0;
-    const char *name = "Run011_Graphics_Test.py.tns";
+    const char *name = "Run012_Graphics_Test.py.tns";
     write_file(root,name,source);
     app_init(root,stack);
     assert(load_script(name));
@@ -446,9 +451,25 @@ static void graphics_checks(const char *root, void *stack) {
         "assert 14 <= time.ticks_diff(time.ticks_ms(),start) <= 16\n"
         "assert time.ticks_diff(2,1073741823)==3\n"
         "assert time.ticks_diff(1073741823,2)==-3",0));
+    timer_stalled=1;
+    assert(!runtime_exec("<graphics>", "time.sleep_ms(18)", 0));
+    assert(output_has("calculator timer stopped"));
+    timer_stalled=0;
+    assert(runtime_exec("<graphics>", "time.sleep_ms(18)", 0));
     runtime_end();
     snprintf(path,sizeof path,"%s/%s",root,name);
     assert(!unlink(path));
+
+    fixture = fopen("tests/Run012_Frame_Probe.py.tns", "rb");
+    assert(fixture);
+    len = fread(source, 1, sizeof source, fixture);
+    assert(len < sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len] = 0;
+    frames = 0;
+    runtime_start(stack);
+    assert(runtime_exec("<frame-probe>", source, 0));
+    runtime_end();
+    assert(frames == 1 && output_has("Frame returned") && output_has("Delay returned:"));
     puts("PASS: canvas, held arrows and release, Esc and rerun, compatibility adapters and wrap-safe timing.");
 }
 

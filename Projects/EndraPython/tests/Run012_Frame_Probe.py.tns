@@ -1,0 +1,13 @@
+import display as d
+import time
+
+d.clear_screen((15, 24, 38))
+d.draw_string(12, 12, "Run012 frame probe", (255, 255, 255))
+d.fill_rect(136, 95, 48, 48, (80, 220, 180))
+d.show_screen()
+print("Frame returned")
+start = time.ticks_ms()
+time.sleep_ms(750)
+elapsed = time.ticks_diff(time.ticks_ms(), start)
+assert elapsed >= 750, elapsed
+print("Delay returned:", elapsed, "ms")

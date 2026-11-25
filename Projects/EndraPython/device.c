@@ -141,7 +141,8 @@ static void sleep_milliseconds(mp_int_t ms) {
     while (ms) {
         if (cancel_pressed()) mp_raise_type(&mp_type_KeyboardInterrupt);
         unsigned chunk = ms > 15 ? 15 : (unsigned)ms;
-        device_delay(chunk);
+        if (!device_delay(chunk))
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("calculator timer stopped"));
         ms -= chunk;
     }
     current_ms();

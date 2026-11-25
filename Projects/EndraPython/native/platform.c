@@ -270,7 +270,14 @@ int device_key_held(int key) {
   return key_active(raw[key - UP], 0) || (key == ENTER && key_active(KEY_CLICK_RAW, 0));
 }
 
-void device_delay(unsigned ms) {
-  msleep(ms);
-  if(!timer_ok)fallback_ticks+=(TICKS*ms+500)/1000;
+int device_delay(unsigned ms) {
+  /* The SDK's msleep waits for an IRQ without a timeout. Use the already
+   * running counter here and bound register reads even if it stops. */
+  if (!timer_ok) return 0;
+  uint32_t start = ticks();
+  uint32_t duration = (TICKS * ms + 999) / 1000;
+  for (unsigned polls = 0; polls < 1000000; polls++) {
+    if ((uint32_t)(ticks() - start) >= duration) return 1;
+  }
+  return 0;
 }
