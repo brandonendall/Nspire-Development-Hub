@@ -442,6 +442,7 @@ unsigned device_script_keys(int keys[EP_SCRIPT_KEY_CAP]) {
             if (frames == 2) { keys[0]='a'; return 1; }
         }
     }
+    if (device_key_held(RIGHT)) { keys[0]=RIGHT; return 1; }
     return 0;
 }
 uint32_t device_ticks(void) { return raw_ticks; }
@@ -662,6 +663,57 @@ static void pygame_draw_checks(const char *root, void *stack) {
     snprintf(path,sizeof path,"%s/%s",root,name);
     assert(!unlink(path));
     puts("PASS: Pygame primitives, clipped drawing, RGB565 transforms and color keys.");
+}
+
+static void pygame_event_checks(const char *root, void *stack) {
+    const char *name="Run024_Pygame_Events.py.tns";
+    char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
+    FILE *fixture=fopen("tests/Run024_Pygame_Events.py.tns","rb");
+    assert(fixture);
+    size_t len=fread(source,1,sizeof source,fixture);
+    assert(len<sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len]=0;
+    write_file(root,name,source);
+    app_init(root,stack);
+    assert(load_script(name));
+    app.page=EDITOR;
+    choose_command(OPEN_CATALOG);type("pygame");app_key(ENTER);type("event.wait");
+    assert(catalog_signature() && !strcmp(catalog_signature(),"pygame.event.wait([timeout_ms])"));
+    app_key(ESC);app_key(ESC);
+    frames=0;
+    raw_ticks=UINT32_MAX-20;
+    key_fixture=1;
+    app_key(RUN);
+    if(app.error)for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[i]);
+    assert(app.page==OUTPUT && !app.error && frames==2 && output_has("Pygame event checks passed"));
+    assert(script_pixels[0]==script_pixels[EP_WIDTH*EP_HEIGHT-1]);
+    save_script_pixels("build/pygame_events.ppm");
+    key_fixture=2;
+    runtime_start(stack);
+    assert(runtime_exec("<pygame-events>", "import pygame as p, time\np.key.set_repeat(30,12)\n",0));
+    injected_keys[0]=EP_KEY_SHIFT;injected_keys[1]='a';injected_count=2;
+    assert(runtime_exec("<pygame-events>",
+        "assert p.key.get_mods()==p.KMOD_SHIFT and p.key.get_pressed()[p.K_a]\n"
+        "e=[e for e in p.event.get(p.KEYDOWN) if e.key==p.K_a][0]\n"
+        "assert e.unicode=='A' and e.mod==p.KMOD_SHIFT and not e.repeat\n"
+        "time.sleep_ms(31); e=p.event.poll(); assert e.key==p.K_a and e.repeat\n"
+        "time.sleep_ms(13); assert p.event.poll().repeat\n",0));
+    injected_count=0;
+    assert(runtime_exec("<pygame-events>",
+        "assert len(p.event.get(p.KEYUP))==2\n"
+        "assert p.event.wait(16).type==p.NOEVENT\n"
+        "e=p.event.Event(p.USEREVENT); p.event.post(e); p.event.post(p.event.Event(p.QUIT))\n"
+        "assert len(p.event.get(pump=False,exclude=p.QUIT))==1\n"
+        "assert p.event.peek(p.QUIT,pump=False); p.event.clear(p.QUIT,pump=False)\n"
+        "assert not p.event.peek(pump=False)\n",0));
+    cancel=1;
+    assert(!runtime_exec("<pygame-events>", "p.event.wait()\n",0) && output_has("KeyboardInterrupt"));
+    cancel=0;
+    runtime_end();
+    key_fixture=0;
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+    puts("PASS: Pygame mapped keys, modifiers, repeat, wait, event filters and Esc.");
 }
 
 static void pygame_checks(const char *root, void *stack) {
@@ -928,6 +980,7 @@ int main(void){
     file_manager_checks(scripts,&stack);
     pygame_checks(scripts,&stack);
     pygame_draw_checks(scripts,&stack);
+    pygame_event_checks(scripts,&stack);
     assets_checks(scripts,&stack);
     indentation_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
@@ -943,5 +996,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 38 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 39 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

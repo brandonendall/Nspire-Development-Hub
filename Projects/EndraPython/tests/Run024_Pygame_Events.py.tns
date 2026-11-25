@@ -1,0 +1,56 @@
+import pygame as pg
+import time
+
+pg.init()
+screen = pg.display.set_mode()
+font = pg.font.Font(None, 16)
+
+
+def prompt(first, second):
+    screen.fill((8, 16, 24))
+    screen.blit(font.render(first, True, "white"), (14, 57))
+    screen.blit(font.render(second, True, "white"), (14, 88))
+    pg.display.flip()
+
+
+pg.event.clear()
+prompt("Hold Right until the screen changes.", "Esc cancels.")
+start = time.ticks_ms()
+while time.ticks_diff(time.ticks_ms(), start) < 8000:
+    event = pg.event.wait(100)
+    if event.type == pg.KEYDOWN and event.key == pg.K_RIGHT:
+        assert pg.key.get_pressed()[pg.K_RIGHT]
+        assert not event.repeat and event.unicode == ""
+        break
+else:
+    raise AssertionError("Right press not seen")
+
+prompt("Release Right, then tap A.", "Esc cancels.")
+start = time.ticks_ms()
+released = False
+while time.ticks_diff(time.ticks_ms(), start) < 8000:
+    event = pg.event.wait(100)
+    if event.type == pg.KEYUP and event.key == pg.K_RIGHT:
+        released = True
+    if event.type == pg.KEYDOWN and event.key == pg.K_a:
+        assert released and event.unicode == "a" and event.mod == pg.KMOD_NONE
+        break
+else:
+    raise AssertionError("A press not seen")
+
+start = time.ticks_ms()
+while time.ticks_diff(time.ticks_ms(), start) < 5000:
+    event = pg.event.wait(100)
+    if event.type == pg.KEYUP and event.key == pg.K_a:
+        break
+else:
+    raise AssertionError("A release not seen")
+
+pg.event.clear()
+custom = pg.event.custom_type()
+pg.event.post(pg.event.Event(custom, source="test"))
+assert pg.event.peek(custom, pump=False)
+assert pg.event.get(eventtype=custom, pump=False)[0].source == "test"
+assert pg.event.wait(300).type == pg.NOEVENT
+pg.quit()
+print("Pygame event checks passed")

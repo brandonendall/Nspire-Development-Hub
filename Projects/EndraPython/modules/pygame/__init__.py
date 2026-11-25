@@ -4,13 +4,50 @@ import keys as _keys
 from ._geometry import Color, Rect, _color565, _color_from_565
 from . import sprite, time, image, font, transform
 
-__version__ = "0.1.2-endrapython"
+__version__ = "0.1.3-endrapython"
 
 NOEVENT, QUIT, KEYDOWN, KEYUP = 0, 0x100, 0x300, 0x301
 K_UP, K_DOWN, K_LEFT, K_RIGHT = _keys.KEY_UP, _keys.KEY_DOWN, _keys.KEY_LEFT, _keys.KEY_RIGHT
-K_RETURN = K_SPACE = _keys.KEY_OK
-K_ESCAPE = _keys.KEY_ESC
-_KEYS = (K_UP, K_DOWN, K_LEFT, K_RIGHT, K_RETURN, K_ESCAPE)
+K_RETURN, K_ESCAPE, K_MENU = _keys.KEY_OK, _keys.KEY_ESC, _keys.KEY_MENU
+K_SPACE, K_BACKSPACE, K_LSHIFT, K_LCTRL = 32, 8, 512, 513
+KMOD_NONE, KMOD_SHIFT, KMOD_CTRL = 0, 0x0003, 0x00c0
+USEREVENT, NUMEVENTS = 0x8000, 0x10000
+K_a = 97
+K_b = 98
+K_c = 99
+K_d = 100
+K_e = 101
+K_f = 102
+K_g = 103
+K_h = 104
+K_i = 105
+K_j = 106
+K_k = 107
+K_l = 108
+K_m = 109
+K_n = 110
+K_o = 111
+K_p = 112
+K_q = 113
+K_r = 114
+K_s = 115
+K_t = 116
+K_u = 117
+K_v = 118
+K_w = 119
+K_x = 120
+K_y = 121
+K_z = 122
+K_0 = 48
+K_1 = 49
+K_2 = 50
+K_3 = 51
+K_4 = 52
+K_5 = 53
+K_6 = 54
+K_7 = 55
+K_8 = 56
+K_9 = 57
 
 class Surface:
     def __init__(self, size, flags=0, depth=0, _display=False):
@@ -322,14 +359,50 @@ def _ellipse_span(rect, y):
 draw = _Draw()
 
 
+def _key_snapshot():
+    down = _keys._active()
+    return down + (K_ESCAPE,) if _keys.keydown(K_ESCAPE) else down
+
+
+def _modifiers(down):
+    return (KMOD_SHIFT if K_LSHIFT in down else 0) | (KMOD_CTRL if K_LCTRL in down else 0)
+
+
 class _Pressed:
     def __getitem__(self, value):
-        return value in _KEYS and _keys.keydown(value)
+        down = _key_snapshot()
+        return value in down or (value == K_SPACE and K_RETURN in down)
 
 
 class _Key:
+    def __init__(self):
+        self._repeat = (0, 0)
+
     def get_pressed(self):
         return _Pressed()
+
+    def get_mods(self):
+        return _modifiers(_key_snapshot())
+
+    def name(self, keycode):
+        names = {
+            K_UP: "up", K_DOWN: "down", K_LEFT: "left", K_RIGHT: "right",
+            K_RETURN: "return", K_ESCAPE: "escape", K_SPACE: "space",
+            K_BACKSPACE: "backspace", K_LSHIFT: "left shift", K_LCTRL: "left ctrl",
+            K_MENU: "menu",
+        }
+        if isinstance(keycode, int) and 33 <= keycode <= 126:
+            return chr(keycode)
+        return names.get(keycode, "unknown key")
+
+    def set_repeat(self, delay=0, interval=0):
+        delay, interval = int(delay), int(interval)
+        if not (0 <= delay < (1 << 29) and 0 <= interval < (1 << 29)):
+            raise ValueError("repeat timing out of range")
+        self._repeat = (delay, interval or delay) if delay else (0, 0)
+
+    def get_repeat(self):
+        return self._repeat
 
 
 key = _Key()
@@ -349,22 +422,42 @@ class Event:
         return "<Event(%d %r)>" % (self.type, self.dict)
 
 
-
 class _Event:
     Event = Event
+    EventType = Event
 
     def __init__(self):
         self._held = {}
         self._queue = []
+        self._next_user_type = USEREVENT
+
+    def _key_event(self, kind, code, mods, repeat=False):
+        value = chr(code) if 32 <= code <= 126 else "\r" if code == K_RETURN else ""
+        if mods & KMOD_SHIFT:
+            value = value.upper()
+        self.post(Event(kind, key=code, mod=mods, unicode=value,
+                        scancode=code, repeat=repeat))
 
     def pump(self):
-        for value in _KEYS:
-            down = _keys.keydown(value)
-            if down != self._held.get(value, False):
-                self._held[value] = down
-                self.post(Event(KEYDOWN if down else KEYUP, key=value))
-                if value == K_ESCAPE and down:
+        down = _key_snapshot()
+        mods = _modifiers(down)
+        stamp = time._ticks_ms()
+        for code in list(self._held):
+            if code not in down:
+                del self._held[code]
+                self._key_event(KEYUP, code, mods)
+        delay, interval = key.get_repeat()
+        for code in down:
+            if code not in self._held:
+                self._held[code] = (stamp, False)
+                self._key_event(KEYDOWN, code, mods)
+                if code == K_ESCAPE:
                     self.post(Event(QUIT))
+            elif delay and code not in (K_ESCAPE, K_LSHIFT, K_LCTRL):
+                last, repeated = self._held[code]
+                if time._ticks_diff(stamp, last) >= (interval if repeated else delay):
+                    self._held[code] = (stamp, True)
+                    self._key_event(KEYDOWN, code, mods, True)
 
     def post(self, item):
         if not isinstance(item, Event):
@@ -374,24 +467,67 @@ class _Event:
         self._queue.append(item)
         return True
 
-    def get(self, types=None):
-        self.pump()
-        if types is None:
+    def get(self, types=None, pump=True, exclude=None, *, eventtype=None):
+        if eventtype is not None:
+            if types is not None:
+                raise TypeError("specify one event type filter")
+            types = eventtype
+        if pump:
+            self.pump()
+        if types is None and exclude is None:
             result, self._queue = self._queue, []
             return result
         if isinstance(types, int):
             types = (types,)
-        result = [item for item in self._queue if item.type in types]
-        self._queue = [item for item in self._queue if item.type not in types]
+        if isinstance(exclude, int):
+            exclude = (exclude,)
+        result, remaining = [], []
+        for item in self._queue:
+            take = (types is None or item.type in types) and (exclude is None or item.type not in exclude)
+            (result if take else remaining).append(item)
+        self._queue = remaining
         return result
 
     def poll(self):
         self.pump()
         return self._queue.pop(0) if self._queue else Event(NOEVENT)
 
-    def clear(self):
-        self.pump()
-        self._queue = []
+    def wait(self, timeout=0):
+        timeout = int(timeout)
+        if not 0 <= timeout < (1 << 29):
+            raise ValueError("event timeout out of range")
+        start = time._ticks_ms()
+        while True:
+            item = self.poll()
+            if item.type != NOEVENT:
+                return item
+            remaining = timeout - time._ticks_diff(time._ticks_ms(), start) if timeout else 8
+            if remaining <= 0:
+                return item
+            time._sleep_ms(min(remaining, 8))
+
+    def peek(self, eventtype=None, pump=True):
+        if pump:
+            self.pump()
+        if eventtype is None:
+            return bool(self._queue)
+        if isinstance(eventtype, int):
+            eventtype = (eventtype,)
+        return any(item.type in eventtype for item in self._queue)
+
+    def clear(self, eventtype=None, pump=True):
+        self.get(eventtype, pump=pump)
+
+    def custom_type(self):
+        if self._next_user_type >= NUMEVENTS:
+            raise ValueError("no user event types available")
+        value = self._next_user_type
+        self._next_user_type += 1
+        return value
+
+    def event_name(self, event_type):
+        return {NOEVENT: "NoEvent", QUIT: "Quit", KEYDOWN: "KeyDown",
+                KEYUP: "KeyUp"}.get(event_type, "UserEvent" if USEREVENT <= event_type < NUMEVENTS else "Unknown")
 
 
 event = _Event()
@@ -410,6 +546,7 @@ def quit():
     font.quit()
     _initialized = False
     display.surface = None
+    key.set_repeat()
     event._held.clear()
     event._queue = []
 
