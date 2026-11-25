@@ -222,8 +222,7 @@ static void console(void){
     box(0,52,320,1,LINE);
     int visible=shell?10:12,last=app.rows-app.offset,first=last>visible?last-visible:0;
     if(shell && !input && app.rows==1 && !app.output[app.first][0]){
-        text(10,62,CODE,MUTED,"Menu > Command catalog",312);
-        text(10,77,CODE,MUTED,":help for terminal commands",312);
+        text(10,62,CODE,MUTED,":help for terminal commands",312);
     }
     for(int i=first;i<last;i++){
         const char *line=app.output[(app.first+i)%OUT_LINES];

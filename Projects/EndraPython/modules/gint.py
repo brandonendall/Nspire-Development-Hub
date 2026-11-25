@@ -2,9 +2,12 @@
 import display as _display
 from keys import KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_EXE, KEY_MENU, KEY_EXIT, keydown
 from display import show_screen as dupdate
+from display import _gint_line as dline, _gint_triangle as dtriangle, _gint_poly as dpoly
+from display import _gint_ellipse as dellipse, _gint_circle as dcircle
 
 DWIDTH = _display.WIDTH
 DHEIGHT = _display.HEIGHT
+C_NONE = -1
 C_BLACK = 0
 C_WHITE = 65535
 
@@ -28,3 +31,11 @@ def drect(x1, y1, x2, y2, rgb):
 
 def dtext(x, y, rgb, text):
     _display.draw_string(x, y, text, _color(rgb))
+
+
+def dhline(y, rgb):
+    dline(0, y, DWIDTH - 1, y, rgb)
+
+
+def dvline(x, rgb):
+    dline(x, 0, x, DHEIGHT - 1, rgb)

@@ -1,4 +1,4 @@
-name: EndraPython Run020
+name: EndraPython Run021
 on:
   push:
     branches: [feature/endrapython-run001]
@@ -28,17 +28,17 @@ jobs:
       - name: Verify and package
         working-directory: Projects/EndraPython
         run: |
-          test "$(head -c4 EndraPython_Run020.tns)" = Zehn
+          test "$(head -c4 EndraPython_Run021.tns)" = Zehn
           readelf -h build/endrapython.elf | grep -E 'Machine: +ARM'
-          sha256sum EndraPython_Run020.tns > build/SHA256SUMS.txt
-          wc -c EndraPython_Run020.tns
+          sha256sum EndraPython_Run021.tns > build/SHA256SUMS.txt
+          wc -c EndraPython_Run021.tns
           cat build/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraPython_Run020
+          name: EndraPython_Run021
           if-no-files-found: error
           path: |
-            Projects/EndraPython/EndraPython_Run020.tns
+            Projects/EndraPython/EndraPython_Run021.tns
             Projects/EndraPython/build/SHA256SUMS.txt
             Projects/EndraPython/build/previews/
             Projects/EndraPython/licenses/
@@ -47,10 +47,11 @@ jobs:
             Projects/EndraPython/tests/Run013_Numerics_Test.py.tns
             Projects/EndraPython/tests/Run014_Pygame_Test.py.tns
             Projects/EndraPython/tests/Run015_Assets_Test.py.tns
+            Projects/EndraPython/tests/Run021_Gint_Drawing.py.tns
             Projects/EndraPython/build/Run015_Badge.bmp.tns
       - name: Offer the standalone calculator download
         uses: actions/upload-artifact@v7
         with:
-          path: Projects/EndraPython/EndraPython_Run020.tns
+          path: Projects/EndraPython/EndraPython_Run021.tns
           archive: false
           if-no-files-found: error

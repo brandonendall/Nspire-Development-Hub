@@ -165,13 +165,21 @@ static const CatalogEntry catalog_members[] = {
     {"mem_free", 1},
     /* gint */
     {"C_BLACK", 0},
+    {"C_NONE", 0},
     {"C_WHITE", 0},
+    {"dcircle", 1},
     {"dclear", 1},
+    {"dellipse", 1},
     {"DHEIGHT", 0},
+    {"dhline", 1},
+    {"dline", 1},
     {"dpixel", 1},
+    {"dpoly", 1},
     {"drect", 1},
     {"dtext", 1},
+    {"dtriangle", 1},
     {"dupdate", 1},
+    {"dvline", 1},
     {"DWIDTH", 0},
     {"KEY_DOWN", 0},
     {"KEY_EXE", 0},
@@ -400,18 +408,18 @@ static const struct { int offset, count; } catalog_ranges[] = {
     {113, 1}, /* collections */
     {114, 9}, /* display */
     {123, 6}, /* gc */
-    {129, 17}, /* gint */
-    {146, 3}, /* io */
-    {149, 11}, /* ion */
-    {160, 4}, /* json */
-    {164, 5}, /* kandinsky */
-    {169, 10}, /* keys */
-    {179, 27}, /* math */
-    {206, 41}, /* numpy */
-    {247, 4}, /* os */
-    {251, 65}, /* pygame */
-    {316, 7}, /* random */
-    {323, 5}, /* struct */
-    {328, 9}, /* sys */
-    {337, 4}, /* time */
+    {129, 25}, /* gint */
+    {154, 3}, /* io */
+    {157, 11}, /* ion */
+    {168, 4}, /* json */
+    {172, 5}, /* kandinsky */
+    {177, 10}, /* keys */
+    {187, 27}, /* math */
+    {214, 41}, /* numpy */
+    {255, 4}, /* os */
+    {259, 65}, /* pygame */
+    {324, 7}, /* random */
+    {331, 5}, /* struct */
+    {336, 9}, /* sys */
+    {345, 4}, /* time */
 };

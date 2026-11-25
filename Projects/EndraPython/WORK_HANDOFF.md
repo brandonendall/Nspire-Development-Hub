@@ -1,14 +1,13 @@
-# Run020 handheld check
+# Run021 handheld check
 
-Brandon confirmed the Run019 menu catalog on the handheld. Run020 maps the unmodified physical Catalog key to that same built-in catalog action in the Python shell and Python script editor. Run019 is the rollback for this change.
+Run020 is the confirmed rollback. Run021 adds Gint drawing and removes the redundant Catalog hint from the shell startup screen.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run020.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run021.tns /upload
+push /storage/emulated/0/Download/Run021_Gint_Drawing.py.tns /upload
 ```
 
-1. In Run020, open the Python shell and tap the physical Catalog key once. Expect the Python modules list.
-2. Press Esc and confirm the shell returns to the same prompt. Verify the shortcut from a Python script editor after the shell check.
-3. If the shortcut causes a freeze or reboot, return to Run019 and use Menu > Command catalog.
+Place the Python test in your EndraPython scripts folder or browse to it in EndraPython. Run the test. A colored line and shapes should appear for about 4.5 seconds, then the terminal should print `Gint drawing checks passed`. The magenta ellipse should be hollow. The far-right green ellipse is intentionally clipped. In the shell, the physical Catalog key and the menu entry still open the browser. The startup hint is removed.
 
-Gint input is a separate milestone. It includes `gint.getkey()`, polling, and key state and events.
+Gint key waits and events are planned separately.

@@ -2,6 +2,7 @@
 #include "app.h"
 #include "runtime.h"
 #include "py/runtime.h"
+#include <stdlib.h>
 #include <string.h>
 
 static uint16_t canvas[EP_WIDTH * EP_HEIGHT];
@@ -58,6 +59,182 @@ static void rectangle(int x, int y, int w, int h, uint16_t color) {
         for (int col = x < 0 ? 0 : x; col < x + w && col < EP_WIDTH; col++)
             canvas[row * EP_WIDTH + col] = color;
 }
+
+#define GINT_TRANSPARENT (-1)
+#define GINT_MAX_VERTICES 128
+
+typedef struct { int x, y; } DrawPoint;
+
+static int min_int(int a, int b) { return a < b ? a : b; }
+static int max_int(int a, int b) { return a > b ? a : b; }
+
+static int gint_color(mp_obj_t value) {
+    mp_int_t color = mp_obj_get_int(value);
+    if (color < GINT_TRANSPARENT || color > UINT16_MAX)
+        mp_raise_ValueError(MP_ERROR_TEXT("expected RGB565 or C_NONE"));
+    return color;
+}
+
+static DrawPoint draw_point(const mp_obj_t *args) {
+    DrawPoint point = {coordinate(args[0]), coordinate(args[1])};
+    return point;
+}
+
+static void draw_span(int left, int right, int y, int color) {
+    if (color != GINT_TRANSPARENT && left <= right && y >= 0 && y < EP_HEIGHT)
+        rectangle(left, y, right - left + 1, 1, color);
+}
+
+static void draw_line(DrawPoint a, DrawPoint b, int color) {
+    if (color == GINT_TRANSPARENT) return;
+    int steep = abs(b.y-a.y) > abs(b.x-a.x);
+    int u0 = steep ? a.y : a.x, u1 = steep ? b.y : b.x;
+    int v0 = steep ? a.x : a.y, v1 = steep ? b.x : b.y;
+    if (u0 > u1) {
+        int temp = u0; u0 = u1; u1 = temp;
+        temp = v0; v0 = v1; v1 = temp;
+    }
+    if (u0 == u1) {
+        draw_span(a.x, a.x, a.y, color);
+        return;
+    }
+    int end = min_int(u1, (steep ? EP_HEIGHT : EP_WIDTH)-1);
+    int delta = v1-v0, length = u1-u0;
+    int round = delta < 0 ? -length/2 : length/2;
+    // Clip the major axis before stepping. Distance off-screen cannot lengthen the loop.
+    for (int u = max_int(0,u0); u <= end; u++) {
+        int v = v0 + ((int64_t)(u-u0)*delta + round)/length;
+        if (steep) draw_span(v, v, u, color);
+        else draw_span(u, u, v, color);
+    }
+}
+
+static void draw_polygon(const DrawPoint *points, size_t count, int fill, int border) {
+    if (fill != GINT_TRANSPARENT) {
+        int top = points[0].y, bottom = top;
+        for (size_t i = 1; i < count; i++) {
+            top = min_int(top,points[i].y);
+            bottom = max_int(bottom,points[i].y);
+        }
+        for (int y = max_int(0,top); y < min_int(EP_HEIGHT,bottom); y++) {
+            int64_t crossings[GINT_MAX_VERTICES];
+            size_t used = 0;
+            for (size_t i = 0, prev = count-1; i < count; prev = i++) {
+                DrawPoint a = points[prev], b = points[i];
+                if (a.y > b.y) { DrawPoint swap = a; a = b; b = swap; }
+                if (y < a.y || y >= b.y) continue;
+                int64_t x = (int64_t)a.x*65536 + (int64_t)(b.x-a.x)*(y-a.y)*65536/(b.y-a.y);
+                size_t j = used++;
+                while (j && crossings[j-1] > x) {
+                    crossings[j] = crossings[j-1];
+                    j--;
+                }
+                crossings[j] = x;
+            }
+            for (size_t i = 0; i+1 < used; i += 2) {
+                int64_t left = crossings[i], right = crossings[i+1];
+                int first = (left + (left > 0 ? 65535 : 0))/65536;
+                int last = (right - (right < 0 ? 65535 : 0))/65536;
+                draw_span(first,last,y,fill);
+            }
+        }
+    }
+    int edge = border == GINT_TRANSPARENT ? fill : border;
+    for (size_t i = 0, prev = count-1; i < count; prev = i++)
+        draw_line(points[prev],points[i],edge);
+}
+
+static uint64_t square(int value) {
+    return (int64_t)value*value;
+}
+
+static int ellipse_extent(DrawPoint a, DrawPoint b, int y) {
+    if (y < a.y || y > b.y) return -1;
+    if (a.y == b.y) return a.x;
+    int sum_x = a.x+b.x, sum_y = a.y+b.y;
+    uint64_t w2 = square(b.x-a.x), h2 = square(b.y-a.y);
+    uint64_t limit = w2*(h2 - square(2*y-sum_y));
+    // Start with the center pixel(s), including rows at the ends of an even-width box.
+    int lo = a.x, hi = a.x+(b.x-a.x)/2;
+    while (lo < hi) {
+        int x = lo+(hi-lo)/2;
+        if (square(2*x-sum_x)*h2 <= limit) hi = x;
+        else lo = x+1;
+    }
+    return lo;
+}
+
+static void draw_ellipse(DrawPoint a, DrawPoint b, int fill, int border) {
+    int sum_x = a.x+b.x;
+    for (int y = max_int(a.y,0); y <= min_int(b.y,EP_HEIGHT-1); y++) {
+        int left = ellipse_extent(a,b,y), right = sum_x-left;
+        if (border == GINT_TRANSPARENT) {
+            draw_span(left,right,y,fill);
+            continue;
+        }
+        int prev = ellipse_extent(a,b,y-1), next = ellipse_extent(a,b,y+1);
+        if (y == a.y || y == b.y) {
+            draw_span(left,right,y,border);
+            continue;
+        }
+        int inner = max_int(left+1,max_int(prev,next));
+        if (inner > sum_x-inner) draw_span(left,right,y,border);
+        else {
+            draw_span(left,inner-1,y,border);
+            draw_span(inner,sum_x-inner,y,fill);
+            draw_span(sum_x-inner+1,right,y,border);
+        }
+    }
+}
+
+static mp_obj_t gint_line(size_t n, const mp_obj_t *args) {
+    (void)n;
+    draw_line(draw_point(args),draw_point(args+2),gint_color(args[4]));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gint_line_obj, 5, 5, gint_line);
+
+static mp_obj_t gint_triangle(size_t n, const mp_obj_t *args) {
+    (void)n;
+    DrawPoint points[] = {draw_point(args),draw_point(args+2),draw_point(args+4)};
+    draw_polygon(points,3,gint_color(args[6]),GINT_TRANSPARENT);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gint_triangle_obj, 7, 7, gint_triangle);
+
+static mp_obj_t gint_poly(mp_obj_t vertices, mp_obj_t fill, mp_obj_t border) {
+    size_t n;
+    mp_obj_t *items;
+    mp_obj_get_array(vertices,&n,&items);
+    if (n < 6 || n > 2*GINT_MAX_VERTICES || n%2)
+        mp_raise_ValueError(MP_ERROR_TEXT("expected 3 to 128 x,y pairs"));
+    DrawPoint points[GINT_MAX_VERTICES];
+    for (size_t i = 0; i < n/2; i++) points[i] = draw_point(items+2*i);
+    draw_polygon(points,n/2,gint_color(fill),gint_color(border));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(gint_poly_obj, gint_poly);
+
+static mp_obj_t gint_ellipse(size_t n, const mp_obj_t *args) {
+    (void)n;
+    DrawPoint a = draw_point(args), b = draw_point(args+2);
+    DrawPoint top_left = {min_int(a.x,b.x),min_int(a.y,b.y)};
+    DrawPoint bottom_right = {max_int(a.x,b.x),max_int(a.y,b.y)};
+    draw_ellipse(top_left,bottom_right,gint_color(args[4]),gint_color(args[5]));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gint_ellipse_obj, 6, 6, gint_ellipse);
+
+static mp_obj_t gint_circle(size_t n, const mp_obj_t *args) {
+    (void)n;
+    DrawPoint center = draw_point(args);
+    int r = coordinate(args[2]);
+    if (r < 0) mp_raise_ValueError(MP_ERROR_TEXT("radius must be nonnegative"));
+    DrawPoint a = {center.x-r,center.y-r}, b = {center.x+r,center.y+r};
+    draw_ellipse(a,b,gint_color(args[3]),gint_color(args[4]));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gint_circle_obj, 5, 5, gint_circle);
 
 static mp_obj_t fill_rect(size_t n, const mp_obj_t *args) {
     (void)n;
@@ -234,6 +411,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sleep_obj, sleep_seconds);
 #define INTEGER(q, n) {MP_ROM_QSTR(MP_QSTR_##q), MP_ROM_INT(n)}
 static const mp_rom_map_elem_t display_table[] = {
     NAME(display), FUNC(_blit565, blit565_obj),
+    FUNC(_gint_line,gint_line_obj), FUNC(_gint_triangle,gint_triangle_obj), FUNC(_gint_poly,gint_poly_obj),
+    FUNC(_gint_ellipse,gint_ellipse_obj), FUNC(_gint_circle,gint_circle_obj),
     FUNC(_text_size,text_size_obj), FUNC(_rasterize_text,rasterize_text_obj), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),
     FUNC(fill_rect, fill_rect_obj), FUNC(clear_screen, clear_screen_obj),
     FUNC(draw_string, draw_string_obj), FUNC(show_screen, show_screen_obj),

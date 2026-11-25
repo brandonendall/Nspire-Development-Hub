@@ -434,6 +434,60 @@ int device_delay(unsigned ms) {
     return 1;
 }
 
+static void save_script_pixels(const char *path) {
+    FILE *ppm = fopen(path,"wb");
+    assert(ppm);
+    fprintf(ppm,"P6\n%d %d\n255\n",EP_WIDTH,EP_HEIGHT);
+    for(size_t i=0;i<EP_WIDTH*EP_HEIGHT;i++){
+        unsigned c = script_pixels[i];
+        fputc(((c>>11)&31)*255/31,ppm);
+        fputc(((c>>5)&63)*255/63,ppm);
+        fputc((c&31)*255/31,ppm);
+    }
+    assert(!fclose(ppm));
+}
+
+static void gint_drawing_checks(const char *root, void *stack) {
+    const char *name = "Run021_Gint_Drawing.py.tns";
+    char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
+    FILE *fixture = fopen("tests/Run021_Gint_Drawing.py.tns", "rb");
+    assert(fixture);
+    size_t len = fread(source,1,sizeof source,fixture);
+    assert(len < sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len] = 0;
+    write_file(root,name,source);
+    app_init(root,stack);
+    assert(load_script(name));
+    app.page=EDITOR;
+    choose_command(OPEN_CATALOG);type("gint");app_key(ENTER);type("dtri");
+    assert(!strcmp(catalog_signature(),"gint.dtriangle(x1, y1, x2, y2, x3, y3, color)"));
+    app_key(ESC);app_key(ESC);
+    frames=0;
+    app_key(RUN);
+    assert(app.page==OUTPUT && !app.error && frames==1 && output_has("Gint drawing checks passed"));
+    save_script_pixels("build/gint_drawing.ppm");
+    runtime_start(stack);
+    assert(runtime_exec("<gint>",
+        "import gint, display\n"
+        "gint.dhline(3,0xf800); gint.dvline(7,0x07e0)\n"
+        "assert display.get_pixel(0,3)==(255,0,0) and display.get_pixel(7,239)==(0,255,0)\n"
+        "gint.dline(319,239,-32768,-32768,gint.C_NONE)\n"
+        "assert display.get_pixel(7,239)==(0,255,0)\n"
+        "gint.dellipse(-32768,-32768,32767,32767,0x001f,0xf800)\n"
+        "assert display.get_pixel(319,239)==(0,0,255)\n"
+        "for args in ([0,0,1,0,2], list(range(258))):\n"
+        " try: gint.dpoly(args,0,gint.C_NONE)\n"
+        " except ValueError: pass\n"
+        " else: raise AssertionError('invalid polygon accepted')\n"
+        "try: gint.dcircle(0,0,-1,0,0)\n"
+        "except ValueError: pass\n"
+        "else: raise AssertionError('negative radius accepted')\n",0));
+    runtime_end();
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+    puts("PASS: native Gint drawing pixels, clipping, transparency, validation and catalog.");
+}
+
 static void graphics_checks(const char *root, void *stack) {
     char source[SOURCE_CAP + 1], path[PATH_CAP + NAME_CAP];
     FILE *fixture = fopen("tests/Run012_Graphics_Test.py.tns", "rb");
@@ -457,16 +511,7 @@ static void graphics_checks(const char *root, void *stack) {
         assert(app.page==EDITOR);
     }
     preview("graphics_return");
-    FILE *ppm = fopen("build/graphics.ppm","wb");
-    assert(ppm);
-    fprintf(ppm,"P6\n%d %d\n255\n",EP_WIDTH,EP_HEIGHT);
-    for(size_t i=0;i<EP_WIDTH*EP_HEIGHT;i++){
-        unsigned c = script_pixels[i];
-        fputc(((c>>11)&31)*255/31,ppm);
-        fputc(((c>>5)&63)*255/63,ppm);
-        fputc((c&31)*255/31,ppm);
-    }
-    assert(!fclose(ppm));
+    save_script_pixels("build/graphics.ppm");
     control_fixture=0;
     raw_ticks=UINT32_MAX-20;
     runtime_start(stack);
@@ -773,6 +818,7 @@ int main(void){
     assets_checks(scripts,&stack);
     indentation_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
+    gint_drawing_checks(scripts,&stack);
     numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
     storage_io_checks(root,&stack);
@@ -783,5 +829,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 35 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 36 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }
