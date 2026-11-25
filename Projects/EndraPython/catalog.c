@@ -72,6 +72,12 @@ const char *catalog_signature(void){
         {"gint.dcircle", "gint.dcircle(x, y, radius, fill, border)"},
         {"gint.dellipse", "gint.dellipse(x1, y1, x2, y2, fill, border)"},
         {"gint.dhline", "gint.dhline(y, color)"}, {"gint.dvline", "gint.dvline(x, color)"},
+        {"gint.getkey", "gint.getkey()"},
+        {"gint.getkey_opt", "gint.getkey_opt(options, timeout_ms)"},
+        {"gint.pollevent", "gint.pollevent()"},
+        {"gint.clearevents", "gint.clearevents()"}, {"gint.cleareventflips", "gint.cleareventflips()"},
+        {"gint.keypressed", "gint.keypressed(key)"}, {"gint.keyreleased", "gint.keyreleased(key)"},
+        {"gint.keydown_all", "gint.keydown_all(*keys)"}, {"gint.keydown_any", "gint.keydown_any(*keys)"},
         {"gint.keydown", "gint.keydown(key)"}, {"ion.keydown", "ion.keydown(key)"},
         {"display.color", "display.color(r, g, b)"}, {"time.ticks_ms", "time.ticks_ms()"},
         {"time.sleep", "time.sleep(seconds)"},
@@ -105,14 +111,15 @@ const char *catalog_signature(void){
 static void find_prefix(void) {
     size_t len = strlen(catalog_filter);
     int count = catalog_browsing_modules ? catalog_group_count : catalog_count;
+    int match = -1;
     for (int i = 0; i < count; i++) {
         const char *name = catalog_browsing_modules ? catalog_groups[i] : catalog_entries[i].name;
-        if (strncasecmp(name, catalog_filter, len)) continue;
-        if (catalog_browsing_modules) catalog_group = i;
-        else catalog_index = i;
-        return;
+        if (!strncmp(name, catalog_filter, len)) { match = i; break; }
+        if (match < 0 && !strncasecmp(name, catalog_filter, len)) match = i;
     }
-    strcpy(app.status, "No matching name");
+    if (match < 0) strcpy(app.status, "No matching name");
+    else if (catalog_browsing_modules) catalog_group = match;
+    else catalog_index = match;
 }
 
 void catalog_key(int k) {

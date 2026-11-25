@@ -1,0 +1,35 @@
+import gint
+import time
+
+def screen(instruction):
+    gint.dclear(0x0843)
+    gint.dtext(12, 55, gint.C_WHITE, instruction)
+    gint.dtext(12, 96, gint.C_WHITE, "Esc cancels")
+    gint.dupdate()
+
+assert gint.getkey_opt(gint.GETKEY_NONE, 0).type == gint.KEYEV_NONE
+screen("Tap Right, then release it.")
+gint.cleareventflips()
+event = gint.getkey()
+assert event.type == gint.KEYEV_DOWN and event.key == gint.KEY_RIGHT
+assert gint.keypressed(gint.KEY_RIGHT)
+
+start = time.ticks_ms()
+while time.ticks_diff(time.ticks_ms(), start) < 5000:
+    event = gint.pollevent()
+    if event.type == gint.KEYEV_UP and event.key == gint.KEY_RIGHT:
+        break
+    time.sleep_ms(8)
+else:
+    raise AssertionError("Right release not seen")
+assert gint.keyreleased(gint.KEY_RIGHT)
+
+screen("Tap A within 8 seconds.")
+event = gint.getkey_opt(gint.GETKEY_NONE, 8000)
+assert event.type == gint.KEYEV_DOWN and event.key == ord("a")
+gint.clearevents()
+gint.cleareventflips()
+assert not gint.keypressed(ord("a"))
+screen("Leave the keys untouched.")
+assert gint.getkey_opt(gint.GETKEY_NONE, 250).type == gint.KEYEV_NONE
+print("Gint key checks passed")

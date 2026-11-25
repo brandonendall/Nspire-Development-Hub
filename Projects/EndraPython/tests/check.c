@@ -417,14 +417,32 @@ static void numerics_checks(const char *root, void *stack) {
 static uint16_t script_pixels[EP_WIDTH * EP_HEIGHT];
 static uint32_t raw_ticks;
 static int frames, control_fixture;
+static uint32_t key_frame_tick;
+static int key_fixture, injected_keys[2];
+static unsigned injected_count;
 
 void device_present(const uint16_t *pixels) {
     memcpy(script_pixels, pixels, sizeof script_pixels);
     frames++;
+    key_frame_tick = raw_ticks;
 }
 int device_key_held(int key) {
     if (!control_fixture) return 0;
     return (key == RIGHT && frames == 0) || (key == ESC && frames >= 2);
+}
+unsigned device_script_keys(int keys[EP_SCRIPT_KEY_CAP]) {
+    if (key_fixture == 2) {
+        memcpy(keys,injected_keys,injected_count*sizeof keys[0]);
+        return injected_count;
+    }
+    if (key_fixture == 1) {
+        uint32_t elapsed = raw_ticks-key_frame_tick;
+        if (elapsed >= EP_TICKS_PER_SECOND/30 && elapsed < EP_TICKS_PER_SECOND/8) {
+            if (frames == 1) { keys[0]=RIGHT; return 1; }
+            if (frames == 2) { keys[0]='a'; return 1; }
+        }
+    }
+    return 0;
 }
 uint32_t device_ticks(void) { return raw_ticks; }
 static int timer_stalled;
@@ -486,6 +504,60 @@ static void gint_drawing_checks(const char *root, void *stack) {
     snprintf(path,sizeof path,"%s/%s",root,name);
     assert(!unlink(path));
     puts("PASS: native Gint drawing pixels, clipping, transparency, validation and catalog.");
+}
+
+static void gint_input_checks(const char *root, void *stack) {
+    const char *name="Run022_Gint_Keys.py.tns";
+    char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
+    FILE *fixture=fopen("tests/Run022_Gint_Keys.py.tns","rb");
+    assert(fixture);
+    size_t len=fread(source,1,sizeof source,fixture);
+    assert(len<sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len]=0;
+    write_file(root,name,source);
+    app_init(root,stack);
+    assert(load_script(name));
+    app.page=EDITOR;
+    choose_command(OPEN_CATALOG);type("gint");app_key(ENTER);type("getkey_");
+    assert(catalog_signature() && !strcmp(catalog_signature(),"gint.getkey_opt(options, timeout_ms)"));
+    app_key(ESC);app_key(ESC);
+    frames=0;
+    raw_ticks=UINT32_MAX-20;
+    key_fixture=1;
+    app_key(RUN);
+    assert(app.page==OUTPUT && !app.error && frames==3 && output_has("Gint key checks passed"));
+    assert(script_pixels[0]==0x0843 && script_pixels[EP_WIDTH-1]==0x0843);
+    assert(script_pixels[(EP_HEIGHT-1)*EP_WIDTH]==0x0843 && script_pixels[EP_WIDTH*EP_HEIGHT-1]==0x0843);
+    save_script_pixels("build/gint_keys.ppm");
+    key_fixture=2;
+    runtime_start(stack);
+    assert(runtime_exec("<gint-keys>", "import gint as g, time\nassert g.pollevent().type == g.KEYEV_NONE\n",0));
+    injected_keys[0]=EP_KEY_SHIFT;injected_keys[1]=LEFT;injected_count=2;
+    assert(runtime_exec("<gint-keys>",
+        "e=g.getkey_opt(g.GETKEY_DEFAULT,0)\n"
+        "assert e.type==g.KEYEV_DOWN and e.key==g.KEY_LEFT and e.shift and e.mod and not e.alpha\n"
+        "assert g.keydown_all(g.KEY_LEFT,g.KEY_SHIFT) and g.keydown_any(g.KEY_LEFT,g.KEY_UP)\n"
+        "assert g.keypressed(g.KEY_LEFT)\n"
+        "time.sleep_ms(410)\n"
+        "assert g.pollevent().type == g.KEYEV_HOLD\n"
+        "assert g.getkey_opt(g.GETKEY_NONE,0).type==g.KEYEV_NONE\n",0));
+    injected_count=0;
+    assert(runtime_exec("<gint-keys>",
+        "assert g.pollevent().type==g.KEYEV_UP\n"
+        "assert g.pollevent().key==g.KEY_LEFT and g.keyreleased(g.KEY_LEFT)\n"
+        "g.cleareventflips()\n"
+        "assert not g.keyreleased(g.KEY_LEFT) and not g.keydown_any(g.KEY_LEFT)\n",0));
+    cancel=1;
+    assert(!runtime_exec("<gint-keys>", "g.getkey()\n",0) && output_has("KeyboardInterrupt"));
+    cancel=0;
+    timer_stalled=1;
+    assert(!runtime_exec("<gint-keys>", "g.getkey()\n",0) && output_has("calculator timer stopped"));
+    timer_stalled=0;
+    runtime_end();
+    key_fixture=0;
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+    puts("PASS: Gint key waits, timeout, polling, repeats, modifiers, escape and stopped timer.");
 }
 
 static void graphics_checks(const char *root, void *stack) {
@@ -819,6 +891,7 @@ int main(void){
     indentation_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
     gint_drawing_checks(scripts,&stack);
+    gint_input_checks(scripts,&stack);
     numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
     storage_io_checks(root,&stack);
@@ -829,5 +902,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 36 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 37 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

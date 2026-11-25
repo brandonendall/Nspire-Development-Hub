@@ -13,6 +13,7 @@
 #include "device.h"
 #include "app.h"
 #include "runtime.h"
+#include "text_input.h"
 #include <libndls.h>
 #include <os.h>
 #include <string.h>
@@ -261,13 +262,25 @@ void device_present(const uint16_t *pixels) {
   eh_platform_flip();
 }
 
-int device_key_held(int key) {
+static int navigation_key_held(int key) {
   static const int raw[] = {
     KEY_UP_RAW, KEY_DOWN_RAW, KEY_LEFT_RAW, KEY_RIGHT_RAW, KEY_ENTER_RAW, KEY_ESC_RAW, KEY_MENU_RAW
   };
+  return key_active(raw[key - UP], 0) || (key == ENTER && key_active(KEY_CLICK_RAW, 0));
+}
+
+int device_key_held(int key) {
   poll_keys();
   if (key == ESC) return cancel_pressed();
-  return key_active(raw[key - UP], 0) || (key == ENTER && key_active(KEY_CLICK_RAW, 0));
+  return navigation_key_held(key);
+}
+
+unsigned device_script_keys(int keys[EP_SCRIPT_KEY_CAP]) {
+  unsigned count = 0;
+  poll_keys();
+  for (int key = UP; key <= MENU; key++)
+    if (key != ESC && navigation_key_held(key)) keys[count++] = key;
+  return count + eh16_script_text_keys(keys+count);
 }
 
 int device_delay(unsigned ms) {

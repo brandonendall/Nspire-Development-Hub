@@ -3,6 +3,7 @@
  */
 #include "text_input.h"
 #include "app.h"
+#include "device.h"
 #include <libndls.h>
 static const t_key letters[26]={
  KEY_NSPIRE_A,KEY_NSPIRE_B,KEY_NSPIRE_C,KEY_NSPIRE_D,
@@ -18,6 +19,22 @@ static const t_key digits[10]={
  KEY_NSPIRE_4,KEY_NSPIRE_5,KEY_NSPIRE_6,KEY_NSPIRE_7,
  KEY_NSPIRE_8,KEY_NSPIRE_9
 };
+unsigned eh16_script_text_keys(int *keys){
+    static const struct { t_key physical; int code; } other[] = {
+        {KEY_NSPIRE_SHIFT, EP_KEY_SHIFT}, {KEY_NSPIRE_CTRL, EP_KEY_CTRL},
+        {KEY_NSPIRE_SPACE, ' '}, {KEY_NSPIRE_PERIOD, '.'},
+        {KEY_NSPIRE_MINUS, '-'}, {KEY_NSPIRE_PLUS, '+'},
+        {KEY_NSPIRE_COMMA, ','}, {KEY_NSPIRE_APOSTROPHE, 39},
+        {KEY_NSPIRE_DEL, 8}, {KEY_NSPIRE_LP, '('}, {KEY_NSPIRE_RP, ')'},
+        {KEY_NSPIRE_MULTIPLY, '*'}, {KEY_NSPIRE_DIVIDE, '/'}, {KEY_NSPIRE_EQU, '='},
+    };
+    unsigned count = 0;
+    for(int i=0;i<26;i++)if(isKeyPressed(letters[i]))keys[count++]='a'+i;
+    for(int i=0;i<10;i++)if(isKeyPressed(digits[i]))keys[count++]='0'+i;
+    for(unsigned i=0;i<sizeof other/sizeof other[0];i++)
+        if(isKeyPressed(other[i].physical))keys[count++]=other[i].code;
+    return count;
+}
 int eh16_textkey(void){
  static int last_scan=0;
  int scan=0,ascii=0;

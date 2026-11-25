@@ -8,13 +8,14 @@ from tempfile import TemporaryDirectory
 with TemporaryDirectory() as tmp:
     root = Path(tmp)
     source = Path("native/text_input.c").read_text()
-    keys = sorted(set(re.findall(r"KEY_NSPIRE_\w+", source)))
+    keys = sorted(set(re.findall(r"KEY_NSPIRE_\w+", source)) | {"KEY_NSPIRE_ESC"})
     (root / "libndls.h").write_text(
         "typedef int t_key; enum {" + ",".join(keys) +
         "}; extern int isKeyPressed(int);\n")
     (root / "check.c").write_text("""
 #include "libndls.h"
 #include "app.h"
+#include "device.h"
 #include "text_input.h"
 #include <assert.h>
 static int key=-1;
@@ -37,6 +38,16 @@ int main(void){
     assert(eh16_key_event(0,press(KEY_NSPIRE_RP),0)==')');
     assert(eh16_key_event(0,press(KEY_NSPIRE_S),1)==SAVE);
     assert(eh16_key_event(0,press(KEY_NSPIRE_QUESEXCL),0)==MARKS);
+    int keys[EP_SCRIPT_KEY_CAP];
+    key=KEY_NSPIRE_A;
+    assert(eh16_script_text_keys(keys)==1 && keys[0]=='a');
+    key=KEY_NSPIRE_9;
+    assert(eh16_script_text_keys(keys)==1 && keys[0]=='9');
+    key=KEY_NSPIRE_SHIFT;
+    assert(eh16_script_text_keys(keys)==1 && keys[0]==EP_KEY_SHIFT);
+    key=KEY_NSPIRE_ESC;
+    assert(eh16_script_text_keys(keys)==0);
+
 }
 """)
     subprocess.run([os.environ.get("CC", "cc"), "-std=gnu99", "-I.", "-Inative",

@@ -1,13 +1,11 @@
-# Run021 handheld check
+# Run022 handheld check
 
-Run020 is the confirmed rollback. Run021 adds Gint drawing and removes the redundant Catalog hint from the shell startup screen.
+Run021 passed the Gint drawing check on the CX II CAS and is the rollback. Run022 adds sampled Gint input while keeping Esc as the script interrupt.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run021.tns /upload
-push /storage/emulated/0/Download/Run021_Gint_Drawing.py.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run022.tns /upload
+push /storage/emulated/0/Download/Run022_Gint_Keys.py.tns /upload
 ```
 
-Place the Python test in your EndraPython scripts folder or browse to it in EndraPython. Run the test. A colored line and shapes should appear for about 4.5 seconds, then the terminal should print `Gint drawing checks passed`. The magenta ellipse should be hollow. The far-right green ellipse is intentionally clipped. In the shell, the physical Catalog key and the menu entry still open the browser. The startup hint is removed.
-
-Gint key waits and events are planned separately.
+Open the test in EndraPython. The prompt uses the full screen with an edge-to-edge background. Tap Right and release it, then tap A when prompted. Leave the keypad untouched for the short timeout check. The console should display `Gint key checks passed`. On a second run, press Esc at the first wait to check that the script returns with a KeyboardInterrupt.

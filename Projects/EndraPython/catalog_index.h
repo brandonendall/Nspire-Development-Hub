@@ -167,6 +167,8 @@ static const CatalogEntry catalog_members[] = {
     {"C_BLACK", 0},
     {"C_NONE", 0},
     {"C_WHITE", 0},
+    {"cleareventflips", 1},
+    {"clearevents", 1},
     {"dcircle", 1},
     {"dclear", 1},
     {"dellipse", 1},
@@ -181,14 +183,53 @@ static const CatalogEntry catalog_members[] = {
     {"dupdate", 1},
     {"dvline", 1},
     {"DWIDTH", 0},
+    {"getkey", 1},
+    {"GETKEY_DEFAULT", 0},
+    {"GETKEY_MOD_SHIFT", 0},
+    {"GETKEY_NONE", 0},
+    {"getkey_opt", 1},
+    {"GETKEY_REP_ALL", 0},
+    {"GETKEY_REP_ARROWS", 0},
+    {"KEY_0", 0},
+    {"KEY_1", 0},
+    {"KEY_2", 0},
+    {"KEY_3", 0},
+    {"KEY_4", 0},
+    {"KEY_5", 0},
+    {"KEY_6", 0},
+    {"KEY_7", 0},
+    {"KEY_8", 0},
+    {"KEY_9", 0},
+    {"KEY_ADD", 0},
+    {"KEY_COMMA", 0},
+    {"KEY_CTRL", 0},
+    {"KEY_DEL", 0},
+    {"KEY_DIV", 0},
+    {"KEY_DOT", 0},
     {"KEY_DOWN", 0},
+    {"KEY_EQUALS", 0},
     {"KEY_EXE", 0},
     {"KEY_EXIT", 0},
     {"KEY_LEFT", 0},
+    {"KEY_LEFTP", 0},
     {"KEY_MENU", 0},
+    {"KEY_MUL", 0},
     {"KEY_RIGHT", 0},
+    {"KEY_RIGHTP", 0},
+    {"KEY_SHIFT", 0},
+    {"KEY_SPACE", 0},
+    {"KEY_SUB", 0},
     {"KEY_UP", 0},
     {"keydown", 1},
+    {"keydown_all", 1},
+    {"keydown_any", 1},
+    {"KEYEV_DOWN", 0},
+    {"KEYEV_HOLD", 0},
+    {"KEYEV_NONE", 0},
+    {"KEYEV_UP", 0},
+    {"keypressed", 1},
+    {"keyreleased", 1},
+    {"pollevent", 1},
     /* io */
     {"BytesIO", 1},
     {"open", 1},
@@ -408,18 +449,18 @@ static const struct { int offset, count; } catalog_ranges[] = {
     {113, 1}, /* collections */
     {114, 9}, /* display */
     {123, 6}, /* gc */
-    {129, 25}, /* gint */
-    {154, 3}, /* io */
-    {157, 11}, /* ion */
-    {168, 4}, /* json */
-    {172, 5}, /* kandinsky */
-    {177, 10}, /* keys */
-    {187, 27}, /* math */
-    {214, 41}, /* numpy */
-    {255, 4}, /* os */
-    {259, 65}, /* pygame */
-    {324, 7}, /* random */
-    {331, 5}, /* struct */
-    {336, 9}, /* sys */
-    {345, 4}, /* time */
+    {129, 66}, /* gint */
+    {195, 3}, /* io */
+    {198, 11}, /* ion */
+    {209, 4}, /* json */
+    {213, 5}, /* kandinsky */
+    {218, 10}, /* keys */
+    {228, 27}, /* math */
+    {255, 41}, /* numpy */
+    {296, 4}, /* os */
+    {300, 65}, /* pygame */
+    {365, 7}, /* random */
+    {372, 5}, /* struct */
+    {377, 9}, /* sys */
+    {386, 4}, /* time */
 };
