@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run015 Pygame assets, 2026-11-25
+
+Run015 adds pygame.image.load for row-streamed uncompressed 24/32-bit BMP and binary P6 PPM with an image limit of 16384 pixels, and pygame.font.Font for built-in bitmap faces. The badge demo loads its asset from project storage, uses a color key, and draws transparent and solid-background text. Host checks passed including truncated/oversized image rejection, PPM leading pixel bytes, and fonts. Source `44857c80fb177f2eadd7a9c98a3b7560fc1640a4`, [CI 45562152856](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45562152856), [standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45562152856/artifacts/14997644047), [build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45562152856/artifacts/14999000375). Executable 211158 bytes SHA-256 `cb3d21e94bdfa962aa46842f231dc3015320a97e59afb2154208c999a49c352a`. The executable, test, badge, and 29 framebuffer previews plus contact sheet matched the local build. Run014 remains the confirmed calculator baseline. Run015 needs a handheld test with the badge and script together; projected 3D is the next milestone.
+
 ## Run014 Pygame hardware confirmation, 2026-11-25
 
 Brandon's CX II CAS photo shows Run014_Pygame_Test.py.tns reached Run complete with Pygame frames: 240 and Tokens collected: 1. This confirms the Pygame demo completed at its frame cap and registered the sprite/token collision on hardware. Brandon subsequently confirmed that Files-first navigation and creating, saving, and reopening a plain-text file worked on the calculator. Run014 is the hardware-confirmed baseline for Files, text-file saving, and the Pygame demo.
