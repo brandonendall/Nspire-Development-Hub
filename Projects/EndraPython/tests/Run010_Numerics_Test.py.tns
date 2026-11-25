@@ -1,0 +1,29 @@
+import gc
+import numpy as np
+
+def close(actual, expected):
+  return abs(actual - expected) < 0.0001
+
+assert np.dot([1, 2, 3], [4, 5, 6]) == 32
+assert close(np.normalize([3.0, 4.0])[0], 0.6)
+assert close(np.norm(np.normalize([3.0, 4.0])), 1)
+assert np.arange(6).reshape(2, 3).T.tolist() == [[0, 3], [1, 4], [2, 5]]
+assert np.matmul([[1, 2], [3, 4]], [2, 1]).tolist() == [4, 10]
+a = np.matrix([[4.0, 7.0], [2.0, 6.0]])
+product = a * a.I
+for row in range(2):
+  for col in range(2):
+    assert close(product[row, col], int(row == col))
+print("Vector and matrix checks passed")
+
+def check_square(n):
+  matrix = np.ones((n, n))
+  result = np.matmul(matrix, matrix)
+  return result.shape == (n, n) and result.min() == n and result.max() == n
+
+for size in (8, 16, 24, 32):
+  gc.collect()
+  assert check_square(size)
+  print(size, "x", size, "multiply passed")
+gc.collect()
+print("Free heap:", gc.mem_free(), "bytes")

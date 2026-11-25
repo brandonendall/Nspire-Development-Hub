@@ -1,4 +1,4 @@
-# EndraPython Run009
+# EndraPython Run010
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -75,7 +75,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run009 scope |
+| Area | Run010 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
@@ -84,9 +84,15 @@ Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838
 | Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
 | Other modules | time, display, keys, pygame, pip and desktop packages unavailable |
 
+## Calculator numerics
+
+`import numpy as np` loads the bundled PythonUltra numerical module. It supports small arrays and matrices, reshaping and transpose, vector dot products and normalization, two-dimensional matrix multiplication and `matrix.I` for inversion. The command catalog lists the available names. Use `np.matmul(a, b)` for multiplication of arrays and `a * b` for PythonUltra matrix objects.
+
+This port uses the existing 128 KiB MicroPython heap and single-precision floats. Matrix capacity depends on the live arrays, element values, and operation. The Stage 5 test script reports the completed square products and free heap after collection.
+
 ## PythonUltra parity and the IDE roadmap
 
-The reference is Brandon's Casio PythonUltra at commit `865e4b5e94280c12a405b3752ec2bd2231236e77`. Run003 adds four upstream MicroPython modules and the editor tools above. Run007 adds multi-file projects. Run008 adds persistent project data. Run009 adds workbench tools.
+The reference is Brandon's Casio PythonUltra at commit `865e4b5e94280c12a405b3752ec2bd2231236e77`. Run003 adds four upstream MicroPython modules and the editor tools above. Run007 adds multi-file projects. Run008 adds persistent project data. Run009 adds workbench tools and passed on Brandon’s calculator. Run010 integrates the numerical module.
 
 The reference manifest includes pyeditor, pyfiles, pyterm, pyperm, zipfile, pythonultra, pygame, py3d and numpy. The TI port needs its own file, display, keyboard and timing interfaces before those packages can work here. Check dependencies and exercise each port on the handheld. Numerical extensions also need a memory and speed check on the target.
 

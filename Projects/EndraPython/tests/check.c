@@ -75,7 +75,7 @@ static void catalog_checks(const char *root,void *stack){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));
     }
-    for(int i=1;i<=11;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
+    for(int i=1;i<=12;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
     app_key(RIGHT);app_key(RIGHT);type("input");
     assert(!strcmp(catalog_entries[catalog_index].name,"input"));app_key(ESC);
     type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);app_key(RIGHT);app_key(RIGHT);
@@ -344,6 +344,41 @@ static void workbench_checks(const char *root, void *stack) {
     puts("PASS: direct run and edit, outline, line jump, undoable replace, terminal commands and catalog imports.");
 }
 
+static void numerics_checks(const char *root, void *stack) {
+    char path[PATH_CAP + NAME_CAP], source[SOURCE_CAP + 1];
+    FILE *fixture = fopen("tests/Run010_Numerics_Test.py.tns", "rb");
+    assert(fixture);
+    size_t bytes = fread(source, 1, sizeof source, fixture);
+    assert(bytes < sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[bytes] = 0;
+    write_file(root,"Run010_Numerics_Test.py.tns",source);
+    app_init(root,stack);
+    for(int i=0;i<app.count;i++){
+        if(!strcmp(app.entries[i].name,"Run010_Numerics_Test.py.tns"))app.selected=i+2;
+    }
+    assert(app.selected>=2);
+    app_key(ENTER);
+    if(app.error){
+        for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[(app.first+i)%OUT_LINES]);
+    }
+    assert(app.page==OUTPUT && !app.error && output_has("32 x 32 multiply passed"));
+    preview("numerics");
+    for(int i=0;i<app.rows;i++)puts(app.output[(app.first+i)%OUT_LINES]);
+    app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);
+    assert(app.page==SHELL);
+    choose_command(LIST_MODULES);assert(output_has("numpy"));
+    assert(runtime_exec("<test>","import numpy as np\n"
+        "assert np.array([1, 2, 3])[1:].tolist() == [2, 3]\n"
+        "assert (2 * np.matrix([[1, 2]])).tolist() == [[2, 4]]\n"
+        "assert (np.matrix([[1, 2]]) @ np.matrix([[3], [4]])).tolist() == [[11]]",0));
+    assert(!runtime_exec("<test>","np.dot([1], [1, 2])",0));
+    assert(!runtime_exec("<test>","np.normalize([0, 0])",0));
+    assert(!runtime_exec("<test>","np.matrix([[1, 2],[2, 4]]).I",0));
+    app_key(ESC);
+    snprintf(path,sizeof path,"%s/Run010_Numerics_Test.py.tns",root);
+    assert(!unlink(path));
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
@@ -398,6 +433,7 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
     storage_io_checks(root,&stack);
     project_import_checks(root,&stack);
@@ -407,5 +443,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 21 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 22 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }
