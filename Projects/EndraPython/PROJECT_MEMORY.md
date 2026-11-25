@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run010 calculator numerics failure, 2026-11-25
+
+The calculator photo shows an AssertionError at line 8 of Run010_Numerics_Test.py.tns. The integer dot-product check on line 7 passed; parsing, float operations or math.sqrt must be isolated before changing tolerances or the numerical module. Run010 is not hardware-confirmed. The standalone Run010_Numerics_Diag.py.tns prints the module version, literal, division, square root, dot, norm and normalized values. Run011 inherits the numerical module and can be checked independently for graphics.
+
 ## Run011 Stage 6 graphics, keys and timing, 2026-11-25
 
 Run011 implements Stage 6 with 320 x 240 script drawing, held navigation keys and elapsed time. The TI platform reuses the existing display presentation, touchpad scan and timer. Includes selected casioplot, kandinsky, ion and gint adapters. The graphics fixture passed host drawing, held and released arrow, Esc, rerun, and timer wrap tests. Source `d5c358d6a83d7a25db4f270521b1c2d027b859a4` on feature/endrapython-run001, [CI 45555932474](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45555932474), [standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45555932474/artifacts/14994933409), [build ZIP including test script](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45555932474/artifacts/14995357567). The downloaded 201877-byte Zehn executable matched the local ARM build, SHA-256 `3cef67049b41ef69c17ac15dcb9984e59105a6a41677a26cfef0876f26ce43ad`. The packaged test script and 24 framebuffer previews plus contact sheet matched CI. Run010 hardware verification remains pending by request, and Run011 needs a separate hardware check. Run009 remains the hardware-confirmed rollback. Run the graphics fixture and check arrow holds and release, Esc to output, Esc to editor, and rerun.
