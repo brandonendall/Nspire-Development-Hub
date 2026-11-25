@@ -2,7 +2,7 @@
 
 ## Run014 Pygame hardware confirmation, 2026-11-25
 
-Brandon's CX II CAS photo shows Run014_Pygame_Test.py.tns reached Run complete with Pygame frames: 240 and Tokens collected: 1. This confirms the Pygame demo completed at its frame cap and registered the sprite/token collision on hardware. Files-first navigation and plain-text persistence passed host tests; calculator verification for them was not established by this photo. Run014 is the hardware-confirmed Pygame baseline.
+Brandon's CX II CAS photo shows Run014_Pygame_Test.py.tns reached Run complete with Pygame frames: 240 and Tokens collected: 1. This confirms the Pygame demo completed at its frame cap and registered the sprite/token collision on hardware. Brandon subsequently confirmed that Files-first navigation and creating, saving, and reopening a plain-text file worked on the calculator. Run014 is the hardware-confirmed baseline for Files, text-file saving, and the Pygame demo.
 
 ## Run014 Files and Pygame, 2026-11-25
 
