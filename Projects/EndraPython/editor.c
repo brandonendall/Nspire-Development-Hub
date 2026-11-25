@@ -119,3 +119,83 @@ void edit_goto_line(Editor *d,int line){
     while(line>1 && d->text[p])if(d->text[p++]=='\n')line--;
     d->cursor=p;d->selecting=0;reveal(d);
 }
+
+int edit_replace_all(Editor *d, const char *query, const char *replacement) {
+    if (!*query) return 0;
+    static char result[SOURCE_CAP + 1];
+    size_t needle = strlen(query), substitute = strlen(replacement), used = 0;
+    int count = 0;
+    const char *start = d->text;
+    for (;;) {
+        const char *hit = strstr(start, query);
+        size_t span = hit ? (size_t)(hit - start) : strlen(start);
+        if (used + span + (hit ? substitute : 0) > SOURCE_CAP) return -1;
+        memcpy(result + used, start, span);
+        used += span;
+        if (!hit) break;
+        memcpy(result + used, replacement, substitute);
+        used += substitute;
+        start = hit + needle;
+        count++;
+    }
+    result[used] = 0;
+    if (count && strcmp(result, d->text)) {
+        int line = line_number(d->text, d->cursor) + 1;
+        replace_text(d, 0, (int)strlen(d->text), result, (int)used);
+        edit_goto_line(d, line);
+    }
+    return count;
+}
+
+/* Outline recognizes declarations at the start of a physical line.
+ * Skip quoted strings, including multiline docstrings, and comments. */
+int edit_outline(const Editor *d, int after, int direction, char *label, size_t size) {
+    int line = 1, chosen = 0;
+    const char *entry = NULL, *entry_end = NULL;
+    char quote = 0;
+    int triple = 0;
+    const char *start = d->text;
+    while (*start) {
+        const char *end = start + end_of_line(start, 0);
+        const char *p = start;
+        while (*p == ' ' || *p == '\t') p++;
+        if (!quote && (direction > 0 ? line > after : line < after) &&
+            (!strncmp(p, "def ", 4) || !strncmp(p, "class ", 6) || !strncmp(p, "async def ", 10))) {
+            chosen = line;
+            entry = p;
+            entry_end = end;
+            if (direction > 0) break;
+        }
+        int continued = 0;
+        for (p = start; p < end; p++) {
+            char c = *p;
+            if (quote && c == '\\') {
+                if (p + 1 < end) p++;
+                else continued = 1;
+            } else if (quote && c == quote) {
+                if (!triple || (p + 2 < end && p[1] == c && p[2] == c)) {
+                    if (triple) p += 2;
+                    quote = 0;
+                }
+            } else if (!quote && c == '#') break;
+            else if (!quote && (c == '\'' || c == '"')) {
+                quote = c;
+                triple = p + 2 < end && p[1] == c && p[2] == c;
+                if (triple) p += 2;
+            }
+        }
+        if (!triple && !continued) quote = 0;
+        start = *end ? end + 1 : end;
+        line++;
+    }
+    if (label && size) {
+        size_t n = entry ? (size_t)(entry_end - entry) : 0;
+        if (n >= size) {
+            n = size - 1;
+            while (n && ((unsigned char)entry[n] & 0xc0) == 0x80) n--;
+        }
+        if (n) memcpy(label, entry, n);
+        label[n] = 0;
+    }
+    return chosen;
+}

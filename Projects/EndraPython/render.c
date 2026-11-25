@@ -132,7 +132,9 @@ static void files(void){
     char location[PATH_CAP+16];
     snprintf(location,sizeof location,"Documents%s",app.root+strlen(app.documents));
     status(app.status[0]?app.status:location,app.status[0]?GOLD:FAINT);
-    workspace_footer();
+    if(app.selected>=2 && !app.entries[app.selected-2].folder){
+        footer();int x=key(8,"Enter","Run");key(x,"Right","Edit");
+    }else workspace_footer();
 }
 static int token(const char *s,int n){
     static const char *const words[]={"and","as","assert","break","class","continue","def","del",
@@ -197,7 +199,7 @@ static void console(void){
     box(0,52,320,1,LINE);
     int visible=shell?10:12,last=app.rows-app.offset,first=last>visible?last-visible:0;
     if(shell && !input && app.rows==1 && !app.output[app.first][0])
-        text(10,62,CODE,MUTED,"help('modules') lists libraries.",312);
+        text(10,62,CODE,MUTED,":help for terminal commands",312);
     for(int i=first;i<last;i++){
         const char *line=app.output[(app.first+i)%OUT_LINES];
         int c=!strncmp(line,">>>",3)?AQUA:(!shell&&app.error&&i==last-2)?ERROR:WHITE;
@@ -226,7 +228,9 @@ static void modal(void){
     int list=app.page==ACTIONS;
     int top=list?39:55,bottom=list?212:181;
     panel(x,top,w,bottom-top,LINE,BAR);box(x+2,top+2,3,22,GREEN);
-    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":app.symbols?"Marks and symbols":"Commands";
+    const char *title=app.page==NAME?"New script":app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":
+        app.page==GOTO_LINE?"Go to line":app.page==REPLACE_FIND?"Replace all":
+        app.page==REPLACE_WITH?"Replacement text":app.symbols?"Marks and symbols":"Commands";
     text(x+13,top+7,TITLE,WHITE,title,294);box(x+12,top+34,w-24,1,LINE);
     if(list){
         if(app.page==ACTIONS && app.symbols){
@@ -252,12 +256,17 @@ static void modal(void){
         text(32,123,BODY,MUTED,"Ctrl+S saves. Enter discards.",291);
         text(32,145,BODY,MUTED,"Esc keeps editing.",291);
     }else{
-        const char *s=app.page==FIND?app.query:app.name;
+        const char *s=app.page==FIND || app.page==REPLACE_FIND ? app.query :
+            app.page==REPLACE_WITH ? app.replacement : app.name;
+        const char *hint=app.page==FIND?"Enter finds the next match and wraps.":
+            app.page==GOTO_LINE?"Enter a line number.":
+            app.page==REPLACE_FIND?"Find all exact matches.":
+            app.page==REPLACE_WITH?"Enter replaces all. Blank deletes.":
+            "Enter a name to create a blank script.";
         int n=strlen(s),from=utf_advance(s,0,n,utf_columns(s,n)-34);
         panel(29,101,262,26,GREEN,CARD);
         text(37,106,CODE,WHITE,s+from,284);box(37+7*utf_columns(s+from,n-from),108,1,12,GREEN);
-        fitted(30,139,BODY,app.status[0]?GOLD:MUTED,app.status[0]?app.status:app.page==FIND?
-               "Enter finds the next match and wraps.":"Enter a name to create a blank script.",292);
+        fitted(30,139,BODY,app.status[0]?GOLD:MUTED,app.status[0]?app.status:hint,292);
     }
     footer();
     if(app.page==DISCARD)key(8,"Esc","Keep editing");
@@ -267,17 +276,17 @@ typedef struct {const char *key,*action;} HelpRow;
 typedef struct {const char *title;HelpRow rows[7];} HelpTopic;
 static const HelpTopic topics[HELP_COUNT]={
     [HELP_FILES]={"Files",{{"New script","Create a blank script"},
-        {"Enter","Open a file or folder"},{"Menu > Browse","Browse Documents"},
+        {"Enter","Run script or open folder"},{"Right on script","Open script for editing"},{"Menu > Browse","Browse Documents"},
         {"Tab","Next page in a large folder"},{"Esc","Parent folder or exit"}}},
     [HELP_EDITOR]={"Editing and running",{{"Ctrl+R","Save and run this script"},
         {"Ctrl+S","Save changes"},{"Ctrl+F","Find text or find next"},
-        {"? key","Insert a symbol"},{"Menu > Catalog","Insert a Python command"},
+        {"? key","Insert a symbol"},{"Menu","Replace, go to line, outline"},
         {"Tab","Indent to a 2-space stop"},{"Esc","Return to Files"}}},
     [HELP_EDITS]={"Selection and clipboard",{{"Shift + arrows","Extend selection"},
         {"Ctrl+A","Select all"},{"Ctrl+C","Copy"},{"Ctrl+X","Cut"},{"Ctrl+V","Paste"},
         {"Ctrl+Z","Undo"},{"Ctrl+Y","Redo"}}},
     [HELP_SHELL]={"Python shell",{{"Enter","Run the command"},{"Up","Recall last command"},
-        {"Left / Right","Scroll earlier / later output"},{"Menu > List modules","See installed libraries"},
+        {"Left / Right","Scroll earlier / later output"},{":help","List terminal commands"},
         {"? key","Insert a symbol"},{"Menu > Catalog","Insert a Python command"},{"Esc","Return to Files"}}},
     [HELP_OUTPUT]={"Script output",{{"Ctrl+R","Run the script again"},{"Up / Down","Scroll output"},
         {"Enter on error","Go to the failing line"},{"Hold Esc during run","Interrupt Python"},
@@ -306,17 +315,39 @@ static void command_catalog(void){
     }
     if(catalog_count){
         char name[80],detail[128];catalog_name(name,sizeof name);
-        if(catalog_group<2 && catalog_signature())snprintf(detail,sizeof detail,"%s",catalog_signature());
+        const char *signature=catalog_signature();
+        if(signature)snprintf(detail,sizeof detail,"%s",signature);
         else if(catalog_group<2)snprintf(detail,sizeof detail,"%s%s",name,catalog_entries[catalog_index].callable?"(...)":"");
         else snprintf(detail,sizeof detail,"%s%s  |  import %s",name,catalog_entries[catalog_index].callable?"(...)":"",catalog_groups[catalog_group]);
         fitted(10,167,BODY,AQUA,detail,311);
     }
     status(app.status[0]?app.status:catalog_filter[0]?catalog_filter:"Type a name to jump",MUTED);
-    footer();int x=key(8,"Enter","Insert");key(x,"Esc","Back");
+    footer();int x=key(8,"Enter","Insert");
+    if(catalog_group>=2)x=key(x,"Tab","Import");
+    key(x,"Esc","Back");
+}
+static void outline(void){
+    header("OUTLINE");
+    fitted(10,36,BODY,WHITE,app.doc.name,310);
+    box(10,60,300,1,LINE);
+    if(!app.outline_first)text(10,70,BODY,MUTED,"No functions or classes found.",310);
+    int line=app.outline_first;
+    for(int i=0;i<8 && line;i++){
+        char label[80],number[12];
+        edit_outline(&app.doc,line-1,1,label,sizeof label);
+        int y=63+i*18;
+        if(line==app.outline_line)panel(8,y,304,18,GREEN,DEEP);
+        snprintf(number,sizeof number,"%d",line);
+        right(42,y+2,SMALL,GREEN,number);
+        fitted(50,y+1,CODE,WHITE,label,302);
+        line=edit_outline(&app.doc,line,1,NULL,0);
+    }
+    footer();int x=key(8,"Enter","Go to line");key(x,"Esc","Back");
 }
 void render(uint16_t *pixels){
     fb=pixels;box(0,0,320,240,BG);
     if(app.page==CATALOG)command_catalog();
+    else if(app.page==OUTLINE)outline();
     else if(app.page==GUIDE)guide();
     else if(app.page==FILES)files();
     else if(app.page==EDITOR)editor();

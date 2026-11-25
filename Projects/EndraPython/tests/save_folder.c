@@ -41,7 +41,7 @@ void test_save_folder(void *stack){
     /* Reopen Run001-compatible source and make the photographed edit. */
     response=NORMAL;
     app_init(folder,stack);assert(app.count==1 && !app.status[0]);
-    app_key(DOWN);app_key(ENTER);
+    app_key(DOWN);app_key(RIGHT);
     char *ten=strstr(app.doc.text,"range(10)");assert(ten);
     app.doc.cursor=(int)(ten-app.doc.text)+8;
     app_key(8);app_key(8);app_key('5');app_key(RUN);

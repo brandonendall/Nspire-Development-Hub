@@ -98,10 +98,10 @@ static void browse_checks(const char *home,void *stack){
     while(strcmp(app.entries[app.selected-2].name,"Class Notes")){assert(app.selected<app.count+1);app_key(DOWN);}
     app_key(ENTER);assert(!strcmp(app.root,other));app_key(ENTER);assert(!strcmp(app.root,nested));
     assert(app.count==1);preview("browser");
-    app_key(ENTER);assert(app.page==EDITOR && !strcmp(app.doc.text,"print('original')"));
+    app_key(ENTER);assert(app.page==OUTPUT && !app.error && output_has("original"));app_key(ESC);
     app_key(SELECT_ALL);type("print(");pick("\"");pick("°");pick("\"");type(")");
     app_key(RUN);assert(!app.error && output_has("°"));
-    app_key(ESC);app_key(ESC);app_key(DOWN);app_key(ENTER);assert(!strcmp(app.doc.text,"print(\"°\")"));
+    app_key(ESC);app_key(ESC);app_key(DOWN);app_key(RIGHT);assert(app.page==EDITOR && !strcmp(app.doc.text,"print(\"°\")"));
     app_key(SELECT_ALL);app_key(TI_INPUT);assert(app.request_input);app.request_input=0;
     uint16_t ti[]={'p','r','i','n','t','(','"',0x03c0,0x2264,0x03b8,'"',')'};
     char converted[64];assert(utf16_input(ti,sizeof ti/sizeof ti[0],converted,sizeof converted));
@@ -296,6 +296,54 @@ static void storage_io_checks(const char *documents, void *stack) {
     assert(!rmdir(path) && !rmdir(moved));
 }
 
+static void workbench_checks(const char *root, void *stack) {
+    char folder[PATH_CAP], path[PATH_CAP + NAME_CAP];
+    snprintf(folder,sizeof folder,"%s/Workbench Test",root);
+    assert(!mkdir(folder,0700));
+    write_file(folder,"Demo Script.py.tns",
+        "# marker\n'''\ndef ignored():\n'''\n"
+        "def original():\n    return 'marker'\n"
+        "class Widget:\n    pass\nprint(original())\n");
+    app_init(root,stack);
+    app_key(RIGHT);app_key(ENTER);
+    type(":cd Workbench Test");app_key(ENTER);
+    type(":pwd");app_key(ENTER);assert(output_has("/Workbench Test"));
+    type(":ls");app_key(ENTER);assert(output_has("Demo Script.py.tns"));
+    type(":cat Demo Script.py.tns");app_key(ENTER);assert(output_has("class Widget:"));
+    type(":edit missing.py.tns");app_key(ENTER);assert(app.page==SHELL && output_has("Unreadable"));
+    type(":clear");app_key(ENTER);assert(app.rows==1 && !app.output[0][0]);
+    type(":python Demo Script.py.tns");app_key(ENTER);
+    assert(app.page==OUTPUT && !app.error && output_has("marker"));
+    app_key(ESC);
+    assert(!strcmp(app.root,folder));
+    choose_command(SHOW_OUTLINE);assert(app.outline_line==5);preview("outline");
+    app_key(DOWN);assert(app.outline_line==7);app_key(ENTER);
+    assert(line_number(app.doc.text,app.doc.cursor)==6);
+    choose_command(GO_LINE);type("9000");app_key(ENTER);assert(app.page==GOTO_LINE);
+    for(int i=0;i<4;i++)app_key(8);
+    type("6");app_key(ENTER);
+    assert(app.page==EDITOR && line_number(app.doc.text,app.doc.cursor)==5);
+    choose_command(REPLACE);type("marker");app_key(ENTER);
+    type("updated");preview("replace");app_key(ENTER);
+    assert(app.doc.dirty && !strstr(app.doc.text,"marker"));
+    app_key(UNDO);assert(!app.doc.dirty && strstr(app.doc.text,"marker"));
+    app_key(REDO);assert(app.doc.dirty);
+    app_key(RUN);assert(!app.error && output_has("updated"));
+    app_key(ESC);app_key(ESC);
+    assert(app.page==FILES);app_key(DOWN);app_key(ENTER);
+    assert(app.page==OUTPUT && output_has("updated"));
+    app_key(ESC);app_key(ESC);app_key(RIGHT);app_key(ENTER);
+    assert(app.page==SHELL);
+    type(":edit Demo Script.py.tns");app_key(ENTER);assert(app.page==EDITOR);
+    choose_command(OPEN_CATALOG);app_key(LEFT);app_key(LEFT);type("load");
+    assert(!strcmp(catalog_signature(),"json.load(file)"));
+    preview("catalog_signatures");
+    app_key(INDENT);assert(app.page==EDITOR && !strncmp(app.doc.text,"import json",11));
+    snprintf(path,sizeof path,"%s/Demo Script.py.tns",folder);assert(!unlink(path));
+    assert(!rmdir(folder));
+    puts("PASS: direct run and edit, outline, line jump, undoable replace, terminal commands and catalog imports.");
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
@@ -309,7 +357,7 @@ int main(void){
     app_key(RUN);assert(app.page==OUTPUT && !app.error && output_has("Hello from EndraPython") && output_has("45"));
     preview("console");app_key(ESC);app_key(ESC);assert(app.count==1);
     app_key(ENTER);type("Hello_World");app_key(ENTER);assert(app.page==NAME && strstr(app.status,"in use"));app_key(ESC);
-    app_key(DOWN);app_key(ENTER);assert(app.page==EDITOR);
+    app_key(DOWN);app_key(RIGHT);assert(app.page==EDITOR);
     assert(app.doc.cursor==0);app_key(RIGHT);app_key(RIGHT);preview("editor");
     app_key(LEFT);app_key(LEFT);type("#");app_key(RUN);assert(!app.error&&!output_has("Hello from EndraPython")&&output_has("45"));
     app_key(ESC);assert(app.doc.cursor==1);app_key(8);app_key(SAVE);app_key(ESC);preview("files");
@@ -350,6 +398,7 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    workbench_checks(root,&stack);
     storage_io_checks(root,&stack);
     project_import_checks(root,&stack);
     catalog_checks(scripts,&stack);
@@ -358,5 +407,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 18 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 21 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

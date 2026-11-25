@@ -3,7 +3,7 @@ from PIL import Image
 
 out = Path("build/previews")
 out.mkdir(exist_ok=True)
-frames = ["files", "editor", "console", "error", "repl", "tools", "browser", "symbols", "catalog", "input", "input_script", "import_error", "storage_result"] + [f"help{i}" for i in range(5)]
+frames = ["files", "editor", "console", "error", "repl", "tools", "browser", "symbols", "catalog", "input", "input_script", "import_error", "storage_result", "outline", "replace", "catalog_signatures"] + [f"help{i}" for i in range(5)]
 for name in frames:
     with Image.open(f"build/{name}.ppm") as im:
         assert im.size == (320, 240)
@@ -11,7 +11,7 @@ for name in frames:
             assert len(im.crop((180, 220, 320, 240)).getcolors()) == 1, name
         im.save(out / f"{name}.png")
 sheet = Image.new("RGB", (656, 504), "#273137")
-for i, name in enumerate(["storage_result", "catalog", "browser", "import_error"]):
+for i, name in enumerate(["outline", "replace", "browser", "catalog_signatures"]):
     with Image.open(out / f"{name}.png") as im:
         sheet.paste(im, (4 + (i % 2) * 328, 6 + (i // 2) * 250))
-sheet.save(out / "EndraPython_Run008_Previews.png")
+sheet.save(out / "EndraPython_Run009_Previews.png")

@@ -9,8 +9,8 @@
 #define EDIT_COLS 40
 #define OUT_WIDTH 40
 #define OUT_LINES 96
-typedef enum { FILES, EDITOR, OUTPUT, SHELL, NAME, ACTIONS, DISCARD, FIND, GUIDE, CATALOG, READ_INPUT } Page;
-typedef enum { UP=256, DOWN, LEFT, RIGHT, ENTER, ESC, MENU, SAVE, RUN, INDENT, UNDO, REDO, COPY, CUT, PASTE, SELECT_ALL, SEARCH, EXT_UP, EXT_DOWN, EXT_LEFT, EXT_RIGHT, TI_INPUT, MARKS, OPEN_GUIDE, OPEN_CATALOG, BROWSE, LIST_MODULES } Key;
+typedef enum { FILES, EDITOR, OUTPUT, SHELL, NAME, ACTIONS, DISCARD, FIND, GUIDE, CATALOG, READ_INPUT, GOTO_LINE, REPLACE_FIND, REPLACE_WITH, OUTLINE } Page;
+typedef enum { UP=256, DOWN, LEFT, RIGHT, ENTER, ESC, MENU, SAVE, RUN, INDENT, UNDO, REDO, COPY, CUT, PASTE, SELECT_ALL, SEARCH, EXT_UP, EXT_DOWN, EXT_LEFT, EXT_RIGHT, TI_INPUT, MARKS, OPEN_GUIDE, OPEN_CATALOG, BROWSE, LIST_MODULES, GO_LINE, REPLACE, SHOW_OUTLINE } Key;
 typedef struct {
     char name[NAME_CAP], text[SOURCE_CAP+1], original[SOURCE_CAP+1];
     int cursor, top, left, dirty, existing, crlf, anchor, selecting;
@@ -18,7 +18,8 @@ typedef struct {
 typedef struct {
     Page page, origin;
     Editor doc;
-    char query[64];
+    char query[64], replacement[128];
+    int outline_line, outline_first;
     struct FileEntry { char name[NAME_CAP]; int folder; } entries[FILE_CAP];
     char name[NAME_CAP], status[80], folder[PATH_CAP], documents[PATH_CAP];
     int help_topic, input_result;
@@ -47,6 +48,8 @@ int ensure_scripts_folder(void);
 
 void edit_reset_history(void);
 void edit_find(Editor *d,const char *query);
+int edit_replace_all(Editor *d, const char *query, const char *replacement);
+int edit_outline(const Editor *d, int after, int direction, char *label, size_t size);
 extern const char *const ep_symbols[];
 extern const int ep_symbol_count;
 typedef struct { const char *label; int key; } Command;

@@ -45,6 +45,19 @@ void catalog_name(char *out,size_t size){
 const char *catalog_signature(void){
     if(catalog_group<2)for(size_t i=0;i<sizeof common/sizeof common[0];i++)
         if(!strcmp(catalog_entries[catalog_index].name,common[i].name))return common[i].syntax;
+    static const struct { const char *name, *signature; } signatures[] = {
+        {"os.getcwd", "os.getcwd()"}, {"os.chdir", "os.chdir(path)"},
+        {"os.listdir", "os.listdir([path])"}, {"os.mkdir", "os.mkdir(path)"},
+        {"json.dump", "json.dump(obj, file)"}, {"json.load", "json.load(file)"},
+        {"json.dumps", "json.dumps(obj)"}, {"json.loads", "json.loads(text)"},
+        {"math.sqrt", "math.sqrt(x)"}, {"math.sin", "math.sin(radians)"},
+        {"random.randint", "random.randint(a, b)"}, {"random.choice", "random.choice(seq)"},
+        {"struct.pack", "struct.pack(fmt, values...)"}, {"struct.unpack", "struct.unpack(fmt, data)"},
+    };
+    char name[80];
+    catalog_name(name, sizeof name);
+    for (size_t i = 0; i < sizeof signatures / sizeof signatures[0]; i++)
+        if (!strcmp(name, signatures[i].name)) return signatures[i].signature;
     return NULL;
 }
 static void find_prefix(void){
@@ -58,6 +71,13 @@ void catalog_key(int k){
     if(k==ESC){app.page=app.origin;return;}
     if(k==LEFT || k==RIGHT){
         catalog_group=(catalog_group+groups+(k==LEFT?-1:1))%groups;load_group();return;
+    }
+    if (k == INDENT && catalog_group >= 2) {
+        char statement[80];
+        snprintf(statement, sizeof statement, "import %s", catalog_groups[catalog_group]);
+        app.page = app.origin;
+        app_insert_text(statement);
+        return;
     }
     if(!catalog_count)return;
     size_t n=strlen(catalog_filter);
