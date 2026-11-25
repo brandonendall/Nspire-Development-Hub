@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 #include <ctype.h>
 
 App app;
@@ -32,13 +31,6 @@ const Command *page_commands(Page page){
     if(page==SHELL)return shell;
     if(page==OUTPUT)return output;
     return valid_text(app.doc.name)?text_editor:editor;
-}
-int palette_matches(const Command *command) {
-    size_t len = strlen(app.command_filter);
-    if (!len) return 1;
-    for (const char *p = command->label; *p; p++)
-        if (!strncasecmp(p, app.command_filter, len)) return 1;
-    return 0;
 }
 static void reset_output(void) {
     memset(app.output,0,sizeof app.output);
@@ -153,7 +145,7 @@ void app_key(int k) {
     if(!k)return;
     app.status[0]=0;
     if(k==MENU && (app.page==FILES || app.page==EDITOR || app.page==SHELL || app.page==OUTPUT)){
-        app.origin=app.page;app.page=ACTIONS;app.action=app.symbols=0;app.command_filter[0]=0;return;
+        app.origin=app.page;app.page=ACTIONS;app.action=app.symbols=0;return;
     }
     if(app.page==SETTINGS){
         if(k==ESC || k==MENU)app.page=app.origin;
@@ -290,20 +282,12 @@ void app_key(int k) {
         else if(k==TI_INPUT && app.symbols){app.page=app.origin;app_key(TI_INPUT);}
         else if(app.symbols && k==DOWN){if(app.action+12<count)app.action+=12;}
         else if(app.symbols && k==UP){if(app.action>=12)app.action-=12;}
-        else if(k==DOWN||k==RIGHT||k==UP||k==LEFT){
-            int step=(k==DOWN||k==RIGHT)?1:count-1;
-            int next=app.action<0?(step==1?0:count-1):(app.action+step)%count;
-            for(int i=0;i<count;i++,next=(next+step)%count){
-                if(app.symbols || palette_matches(&commands[next])){app.action=next;break;}
-            }
-        }else if(k==ENTER && app.action>=0){
+        else if(k==DOWN || k==RIGHT)app.action=(app.action+1)%count;
+        else if(k==UP || k==LEFT)app.action=(app.action+count-1)%count;
+        else if(k==ENTER){
             app.page=app.origin;
             if(app.symbols)app_insert_text(ep_symbols[app.action]);
             else app_key(commands[app.action].key);
-        }else if(!app.symbols && (k==8 || (k>=32 && k<127))){
-            text_field(app.command_filter,sizeof app.command_filter,k);
-            app.action=-1;
-            for(int i=0;i<count;i++)if(palette_matches(&commands[i])){app.action=i;break;}
         }
     }else if(app.page==OUTPUT){
         if(k==ESC)app.page=EDITOR;

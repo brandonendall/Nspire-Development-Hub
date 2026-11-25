@@ -1,14 +1,12 @@
-# Run018 handheld check
+# Run019 handheld check
 
-Run017 rebooted Brandon's CX II CAS when he pressed Catalog. Keep Run016 as the confirmed rollback. Run018 disables the key inside EndraPython and uses native read-only data for the menu catalog. The immediate cause of the reboot has not been isolated.
-
-After Ndless is working, transfer Run018 as a separate file.
+The regular Menu uses arrows and Enter. The separate Python Command Catalog keeps typing shortcuts. The physical Catalog shortcut remains disabled after the Run017 reboot. Run016 is the confirmed fallback.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run018.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run019.tns /upload
 ```
 
-1. Open Run018 and choose Python shell from the Files menu.
-2. Open **Menu > Command catalog**. Type `math` and press Enter, then find `sqrt`. The syntax line should show `math.sqrt(x)`.
-3. Press Esc to go back to modules and again to return to the shell. First verify this menu path. Stop at any display, input or stability issue and use Run016.
+1. On Files, press Menu. Check that New Python script, New text file, Python shell, Browse Documents, Settings, and Help appear as a plain list. Typing `print` should leave the selection in place.
+2. Use the arrows to reach Settings, then press Enter and check that arrow navigation and Enter still work. Press Esc to return.
+3. From Python shell, use Menu > Command catalog. Type `math`, open it, and type `sqrt`. Verify the `math.sqrt(x)` hint and press Esc twice to return to the shell.

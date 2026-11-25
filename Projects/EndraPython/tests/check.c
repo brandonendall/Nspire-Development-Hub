@@ -62,6 +62,11 @@ void platform_wait_input(void){
 }
 static void catalog_checks(const char *root,void *stack){
     app_init(root,stack);help_check(HELP_FILES);
+    app_key(MENU);assert(app.page==ACTIONS && app.action==0);
+    type("print");app_key(8);assert(app.page==ACTIONS && app.action==0);
+    app_key(UP);assert(page_commands(FILES)[app.action].key==OPEN_GUIDE);
+    app_key(DOWN);assert(app.action==0);preview("focus_menu");
+    app_key(ESC);assert(app.page==FILES);
     choose_command(NEW_SCRIPT);type("catalog_test");app_key(ENTER);assert(!app.doc.text[0]);
     app_key(INDENT);assert(!strcmp(app.doc.text,"  "));app_key(ENTER);assert(!strcmp(app.doc.text,"  \n  "));
     app_key('x');app_key(INDENT);assert(strstr(app.doc.text,"  x "));
@@ -71,7 +76,7 @@ static void catalog_checks(const char *root,void *stack){
     app_key(ENTER);type("in");preview("catalog");
     app_key(ENTER);assert(!strcmp(app.doc.text,"name=input("));type("'Name? ')");app_key(ENTER);
     choose_command(OPEN_CATALOG);app_key(ENTER);app_key(ENTER);type("name)");preview("input_script");help_check(HELP_EDITOR);
-    app_key(MENU);type("settings");preview("focus_palette");app_key(ENTER);
+    choose_command(OPEN_SETTINGS);
     assert(app.page==SETTINGS);preview("focus_settings");
     app_key(ENTER);assert(!app.auto_indent);app_key(DOWN);
     app_key(ENTER);assert(!app.indent_guides);app_key(DOWN);

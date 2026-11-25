@@ -25,7 +25,6 @@ typedef struct {
     int help_topic, input_result;
     char reply[512];
     int new_text, browsing, request_input, file_page, more_files;
-    char command_filter[40];
     int auto_indent, indent_guides, line_numbers;
     int count, selected, action, quit, error, error_line, symbols;
     char output[OUT_LINES][4*OUT_WIDTH+1], command[128], history[128];
@@ -57,7 +56,6 @@ extern const char *const ep_symbols[];
 extern const int ep_symbol_count;
 typedef struct { const char *label; int key; } Command;
 const Command *page_commands(Page page);
-int palette_matches(const Command *command);
 void catalog_open(void);
 void catalog_key(int key);
 #define CATALOG_CAP 192

@@ -1,4 +1,4 @@
-# EndraPython Run018
+# EndraPython Run019
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -6,11 +6,11 @@ The editor keeps the Run002 save fix. It opens the existing scripts folder befor
 
 ## Commands, help and catalog
 
-Press **Menu** from Files, Editor, Shell or Output. **Help** is highlighted. Press **Enter** to see controls for the current screen. Left and Right cycle through Files, Editing and running, Selection and clipboard, Python shell, and Script output. Esc returns directly to the same work, including a partially typed shell command.
+Press **Menu** from Files, Editor, Shell or Output. Use the arrows to highlight **Help**, then press **Enter** to see controls for the current screen. Left and Right cycle through Files, Editing and running, Selection and clipboard, Python shell, and Script output. Esc returns directly to the same work, including a partially typed shell command.
 
-In the Python editor or shell, choose **Menu > Command catalog**. The browser reads a fixed index of the bundled interpreter modules. The physical Catalog key is disabled in EndraPython Run018 after a handheld reboot in Run017. Start with Common for frequently used builtins, or choose a module to browse public names. Up/Down moves, Enter or Right opens a module, Left or Esc goes back. Type a prefix to jump and use Del to shorten it. The selected command displays its syntax when available. Enter inserts the qualified name and an opening parenthesis for callables. Tab inserts the selected module's import statement. Pygame includes public names in its bundled draw, event, image, and other namespaces.
+In the Python editor or shell, choose **Menu > Command catalog**. The browser reads a fixed index of the bundled interpreter modules. The physical Catalog key is disabled in EndraPython after a handheld reboot in Run017. Start with Common for frequently used builtins, or choose a module to browse public names. Up/Down moves, Enter or Right opens a module, Left or Esc goes back. Type a prefix to jump and use Del to shorten it. The selected command displays its syntax when available. Enter inserts the qualified name and an opening parenthesis for callables. Tab inserts the selected module's import statement. Pygame includes public names in its bundled draw, event, image, and other namespaces.
 
-**Menu** opens the searchable command palette. **Settings** controls auto-indent, guides and line numbers for the current session. Tab advances to two-space stops.
+**Menu** opens the options for the current screen. Use the arrows to select an option, Enter to open it, and Esc to go back. **Settings** controls auto-indent, guides and line numbers for the current session. Tab advances to two-space stops.
 
 The built-in input([prompt]) reads a line in the IDE and returns a string in scripts and the shell. Enter accepts an empty or filled reply, Esc raises KeyboardInterrupt, and the punctuation key opens the existing symbol picker. Each reply holds up to 511 UTF-8 bytes.
 
@@ -18,7 +18,7 @@ The built-in input([prompt]) reads a line in the IDE and returns a string in scr
 
 The physical **?▸** key opens Marks and symbols directly in the editor, shell, Find field or filename. Select a character with the arrows and press Enter. It includes every mark listed in the TI guide plus programming punctuation and brackets. The same popup is an editor Menu item. Ctrl with the parenthesis keys enters the corresponding square bracket; a tapped Ctrl applies to the next key. The original Shift shortcuts still work.
 
-For TI's own keyboard interface, select **TI symbols** from the command palette to open a native TI text field. Use **?▸** inside it for TI punctuation or **Ctrl+Catalog** for the broader TI symbol palette. Confirm the field to insert its text. Esc cancels. Technical notes: the Ndless SDK exports a TI Request text dialog and EndraPython reads its UTF-16 result, converts it to UTF-8, and inserts the whole result as one undoable edit. This two-stage route requires hardware verification. EndraPython stores actual characters, including mathematical symbols. Executable expressions must follow MicroPython syntax. Uncovered font characters use a replacement glyph while retaining the original text.
+For TI's own keyboard interface, select **TI symbols** from the menu to open a native TI text field. Use **?▸** inside it for TI punctuation or **Ctrl+Catalog** for the broader TI symbol palette. Confirm the field to insert its text. Esc cancels. Technical notes: the Ndless SDK exports a TI Request text dialog and EndraPython reads its UTF-16 result, converts it to UTF-8, and inserts the whole result as one undoable edit. This two-stage route requires hardware verification. EndraPython stores actual characters, including mathematical symbols. Executable expressions must follow MicroPython syntax. Uncovered font characters use a replacement glyph while retaining the original text.
 
 In Files, **Menu > Browse Documents** opens Documents. Enter opens a folder or runs the highlighted Python script. Right opens a highlighted script for editing. Esc goes up one folder and returns to the usual EndraPython view from Documents. Save and Run use the opened file's own directory. New script also uses the displayed directory. Tab cycles 96-entry pages in large folders. Browsing reads directory listings only.
 
@@ -95,7 +95,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run018 scope |
+| Area | Run019 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |

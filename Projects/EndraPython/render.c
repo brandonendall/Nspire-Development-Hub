@@ -255,7 +255,7 @@ static void modal(void){
     panel(x,top,w,bottom-top,LINE,BAR);box(x+2,top+2,3,22,ACCENT);
     const char *title=app.page==NAME?(app.new_text?"New text file":"New Python script"):app.page==FIND?"Find in script":app.page==DISCARD?"Unsaved changes":
         app.page==GOTO_LINE?"Go to line":app.page==REPLACE_FIND?"Replace all":
-        app.page==REPLACE_WITH?"Replacement text":app.symbols?"Marks and symbols":"Command palette";
+        app.page==REPLACE_WITH?"Replacement text":app.symbols?"Marks and symbols":"Menu";
     text(x+13,top+7,TITLE,WHITE,title,294);box(x+12,top+34,w-24,1,LINE);
     if(list){
         if(app.page==ACTIONS && app.symbols){
@@ -266,21 +266,14 @@ static void modal(void){
             }
             text(31,161,BODY,MUTED,"Menu also offers TI symbols",290);
         }else{
-            panel(x+12,top+39,w-24,21,ACCENT,CARD);
-            fitted(x+20,top+42,BODY,app.command_filter[0]?WHITE:FAINT,
-                app.command_filter[0]?app.command_filter:"Type a command...",x+w-19);
             const Command *commands=page_commands(app.origin);
-            int before=0;
-            for(int i=0;i<app.action;i++)if(palette_matches(&commands[i]))before++;
-            int skip=before>4?before-4:0, row=0;
-            for(int i=0;commands[i].label && row<5;i++){
-                if(!palette_matches(&commands[i]))continue;
-                if(skip){skip--;continue;}
-                int y=top+63+row++*20;
-                if(i==app.action)panel(x+12,y,w-24,19,LINE,DEEP);
-                fitted(x+20,y+1,BODY,i==app.action?WHITE:MUTED,commands[i].label,x+w-18);
+            const int rows=7;
+            int first=app.action>=rows?app.action-rows+1:0;
+            for(int i=first;i<first+rows && commands[i].label;i++){
+                int y=top+38+(i-first)*19;
+                if(i==app.action)panel(x+12,y,w-24,18,LINE,DEEP);
+                fitted(x+20,y,BODY,i==app.action?WHITE:MUTED,commands[i].label,x+w-18);
             }
-            if(!row)text(x+20,top+70,BODY,FAINT,"No matching command",x+w-18);
         }
     }else if(app.page==DISCARD){
         text(32,101,BODY,WHITE,"Save this script before leaving?",291);
