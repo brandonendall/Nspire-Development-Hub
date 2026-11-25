@@ -4,9 +4,13 @@
 
 Brandon confirmed that Run019's Menu > Command catalog works on the handheld. Run020 maps the unmodified physical Catalog key in the Python shell and Python script editor to that same action. The catalog still reads the compiled index without calling MicroPython while browsing. Ctrl+Catalog is ignored within EndraPython's keyboard handler. Run019 is the rollback for the shortcut. The Run017 reboot cause remains unconfirmed.
 
-Source `04c8abf8a855731c64c23f9d355cd26af447c603` on `feature/endrapython-run001`. Host suite, key-edge and Ctrl simulation, ARM build and 35 framebuffer renders passed. `EndraPython_Run020.tns` is 216372 bytes, SHA-256 `5fc7c60cf1d62207ec8a1e7a0662339e04c921c5cd95ebe9d03d49d9fca0595e`. [CI 45707425279](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45707425279). CI passed and the standalone artifact matches the local SHA-256. [Standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45707425279/artifacts/15065218354) · [Build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45707425279/artifacts/15066151753). Run020 handheld check pending. Open the Python shell, tap Catalog once, and use Esc to return.
+Source `04c8abf8a855731c64c23f9d355cd26af447c603` on `feature/endrapython-run001`. Host suite, key-edge and Ctrl simulation, ARM build and 35 framebuffer renders passed. `EndraPython_Run020.tns` is 216372 bytes, SHA-256 `5fc7c60cf1d62207ec8a1e7a0662339e04c921c5cd95ebe9d03d49d9fca0595e`. [CI 45707425279](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45707425279). CI passed and the standalone artifact matches the local SHA-256. [Standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45707425279/artifacts/15065218354) · [Build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45707425279/artifacts/15066151753). Brandon reported Run020 successful on the handheld, including the physical Catalog shortcut. Run020 is the confirmed rollback.
 
 Gint currently exposes `keydown(key)` for mapped keys. Brandon confirmed that `gint.getkey()` is wanted in the Gint input milestone, alongside `getkey_opt`, `pollevent`, and key-press and release handling. This follows the separate Gint drawing milestone.
+
+## Next combined Gint build
+
+Brandon requested removal of the startup `Menu > Command catalog` hint shown in the Run020 shell. Remove that line in the next substantive Gint build. Keep Catalog accessible from the physical key and menu. Do not ship a standalone build for the hint. The next roadmap milestone is Gint drawing, including line, triangle, polygon, circle and ellipse primitives with clipping checks on the CX II CAS. The Gint input milestone includes `getkey()`, `getkey_opt()`, polling, and press and release handling.
 
 ## Run019 plain menus, 2026-11-25
 
