@@ -1,4 +1,5 @@
 #include "runtime.h"
+#include "device.h"
 #include "app.h"
 #include "py/builtin.h"
 #include "py/gc.h"
@@ -40,6 +41,7 @@ mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
 int runtime_error_line(void){return error_line;}
 void runtime_start(void *stack_top) {
     project_io_start();
+    device_reset();
     mp_embed_init(heap, sizeof heap, stack_top);
     mp_stack_set_limit(16 * 1024);
 }

@@ -10,7 +10,9 @@
  * as the known-working gpSP frontend. Hardware safety remains UNVERIFIED.
  */
 #include "platform.h"
-#define EH_TICKS_PER_SECOND 32768u
+#include "device.h"
+#include "app.h"
+#include "runtime.h"
 #include <libndls.h>
 #include <os.h>
 #include <string.h>
@@ -31,7 +33,7 @@
 #define TIMER_VALUE 0x900C0004u
 #define TIMER_CTRL 0x900C0008u
 #define TIMER_CLOCK 0x900C0080u
-#define TICKS EH_TICKS_PER_SECOND
+#define TICKS EP_TICKS_PER_SECOND
 #define WPIX (EH_W*EH_H)
 #define KEY_ENTER_RAW 2
 #define KEY_CLICK_RAW 98
@@ -79,6 +81,7 @@ static uint32_t ticks(void){
   return fallback_ticks;
 }
 uint32_t eh_platform_ticks(void){ return ticks(); }
+uint32_t device_ticks(void){ return ticks(); }
 int eh_platform_exit_chord(void){
   /* poll_keys has just sampled the SDK's on_key_pressed() into bit 9. */
   return (key_curr[0] & 0x200u) && isKeyPressed(KEY_NSPIRE_CTRL);
@@ -251,4 +254,23 @@ int eh_platform_touch_pan(int *dx,int *dy){
  *dx=touch_dx;*dy=touch_dy;
  touch_dx=touch_dy=0;
  return touch_contact;
+}
+
+void device_present(const uint16_t *pixels) {
+  memcpy(eh_framebuffer(), pixels, EP_WIDTH * EP_HEIGHT * sizeof(*pixels));
+  eh_platform_flip();
+}
+
+int device_key_held(int key) {
+  static const int raw[] = {
+    KEY_UP_RAW, KEY_DOWN_RAW, KEY_LEFT_RAW, KEY_RIGHT_RAW, KEY_ENTER_RAW, KEY_ESC_RAW, KEY_MENU_RAW
+  };
+  poll_keys();
+  if (key == ESC) return cancel_pressed();
+  return key_active(raw[key - UP], 0) || (key == ENTER && key_active(KEY_CLICK_RAW, 0));
+}
+
+void device_delay(unsigned ms) {
+  msleep(ms);
+  if(!timer_ok)fallback_ticks+=(TICKS*ms+500)/1000;
 }

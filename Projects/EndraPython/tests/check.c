@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "app.h"
+#include "device.h"
 #include "runtime.h"
 #include <assert.h>
 #include <stdio.h>
@@ -75,7 +76,7 @@ static void catalog_checks(const char *root,void *stack){
         char check[96];snprintf(check,sizeof check,"assert callable(%s)",catalog_entries[i].name);
         assert(runtime_exec("<check>",check,0));
     }
-    for(int i=1;i<=12;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
+    for(int i=1;i<=19;i++){app_key(RIGHT);assert(catalog_count>0 && catalog_count<CATALOG_CAP);}
     app_key(RIGHT);app_key(RIGHT);type("input");
     assert(!strcmp(catalog_entries[catalog_index].name,"input"));app_key(ESC);
     type("import math");app_key(ENTER);choose_command(OPEN_CATALOG);app_key(RIGHT);app_key(RIGHT);
@@ -379,6 +380,78 @@ static void numerics_checks(const char *root, void *stack) {
     assert(!unlink(path));
 }
 
+static uint16_t script_pixels[EP_WIDTH * EP_HEIGHT];
+static uint32_t raw_ticks;
+static int frames, control_fixture;
+
+void device_present(const uint16_t *pixels) {
+    memcpy(script_pixels, pixels, sizeof script_pixels);
+    frames++;
+}
+int device_key_held(int key) {
+    if (!control_fixture) return 0;
+    return (key == RIGHT && frames == 0) || (key == ESC && frames >= 2);
+}
+uint32_t device_ticks(void) { return raw_ticks; }
+void device_delay(unsigned ms) { raw_ticks += (ms * EP_TICKS_PER_SECOND + 500) / 1000; }
+
+static void graphics_checks(const char *root, void *stack) {
+    char source[SOURCE_CAP + 1], path[PATH_CAP + NAME_CAP];
+    FILE *fixture = fopen("tests/Run011_Graphics_Test.py.tns", "rb");
+    assert(fixture);
+    size_t len = fread(source, 1, sizeof source, fixture);
+    assert(len < sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len] = 0;
+    const char *name = "Run011_Graphics_Test.py.tns";
+    write_file(root,name,source);
+    app_init(root,stack);
+    assert(load_script(name));
+    app.page=EDITOR;
+    control_fixture=1;
+    for(int i=0;i<2;i++){
+        frames=0;
+        app_key(RUN);
+        assert(app.page==OUTPUT && !app.error && frames==2);
+        assert(output_has("Frames: 2"));
+        assert(script_pixels[109*EP_WIDTH+149] != script_pixels[109*EP_WIDTH+148]);
+        app_key(ESC);
+        assert(app.page==EDITOR);
+    }
+    preview("graphics_return");
+    FILE *ppm = fopen("build/graphics.ppm","wb");
+    assert(ppm);
+    fprintf(ppm,"P6\n%d %d\n255\n",EP_WIDTH,EP_HEIGHT);
+    for(size_t i=0;i<EP_WIDTH*EP_HEIGHT;i++){
+        unsigned c = script_pixels[i];
+        fputc(((c>>11)&31)*255/31,ppm);
+        fputc(((c>>5)&63)*255/63,ppm);
+        fputc((c&31)*255/31,ppm);
+    }
+    assert(!fclose(ppm));
+    control_fixture=0;
+    raw_ticks=UINT32_MAX-20;
+    runtime_start(stack);
+    assert(runtime_exec("<graphics>",
+        "import display as d, time, keys, casioplot, kandinsky, gint, ion\n"
+        "assert d.get_pixel(0,0)==(255,255,255)\n"
+        "assert d.get_pixel(-1,0) is None\n"
+        "d.fill_rect(-3,-2,4,3,(255,0,0))\n"
+        "assert casioplot.get_pixel(0,0)==(255,0,0)\n"
+        "assert d.get_pixel(1,0)==(255,255,255)\n"
+        "assert not ion.keydown(keys.KEY_UP)\n"
+        "gint.dpixel(1,0,0x07e0)\n"
+        "assert d.get_pixel(1,0)==(0,255,0)\n"
+        "start=time.ticks_ms()\n"
+        "time.sleep_ms(15)\n"
+        "assert 14 <= time.ticks_diff(time.ticks_ms(),start) <= 16\n"
+        "assert time.ticks_diff(2,1073741823)==3\n"
+        "assert time.ticks_diff(1073741823,2)==-3",0));
+    runtime_end();
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+    puts("PASS: canvas, held arrows and release, Esc and rerun, compatibility adapters and wrap-safe timing.");
+}
+
 int main(void){
     int stack;
     char root[]="/tmp/endrapython-XXXXXX";assert(mkdtemp(root));
@@ -410,7 +483,7 @@ int main(void){
     assert(runtime_exec("<test>","print(6*7)",0));assert(output_has("42"));
     assert(runtime_exec("<test>","import os",0));
     assert(runtime_exec("<test>","import json, io",0));
-    assert(!runtime_exec("<test>","import time",0));
+    assert(runtime_exec("<test>","import time",0));
     app_key(ESC);assert(app.page==FILES);
     for(int i=0;i<24;i++){assert(load_script("Hello_World.py.tns"));app.page=EDITOR;app_key(RUN);assert(!app.error && output_has("45"));app_key(ESC);}
     assert(!valid_script("../x.py")&&!valid_script("x/abc.py")&&!valid_script("system.tns"));
@@ -433,6 +506,7 @@ int main(void){
     app.page=FILES;app_key(ESC);assert(app.quit);
     const char *names[]={"Hello_World.py.tns","Broken.py.tns","Windows.py","foreign.py","large.py"};
     for(int i=1;i<5;i++){char path[256];snprintf(path,sizeof path,"%s/%s",scripts,names[i]);assert(!unlink(path));}
+    graphics_checks(scripts,&stack);
     numerics_checks(scripts,&stack);
     workbench_checks(root,&stack);
     storage_io_checks(root,&stack);
@@ -443,5 +517,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 22 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 24 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

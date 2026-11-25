@@ -1,4 +1,5 @@
 #include "app.h"
+#include "device.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -353,4 +354,11 @@ void render(uint16_t *pixels){
     else if(app.page==EDITOR)editor();
     else if(app.page==SHELL||app.page==OUTPUT||app.page==READ_INPUT)console();
     else modal();
+}
+
+void device_draw_text(uint16_t *pixels, int x, int y, int size, uint16_t color, const char *value) {
+    uint16_t *previous = fb;
+    fb = pixels;
+    text(x, y, size, color, value, EP_WIDTH);
+    fb = previous;
 }

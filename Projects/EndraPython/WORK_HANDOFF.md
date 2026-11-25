@@ -1,11 +1,14 @@
-# Run010 handheld check
+# Run011 handheld check
 
-Run009 passed on Brandon’s TI-Nspire CX II CAS and is the rollback build.
+Run009 is the confirmed hardware rollback. Run010 and Run011 hardware checks can be done independently.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run010.tns /upload
-push /storage/emulated/0/Download/Run010_Numerics_Test.py.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run011.tns /upload
+push /storage/emulated/0/Download/Run011_Graphics_Test.py.tns /upload
 ```
 
-Launch Run010, browse to the upload folder, select Run010_Numerics_Test.py.tns and press Enter. Check the vector and matrix result, the largest completed square product, and the free heap reported on the calculator. If an exception occurs, record the last size printed and the traceback. The optional test does not write project data.
+1. Launch Run011, select Run011_Graphics_Test.py.tns in Files, and press Enter. A green square appears with an instruction banner.
+2. Hold an arrow to move the square. Release it and check that movement stops.
+3. Press Esc. EndraPython should show the number of rendered frames and elapsed milliseconds. Press Esc again to open the editor.
+4. Press Ctrl+R to rerun and confirm the square starts at the center. The test script does not save data.

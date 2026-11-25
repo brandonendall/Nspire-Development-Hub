@@ -17,7 +17,8 @@ PYTHONPATH="$src/tools" python3 - <<'PY'
 from pathlib import Path
 from makemanifest import generate_frozen_str_content
 
-output = generate_frozen_str_content([("modules/numpy.py", "numpy.py")])
+names = ("numpy", "casioplot", "ion", "kandinsky", "gint")
+output = generate_frozen_str_content([(f"modules/{name}.py", f"{name}.py") for name in names])
 output += b'const char mp_frozen_names[] = MP_FROZEN_STR_NAMES "\\0";\n'
 Path("micropython_embed/port/frozen_modules.c").write_bytes(output)
 PY

@@ -8,7 +8,7 @@
 CatalogEntry catalog_entries[CATALOG_CAP];
 int catalog_count,catalog_index,catalog_group;
 char catalog_filter[40];
-const char *const catalog_groups[]={"Common","builtins","math","random","cmath","array","struct","collections","gc","os","numpy","json","io"};
+const char *const catalog_groups[]={"Common","builtins","math","random","cmath","array","struct","collections","gc","os","numpy","display","keys","time","casioplot","kandinsky","ion","gint","json","io"};
 static const struct {const char *name,*syntax;} common[]={
     {"print","print(value, ...)"},{"input","input([prompt])"},{"open","open(file[, mode])"},{"len","len(obj)"},
     {"range","range(start, stop[, step])"},{"int","int(value)"},{"float","float(value)"},
@@ -46,6 +46,10 @@ const char *catalog_signature(void){
     if(catalog_group<2)for(size_t i=0;i<sizeof common/sizeof common[0];i++)
         if(!strcmp(catalog_entries[catalog_index].name,common[i].name))return common[i].syntax;
     static const struct { const char *name, *signature; } signatures[] = {
+        {"display.fill_rect", "display.fill_rect(x,y,w,h,rgb)"},
+        {"display.draw_string", "display.draw_string(x,y,text[,rgb])"},
+        {"keys.keydown", "keys.keydown(key)"}, {"time.sleep_ms", "time.sleep_ms(ms)"},
+        {"time.ticks_diff", "time.ticks_diff(a, b)"},
         {"numpy.array", "numpy.array(value[, dtype])"}, {"numpy.dot", "numpy.dot(a, b)"},
         {"numpy.matmul", "numpy.matmul(a, b)"}, {"numpy.transpose", "numpy.transpose(a)"},
         {"numpy.norm", "numpy.norm(vector)"}, {"numpy.normalize", "numpy.normalize(vector)"},
