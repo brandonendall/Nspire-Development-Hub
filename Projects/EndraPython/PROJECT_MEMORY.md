@@ -1,5 +1,11 @@
 # EndraPython project memory
 
+## Run018 Catalog reboot mitigation, 2026-11-25
+
+Run018 disables the physical Catalog shortcut, including its Ctrl combination, inside EndraPython. Open **Menu > Command catalog** in the editor or shell. A native read-only index retains the bundled modules, members and signature hints without querying or starting MicroPython while browsing. Project scripts are unaffected. The exact cause of the Run017 reboot is unconfirmed. Run016 is the owner-confirmed rollback.
+
+Source `49faca2ba1b64676f283298f9b13e26fe2829bf5` on `feature/endrapython-run001`. Local host checks, keyboard simulation, 35 framebuffer renders and native ARM Zehn build passed. `EndraPython_Run018.tns` is 216744 bytes, SHA-256 `1e8d19cbeaf653beefa82b2a97f03ab724fc7c8eac67ec1ec4d47ba3968fb91f`. [CI 45703845197](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45703845197). CI passed and the standalone artifact matches the local SHA-256. [Standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45703845197/artifacts/15064806189) · [Build ZIP](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45703845197/artifacts/15064288816). Run018 handheld testing pending. First test the menu in the shell, select math and sqrt, then back out. Resume Gint work after handheld acceptance.
+
 ## Run017 Focus, Python Catalog, and next milestones, 2026-11-25
 
 Brandon selected Focus (option A) for the near-black theme and muted blue accents. Run017 adds a full-width editor, searchable Menu command palette and session-only editor settings for auto-indent, indent guides and line numbers. Tab continues to use two-space stops. The physical Catalog key opens the runtime-derived module list in the Python shell and editor. It shows public members, including the available Pygame namespaces, lets users insert calls and imports, and shows named signatures where documented. Ctrl+Catalog and Menu > TI symbols preserve native text input. The bundled `casioplot` module is removed. Use `display` for portable drawing within EndraPython.
