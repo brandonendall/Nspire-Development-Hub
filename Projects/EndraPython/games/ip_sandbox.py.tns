@@ -1,0 +1,145 @@
+"""R11 open-sector flight and station services."""
+import gc
+import gint
+import keys
+import time
+from math import sqrt
+import ip_state as state
+from ip_port import label, select, market, outfitter, missions, SHORT
+from ip_space import Pilot, STATIONS, distance2, view
+from ip_sky import Scene, project
+
+
+def nav(p):
+  dest = p.target
+  local = view(STATIONS[dest],p.xyz,p.basis)
+  x,y,z = local
+  gap = int(sqrt(distance2(p.xyz,STATIONS[dest])))
+  label(8,7,"NAV "+SHORT[dest]+"  "+str(gap)+" km",state.BLUE)
+  projected = project(local) if z>.15 and abs(x)<z*.74 and abs(y)<z*.32 else None
+  if projected:
+    a,b = projected
+    if 18<b<170:
+      gint.drect(a-5,b-5,a+5,b-4,state.GREEN)
+      gint.drect(a-5,b+4,a+5,b+5,state.GREEN)
+      gint.drect(a-5,b-5,a-4,b+5,state.GREEN)
+      gint.drect(a+4,b-5,a+5,b+5,state.GREEN)
+  else:
+    if z<0 and abs(x)<.01:
+      cue = "NAV behind you"
+    elif z<0 or abs(x)>max(1,abs(y)):
+      cue = "NAV left" if x<0 else "NAV right"
+    else:
+      cue = "NAV up" if y>0 else "NAV down"
+    label(8,26,cue,state.AMBER)
+
+
+def hud(p, berth, job):
+  nav(p)
+  label(246,7,"ENG "+str(int(p.energy*100))+"%")
+  if job:
+    label(8,184,"Job: "+SHORT[job[0]],state.GREEN)
+  gint.drect(0,203,319,239,state.BG)
+  gint.dline(0,203,319,203,state.BLUE)
+  if p.can_dock(berth):
+    status = "ENTER Dock / "+SHORT[berth]
+  elif berth == 3 and not p.cleared:
+    status = "Farpoint clearance required"
+  elif berth is not None:
+    status = "0 Brake to dock / "+SHORT[berth]
+  else:
+    status = "Speed "+str(int(p.speed))+"  /  Throttle "+str(int(p.throttle*100))+"%"
+  label(8,208,status,state.GREEN if p.can_dock(berth) else state.TEXT)
+  label(8,224,"Arrows Steer  +/- Thrust  0 Brake  Menu NAV")
+
+
+def fly(profile, job, started):
+  p = Pilot(profile[1],profile[4],profile[5]==3)
+  if job:
+    p.target = job[0]
+  gc.collect()
+  scene = Scene()
+  previous = time.ticks_ms()
+  held = keys.active()
+  frames = 0
+  try:
+    while not keys.keydown(keys.KEY_EXIT):
+      now = time.ticks_ms()
+      dt = max(0,min(100,time.ticks_diff(now,previous)))/1000
+      previous = now
+      prior,held = held,keys.active()
+      if keys.KEY_MENU in held and keys.KEY_MENU not in prior:
+        p.target = (p.target+1)%len(STATIONS)
+      berth = p.nearest()
+      enter = keys.KEY_EXE in held
+      if enter and keys.KEY_EXE not in prior and p.can_dock(berth):
+        return berth
+      turn = (keys.KEY_RIGHT in held)-(keys.KEY_LEFT in held)
+      tilt = (keys.KEY_UP in held)-(keys.KEY_DOWN in held)
+      thrust = (gint.KEY_ADD in held)-(gint.KEY_SUB in held)
+      p.step(dt,turn,tilt,thrust,gint.KEY_0 in held,enter and berth is None)
+      if frames%15 == 0:
+        gc.collect()
+      frames += 1
+      scene.draw(p,max(0,time.ticks_diff(now,started))/1000)
+      hud(p,p.nearest(),job)
+      scene.renderer.present()
+      spare = 40-time.ticks_diff(time.ticks_ms(),now)
+      if spare>0:
+        time.sleep_ms(spare)
+  except KeyboardInterrupt:
+    pass
+  finally:
+    scene.renderer.close()
+  return None
+
+
+def main():
+  try:
+    p = state.load()
+  except (OSError,ValueError):
+    print("Pilot save could not be loaded")
+    return
+  job,kind = None,"free"
+  started = time.ticks_ms()
+  notice = "Arrows steer, +/- thrust, 0 brakes"
+  try:
+    while True:
+      launch = "Launch / Job to "+SHORT[job[0]] if job else "Launch into open sector"
+      options = [launch,"Choose a contract","Commodity market"]
+      if p[1]<2:
+        options.append("Ship outfitter")
+      detail = notice or "Enter boosts in flight or docks at low speed"
+      choice = select(state.NAMES[p[1]],str(p[2])+" CR / R11 Open Sector",options,detail,False)
+      notice = ""
+      if choice is None:
+        break
+      if choice==1:
+        picked,mission = missions(p,10)
+        if picked:
+          job,kind = picked,mission
+        continue
+      if choice==2:
+        p = market(p)
+        continue
+      if choice==3:
+        p,notice = outfitter(p)
+        continue
+      docked = fly(p,job,started)
+      if docked is None:
+        break
+      completed = job is not None and job[0]==docked
+      if completed:
+        p = state.arrived(p,job,kind)
+        notice = "Contract complete / +"+str(job[2])+" CR"
+        job,kind = None,"free"
+      else:
+        p = state.arrived(p,state.route(docked),"free")
+        notice = "Docked / Career saved"
+      print("Docked at",state.NAMES[docked])
+  except OSError:
+    print("Pilot save failed. Reload your pilot.")
+  except KeyboardInterrupt:
+    pass
+  print("Station:",state.NAMES[p[1]])
+  print("Credits:",p[2])

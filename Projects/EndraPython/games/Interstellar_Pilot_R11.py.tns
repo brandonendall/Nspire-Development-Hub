@@ -1,0 +1,4 @@
+"""Interstellar Pilot R11 for EndraPython Run033."""
+from ip_sandbox import main
+
+main()

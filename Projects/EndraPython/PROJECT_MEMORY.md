@@ -1,10 +1,23 @@
 # EndraPython project memory
 
+## Interstellar Pilot R11, 2026-11-26
+
+Brandon verified R07–R10 on hardware, then requested open space rather than gate-based flights. R11 adds continuous yaw/pitch, throttle, brake and boost, four fixed station locations, three procedurally drawn world-space planets, three independent traffic loops and optional navigation markers. Steering and travel are free in 3D space; the marker has no effect on motion or docking. Approach a station and brake below docking speed before pressing Enter. Farpoint clearance remains tied to the first campaign. Optional station contracts advance by docking at the named destination. The same IP2 slots, credits, campaign, outfitter and markets carry forward. Excursions close at Esc and the career resumes from the last saved dock. Planet surfaces are scenery. R10 is the verified hardware fallback.
+
+Exact game files on the Run033 host runtime passed a 752-frame flight with repeated heading, pitch, throttle and braking changes, idle traffic, a changed navigation beacon followed by manual docking at Kepler, and reload with credits, campaign and both upgrades preserved. Run033 regression checks passed. Initial rendering exceeded the bounded heap; narrowed detail distance and collection between mesh batches resolved the tested cases. Calculator performance and playtest pending. New R11 file hashes follow. `ip_mesh.py.tns` and `ip_state.py.tns` match R10.
+
+- `Interstellar_Pilot_R11.py.tns` SHA-256 `8a49c024f72c42057526146de155cafaa85efc37838cc0d793338bff56ec8d9f`
+- `ip_sandbox.py.tns` SHA-256 `6d919feb22794bab2813718900f82f487ef3260833c0f0f3a39dc323f1499c9c`
+- `ip_space.py.tns` SHA-256 `ea0ff8194c0378374aa40680a1f2f6ad8cd04b3343b38b8b52ab472f15919d18`
+- `ip_sky.py.tns` SHA-256 `677b9e4e0c8ac61a7f16f09abda94632ef4d685011dd6d72a35924841e69676b`
+- `ip_port.py.tns` SHA-256 `9288f5895e409a3fa74335d013fe9ea2bb8731e1b65966578c59033efb240a6e`
+- Delivery ZIP SHA-256 `2f88f2be2c35bf7c6841d2bae94bd00f673deda8d403f7c727910a3ef09baa8b`
+
 ## Interstellar Pilot R07–R10, 2026-11-26
 
 Brandon requested all four post-campaign builds and recognizable ships and stations. R07 adds a route map and travel without contract payouts. R08 adds two commodities with four station price lists, capacity limits, transactions, Meridian's cargo rack and Kepler's boost coil. R09 opens Farpoint Anchorage after the first campaign, via Meridian or Relay, and adds two frontier contracts with four-gate high-traffic routes. R10 adds a new-pilot briefing and packages all map, market, and campaign features for the existing EndraPython Run033. The batch shares an IP2 pilot profile while reading R06 IP1 files in the same folder before the first IP2 save. IP1 files are retained as an earlier-game fallback. New progress is in the two IP2 slots. All releases use original swept-wing player/traffic meshes and station-specific octagonal docking gantries. Menu backs out of the map and shops.
 
-Run033 host acceptance passed an R06-format 660-credit completed save, R07 free flight and reload, purchase of 15-credit alloy and sale for 29 credits, cargo rack from 4 to 8, existing coil retained, frontier provisioning and survey across launches, and a fresh R10 profile through all three campaign missions and into free flight. Also passed empty sale, full hold, station-specific service enforcement, truncated newest-slot fallback, and Menu navigation. Run033 regressions passed. Host frame captures reviewed for map, ships, briefing, and docking. Hardware playtest pending. R06 is the calculator-confirmed campaign fallback.
+Run033 host acceptance passed an R06-format 660-credit completed save, R07 free flight and reload, purchase of 15-credit alloy and sale for 29 credits, cargo rack from 4 to 8, existing coil retained, frontier provisioning and survey across launches, and a fresh R10 profile through all three campaign missions and into free flight. Also passed empty sale, full hold, station-specific service enforcement, truncated newest-slot fallback, and Menu navigation. Run033 regressions passed. Host frame captures reviewed for map, ships, briefing, and docking. Brandon reported all four R07–R10 calculator playtests succeeded. R10 is the hardware-tested fallback for the sandbox.
 
 - `Interstellar_Pilot_R07.py.tns` SHA-256 `7a974f9fa72fde3f61849bd3a606c707ac67c40c413d48960a177dcb2abcf576`
 - `Interstellar_Pilot_R08.py.tns` SHA-256 `d3a637d1906bf7bd147af25ca0d37131e6abbfd645943288c3bdc9d9c982c95a`

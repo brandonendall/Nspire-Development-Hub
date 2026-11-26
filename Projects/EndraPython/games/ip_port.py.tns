@@ -1,0 +1,109 @@
+"""Docked screens for the R11 sandbox."""
+import gint
+import keys
+import time
+import ip_state as w
+
+SHORT = ("Meridian", "Kepler", "Relay", "Farpoint")
+
+
+def label(x,y,text,color=w.TEXT):
+  gint.dtext(x,y,color,text)
+
+
+def begin():
+  gint.dclear(w.BG)
+  label(18,13,"INTERSTELLAR PILOT",w.GREEN)
+  gint.dline(18,35,301,35,w.BLUE)
+
+
+def event(previous):
+  time.sleep_ms(42)
+  held = keys.active()
+  for key in (keys.KEY_EXE, keys.KEY_UP, keys.KEY_DOWN,
+              keys.KEY_LEFT, keys.KEY_RIGHT, keys.KEY_MENU):
+    if key in held and key not in previous:
+      return held, key
+  return held, None
+
+
+def select(title, status, options, detail="", back=True):
+  selected = 0
+  previous = keys.active()
+  while not keys.keydown(keys.KEY_EXIT):
+    begin()
+    label(18, 47, title)
+    label(18, 66, status, w.GREEN)
+    for i, item in enumerate(options):
+      y = 87+i*17
+      if i == selected:
+        gint.drect(14, y-2, 305, y+12, 0x114b)
+      label(18, y, item)
+    if detail:
+      label(18, 205, detail)
+    label(18, 224, "Up/Down   Enter Choose   Menu Back" if back else
+          "Up/Down   Enter Choose   Esc Exit")
+    gint.dupdate()
+    previous, key = event(previous)
+    if key == keys.KEY_UP:
+      selected = (selected-1) % len(options)
+    elif key == keys.KEY_DOWN:
+      selected = (selected+1) % len(options)
+    elif key == keys.KEY_EXE:
+      return selected
+    elif key == keys.KEY_MENU and back:
+      return None
+  return None
+
+
+def market(p):
+  notice = ""
+  while True:
+    a,b = w.PRICES[p[1]]
+    options = ("Buy alloy   "+str(a)+" CR", "Sell alloy   "+str(a)+" CR",
+               "Buy medkit  "+str(b)+" CR", "Sell medkit  "+str(b)+" CR")
+    status = str(p[2])+" CR   Cargo "+str(p[6]+p[7])+"/"+str(w.capacity(p))
+    detail = notice or ("Alloy "+str(p[6])+"   Medkits "+str(p[7]))
+    pick = select("Market / "+SHORT[p[1]], status, options, detail)
+    if pick is None:
+      return p
+    p, notice = w.transact(p,pick//2,pick%2==0)
+
+
+def outfitter(p):
+  field = 4 if p[1] == 1 else 8
+  part, price = ("Boost coil",w.COIL_PRICE) if field == 4 else ("Cargo rack",w.RACK_PRICE)
+  status = "Fitted" if p[field] else str(price)+" CR"
+  benefit = "Faster boost recharge" if field == 4 else "Expands cargo from 4 to 8"
+  pick = select("Outfitter / "+SHORT[p[1]], str(p[2])+" CR",
+                (part+" / "+status,), benefit)
+  if pick is None:
+    return p, ""
+  return w.fit(p,field)
+
+
+def missions(p, version):
+  origin, stage, frontier = p[1],p[5],p[9]
+  offers = []
+  if stage < 3:
+    if origin == stage:
+      job = w.CONTRACTS[stage]
+      offers.append((w.CAMPAIGN[stage],job,"campaign"))
+    else:
+      offers.append(("Campaign rendezvous",w.route(stage),"contract"))
+  elif version >= 9 and frontier < 2:
+    start, end = (2,3) if frontier == 0 else (3,0)
+    if origin == start:
+      offers.append((w.FRONTIER[frontier],w.route(end,True),"frontier"))
+    else:
+      dest = 2 if origin == 1 and start == 3 else start
+      offers.append(("Frontier rendezvous: "+SHORT[dest],w.route(dest,origin==3 or dest==3),"free"))
+  for job in w.CONTRACTS:
+    dest = job[0]
+    if dest != origin and (dest != 3 or (version >= 9 and stage == 3 and origin != 1)):
+      if origin != 3 or dest != 1:
+        offers.append((job[1],w.route(dest,origin==3 or dest==3),"contract"))
+  pick = select("Contract board", "Departing "+SHORT[origin], tuple(item[0] for item in offers))
+  return offers[pick][1:] if pick is not None else (None,"")
+
+

@@ -1,0 +1,109 @@
+"""World-space celestial scenery and bounded 3D draw calls for Run033."""
+import gc
+import gint
+from math import cos,sin,sqrt
+from py3d import Renderer,rotation_y,rotation_z,matmul4
+import ip_mesh as art
+from ip_space import PLANETS,STATIONS,view,matrix,traffic
+from ip_state import BG
+
+FOCAL = 203
+CY = 106
+
+
+def starfield():
+  for i in range(84):
+    y = 1-(2*i+1)/84
+    ring = sqrt(1-y*y)
+    a = i*2.399963
+    yield (cos(a)*ring,y,sin(a)*ring)
+
+
+STARS = tuple(starfield())
+
+
+def project(local):
+  x,y,z = local
+  if z <= .10:
+    return None
+  return int(160+FOCAL*x/z),int(CY-FOCAL*y/z)
+
+
+def sky(p):
+  r,u,f = p.basis
+  for sx,sy,sz in STARS:
+    z = sx*f[0]+sy*f[1]+sz*f[2]
+    if z<=.36:
+      continue
+    x = sx*r[0]+sy*r[1]+sz*r[2]
+    y = sx*u[0]+sy*u[1]+sz*u[2]
+    if abs(x)<z*.8 and abs(y)<z*.55:
+      pixel = project((x,y,z))
+      if pixel:
+        px,py = pixel
+        if 0<=px<320 and 0<=py<204:
+          gint.dpixel(px,py,0x7c13)
+  visible = []
+  for x,y,z,r,dark,bright in PLANETS:
+    local = view((x,y,z),p.xyz,p.basis)
+    if local[2] > r*.6 and abs(local[0]) < local[2]+r and abs(local[1]) < local[2]*.7+r:
+      visible.append((local[2],local,r,dark,bright))
+  visible.sort(reverse=True)
+  for z,local,r,dark,bright in visible:
+    x,y = project(local)
+    radius = min(100,max(3,int(FOCAL*r/z)))
+    if x+radius<0 or x-radius>319 or y+radius<0 or y-radius>204:
+      continue
+    gint.dcircle(x,y,radius,dark,-1)
+    glow = radius*3//4
+    gint.dcircle(x-radius//5,y-radius//5,glow,bright,-1)
+    gint.dellipse(x-radius*2//3,y+radius//4,x+radius*2//3,y+radius//2,dark,-1)
+
+
+def in_frame(local, margin, min_z):
+  x,y,z = local
+  return z>min_z and abs(x)<z*.80+margin and abs(y)<z*.56+margin
+
+
+class Scene:
+  def __init__(self):
+    self.renderer = Renderer(background=BG,depth=True)
+    self.renderer.focal = FOCAL
+    self.renderer.center = (160,CY)
+    self.loaded_station = None
+    self.station = self.pods = None
+    self.ship = (art.ship_mesh(False),art.ship_mesh(True))
+    self.freighter = art.freighter()
+
+  def draw(self,p,seconds):
+    r = self.renderer
+    r.clear()
+    sky(p)
+    camera = matrix(p.basis)
+    nearest,z = None,1e8
+    for i,xyz in enumerate(STATIONS):
+      local = view(xyz,p.xyz,p.basis)
+      if in_frame(local,3,3.4) and local[2] < min(z,33):
+        nearest,z,at = i,local[2],local
+    if nearest is not None:
+      if nearest!=self.loaded_station:
+        # Keep one set of station detail in the fixed MicroPython heap.
+        self.station = self.pods = None
+        gc.collect()
+        self.station,self.pods = art.ring(nearest),art.gantry(nearest)
+        self.loaded_station = nearest
+      gc.collect()
+      r.draw_mesh(*self.station,model=camera,position=at,cull=False,ambient=.74)
+      gc.collect()
+      r.draw_mesh(*self.pods,model=camera,position=at,cull=False,ambient=.70)
+    gc.collect()
+    for i in range(3):
+      xyz,yaw = traffic(i,seconds)
+      local = view(xyz,p.xyz,p.basis)
+      if in_frame(local,1,2):
+        orient = matmul4(camera,rotation_y(yaw))
+        r.draw_mesh(*self.freighter,model=orient,position=local,cull=False,ambient=.79)
+    gc.collect()
+    # The chase ship stays in camera space while the sector rotates around it.
+    r.draw_mesh(*self.ship[p.boost],model=rotation_z(p.bank),
+                position=(-p.bank*.40,-.94,3.55),cull=False,ambient=.83)

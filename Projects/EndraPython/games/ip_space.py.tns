@@ -1,0 +1,100 @@
+"""Continuous sector coordinates, player flight and independent ship traffic."""
+from math import cos, sin, sqrt, atan2
+
+STATIONS = ((0,0,0),(0,0,54),(-43,7,39),(51,-9,65))
+PLANETS = (
+  (-77,65,228,33,0x326c,0x6592),
+  (154,24,304,48,0x8c8e,0xc694),
+  (17,-61,-212,29,0x4851,0x90bb),
+)
+# Loops are in sector coordinates and advance even while the player is stopped.
+LANES = (
+  ((-10,2,14),(9,2,28),(12,0,66),(-16,-1,43)),
+  ((8,-4,37),(-36,5,30),(-46,8,47),(-1,1,47)),
+  ((48,-9,59),(24,-6,40),(5,-2,61),(45,-8,74)),
+)
+LEG = (8.0, 11.0, 13.0)
+DOCK_RADIUS = 7.0
+DOCK_SPEED = 2.2
+CRUISE = 9.0
+BOOST = 15.0
+TAU = 6.2831853
+
+
+def distance2(a,b):
+  x,y,z = a[0]-b[0],a[1]-b[1],a[2]-b[2]
+  return x*x+y*y+z*z
+
+
+def axes(yaw,pitch):
+  cy,sy = cos(yaw),sin(yaw)
+  cp,sp = cos(pitch),sin(pitch)
+  return (cy,0,-sy),(-sy*sp,cp,-cy*sp),(sy*cp,sp,cy*cp)
+
+
+def view(point, origin, basis):
+  x,y,z = point[0]-origin[0],point[1]-origin[1],point[2]-origin[2]
+  r,u,f = basis
+  return (x*r[0]+y*r[1]+z*r[2], x*u[0]+y*u[1]+z*u[2], x*f[0]+y*f[1]+z*f[2])
+
+
+def matrix(basis):
+  r,u,f = basis
+  return r+(0,)+u+(0,)+f+(0,)+(0,0,0,1)
+
+
+def traffic(index, seconds):
+  lane = LANES[index]
+  total = seconds/LEG[index]+index*.73
+  segment = int(total)
+  k = total-segment
+  a,b = lane[segment%len(lane)],lane[(segment+1)%len(lane)]
+  xyz = tuple(a[i]+(b[i]-a[i])*k for i in range(3))
+  return xyz,atan2(b[0]-a[0],b[2]-a[2])
+
+
+class Pilot:
+  def __init__(self, station, coil, cleared):
+    self.station = station
+    self.coil = coil
+    self.cleared = cleared
+    self.target = (1,0,0,1)[station]
+    start,dest = STATIONS[station],STATIONS[self.target]
+    d = tuple(dest[i]-start[i] for i in range(3))
+    length = sqrt(sum(v*v for v in d))
+    self.xyz = tuple(start[i]+8*d[i]/length for i in range(3))
+    self.yaw = atan2(d[0],d[2])
+    self.pitch = atan2(d[1],sqrt(d[0]*d[0]+d[2]*d[2]))
+    self.throttle = self.speed = 0.0
+    self.energy = 1.0
+    self.bank = 0.0
+    self.basis = axes(self.yaw,self.pitch)
+    self.boost = False
+
+  def step(self, dt, turn, tilt, thrust, brake, held):
+    self.yaw = (self.yaw+turn*1.35*dt)%TAU
+    self.pitch = max(-1.50,min(1.50,self.pitch+tilt*1.10*dt))
+    self.basis = axes(self.yaw,self.pitch)
+    self.bank += (-.42*turn-self.bank)*min(1,dt*7)
+    self.throttle = 0.0 if brake else max(0,min(1,self.throttle+thrust*dt*.78))
+    self.boost = held and not brake and self.throttle>.08 and self.energy>0
+    speed = BOOST if self.boost else CRUISE
+    if self.boost:
+      self.energy = max(0,self.energy-dt*.43)
+    elif not held:
+      self.energy = min(1,self.energy+dt*(.48 if self.coil else .28))
+    requested = self.throttle*speed
+    self.speed += (requested-self.speed)*min(1,dt*(7 if brake else 2.6))
+    self.xyz = tuple(self.xyz[i]+self.basis[2][i]*self.speed*dt for i in range(3))
+
+  def nearest(self):
+    best,dist = None,DOCK_RADIUS*DOCK_RADIUS
+    for i,station in enumerate(STATIONS):
+      d = distance2(self.xyz,station)
+      if d < dist:
+        best,dist = i,d
+    return best
+
+  def can_dock(self, station):
+    return (station is not None and self.speed<=DOCK_SPEED
+            and (station!=3 or self.cleared))
