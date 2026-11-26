@@ -1,0 +1,46 @@
+"""Same 3D timing workload for Run028 and later builds."""
+import gc
+import gint
+import time
+from py3d import Renderer, compose, cube, prepare_triangles, rotation_x, rotation_y
+
+renderer = Renderer(background=0x0843)
+vertices, faces = cube()
+positions = ((0, 0, 5), (-2.3, 1, 8), (2.3, -1, 8), (0, -1.8, 8))
+clock = time.ticks_ms
+diff = time.ticks_diff
+
+for count in (1, 4):
+    gc.collect()
+    prep_ms = raster_ms = update_ms = 0
+    for frame in range(24):
+        if gint.keydown(gint.KEY_EXIT):
+            raise KeyboardInterrupt
+        start = clock()
+        model = compose(rotation_x(0.35 + frame * 0.04),
+                        rotation_y(0.30 + frame * 0.06))
+        prepared = [
+            prepare_triangles(vertices, faces, model=model, position=positions[i],
+                              focal=renderer.focal, center=renderer.center,
+                              near=renderer.near)
+            for i in range(count)
+        ]
+        assert all(2 <= len(triangles) <= 6 for triangles in prepared)
+        stamp = clock()
+        prep_ms += diff(stamp, start)
+        renderer.clear()
+        for triangles in prepared:
+            for _, x0, y0, x1, y1, x2, y2, color in triangles:
+                gint.dtriangle(x0, y0, x1, y1, x2, y2, color)
+        ready = clock()
+        raster_ms += diff(ready, stamp)
+        renderer.present()
+        update_ms += diff(clock(), ready)
+    prepared = None
+    triangles = None
+    gc.collect()
+    print(count, "cube(s), 24 frames")
+    print("Prepare / raster / update (ms):")
+    print(prep_ms, raster_ms, update_ms)
+    print("Free heap:", gc.mem_free(), "bytes")
+print("py3d benchmark passed")

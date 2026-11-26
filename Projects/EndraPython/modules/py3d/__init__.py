@@ -334,10 +334,20 @@ class Renderer:
                   position=(0.0, 0.0, 0.0), cull=True, wireframe=False,
                   ambient=0.28, light_dir=(-0.35, -0.45, -1.0),
                   default_color=0xffff, wire_color=0xffff):
-        triangles = prepare_triangles(
+        triangles = self.prepare_mesh(vertices, faces, model, position, cull,
+                                      ambient, light_dir, default_color)
+        return self.draw_prepared(triangles, wireframe, wire_color)
+
+    def prepare_mesh(self, vertices, faces, model=None, position=(0.0, 0.0, 0.0),
+                     cull=True, ambient=0.28, light_dir=(-0.35, -0.45, -1.0),
+                     default_color=0xffff):
+        """Prepare screen-space triangles using this renderer's camera."""
+        return prepare_triangles(
             vertices, faces, model, position, self.focal, self.center,
             self.near, cull, ambient, light_dir, default_color)
 
+    def draw_prepared(self, triangles, wireframe=False, wire_color=0xffff):
+        """Draw the triangles returned by prepare_mesh."""
         for triangle in triangles:
             _, x0, y0, x1, y1, x2, y2, color = triangle
             self.gint.dtriangle(x0, y0, x1, y1, x2, y2, color)
