@@ -6,7 +6,16 @@ Run029 adds `Renderer.prepare_mesh()` and `draw_prepared()` for separate frame s
 
 Run030 adds optional `Renderer(depth=True)` for opaque filled meshes. It uses 150 KiB of native memory for 16-bit reciprocal depth at 320 × 240, allocates on first clear, and releases on close or Python session end. Painter mode remains the default and supports wireframe. Source `4e89cc0021720880317f2ab79729be91e65edfec`. Host checks passed intersecting triangles in both draw orders, perspective-correct depth, frame reset, close/reallocate, and near clipping. The local ARM Zehn build and [CI 45873558363](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45873558363) passed and the [standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45873558363/artifacts/15143926549) matches, 232996 bytes, SHA-256 `a838647c3ae47b7f7466a6c3e4e28df81d8159db166272275770e3ff0db586a5`. Depth test `Run030_Py3D_Depth.py.tns` SHA-256 `97bee2d5e747e35a28df0cf0bee4b22b2bf58658dd0ed1495e77440f252c8f3e`.
 
-Handheld validation is pending. Run the same Run029 benchmark on Run028 and Run029 for a timing comparison. Run the depth test in Run030 and check for `py3d depth checks passed`. Run028 is the handheld-confirmed rollback. Use hardware timings and allocation results to guide the next 3D performance change.
+Hardware validation on the TI-Nspire CX II CAS, 2026-11-26. Both 24-frame workloads in both benchmark photos printed `py3d benchmark passed`. Build assignments follow the requested test order (first photo Run029, second Run028). The header displays the test filename.
+
+| Build | Cubes | Prepare (ms) | Clear and raster (ms) | Display update (ms) | Sum (ms) | Free Python heap (bytes) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Run029 | 1 | 139 | 131 | 177 | 447 | 113264 |
+| Run029 | 4 | 480 | 265 | 180 | 925 | 112992 |
+| Run028 | 1 | 139 | 132 | 183 | 454 | 113552 |
+| Run028 | 4 | 482 | 264 | 181 | 927 | 113280 |
+
+Run030 printed `Both draw orders passed`, `Frame reset and clipping passed`, and `py3d depth checks passed`, with 113584 bytes of free Python heap after close and collection. Run030 is the latest handheld-tested build. Run028 remains the known rollback. For four cubes, preparation was roughly 52% of measured stage time in both benchmark runs. The small differences between builds come from one sample per build. Next: use the same benchmark to measure changes to mesh preparation and add a comparable painter-versus-depth timing run.
 
 ## Runs027 and 028, 2026-11-26
 
