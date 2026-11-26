@@ -697,6 +697,7 @@ static void py3d_checks(const char *root, void *stack) {
     py3d_fixture(root,stack,"Run027_Py3D_Profile.py.tns","build/py3d_profile.ppm","Render and present:",72);
     py3d_fixture(root,stack,"Run028_Py3D_Clipping.py.tns","build/py3d_clipping.ppm","py3d clipping checks passed",72);
     py3d_fixture(root,stack,"Run029_Py3D_Benchmark.py.tns","build/py3d_benchmark.ppm","py3d benchmark passed",48);
+    py3d_fixture(root,stack,"Run030_Py3D_Depth.py.tns","build/py3d_depth.ppm","py3d depth checks passed",2);
     runtime_start(stack);
     assert(runtime_exec("<py3d-prepared>",
         "from py3d import Renderer, cube\n"

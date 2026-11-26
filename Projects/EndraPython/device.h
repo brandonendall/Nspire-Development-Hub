@@ -9,6 +9,7 @@
 #define EP_KEY_CTRL 513
 
 void device_reset(void);
+void device_release_depth(void);
 void device_draw_text(uint16_t *pixels, int x, int y, int size, uint16_t color, const char *text);
 void device_present(const uint16_t *pixels);
 int device_key_held(int key);

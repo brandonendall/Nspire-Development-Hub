@@ -81,7 +81,7 @@ const char *catalog_signature(void){
         {"gint.keydown", "gint.keydown(key)"}, {"ion.keydown", "ion.keydown(key)"},
         {"display.color", "display.color(r, g, b)"}, {"time.ticks_ms", "time.ticks_ms()"},
         {"time.sleep", "time.sleep(seconds)"},
-        {"py3d.Renderer", "py3d.Renderer([width,height,fov,near,background])"},
+        {"py3d.Renderer", "py3d.Renderer([width,height,fov,near,background,depth])"},
         {"py3d.cube", "py3d.cube([size])"},
         {"py3d.compose", "py3d.compose(*matrices)"},
         {"py3d.project", "py3d.project(vertex[,focal,center,near])"},

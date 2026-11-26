@@ -1,11 +1,12 @@
 """Compact software 3D engine adapted from PythonUltra.
 
-The renderer is intentionally small: transform vertices in Python, use a
-painter's algorithm for depth, cull back faces, and hand filled triangles to
-the native ``gint.dtriangle()`` rasterizer.  The camera looks along +Z.
+The renderer transforms vertices in Python and fills triangles natively. It
+uses painter sorting by default and can enable a per-pixel depth buffer.
+The camera looks along +Z.
 """
 
 import math
+import display as _display
 import gint as _gint
 
 SCREEN_WIDTH = _gint.DWIDTH
@@ -214,12 +215,13 @@ def _clip_near(a, b, c, near):
 def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
                       focal=None, center=None, near=0.1, cull=True,
                       ambient=0.28, light_dir=(-0.35, -0.45, -1.0),
-                      default_color=0xffff):
+                      default_color=0xffff, depth=False):
     """Transform, cull, light, project and depth-sort a triangle mesh.
 
     Faces are ``(i0, i1, i2)`` or ``(i0, i1, i2, rgb565_color)``.  The return
     value is painter-sorted from far to near and can be rendered directly with
-    ``gint.dtriangle``.
+    ``gint.dtriangle``. With depth enabled, entries include three reciprocal
+    depths, and sorting is skipped.
     """
     if not near > 0:
         raise ValueError("near plane must be positive")
@@ -275,13 +277,15 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
         pa = points[0]
         for i in range(1, len(points) - 1):
             pb, pc = points[i], points[i + 1]
-            depth = (pa[2] + pb[2] + pc[2]) / 3.0
-            triangles.append((
-                depth,
-                pa[0], pa[1], pb[0], pb[1], pc[0], pc[1], color,
-            ))
+            average_z = (pa[2] + pb[2] + pc[2]) / 3.0
+            triangle = (average_z, pa[0], pa[1], pb[0], pb[1], pc[0], pc[1], color)
+            if depth:
+                triangle += tuple(min(65535, 1 + int((near / point[2]) * 65534))
+                                  for point in (pa, pb, pc))
+            triangles.append(triangle)
 
-    triangles.sort(key=lambda triangle: triangle[0], reverse=True)
+    if not depth:
+        triangles.sort(key=lambda triangle: triangle[0], reverse=True)
     return triangles
 
 
@@ -312,10 +316,10 @@ def cube(size=2.0):
 
 
 class Renderer:
-    """Small calculator renderer backed by the native gint triangle rasterizer."""
+    """Small calculator renderer with painter sorting or native depth testing."""
 
     def __init__(self, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, fov=70.0,
-                 near=0.1, background=0x0000):
+                 near=0.1, background=0x0000, depth=False):
         self.gint = _gint
         self.width = int(width)
         self.height = int(height)
@@ -324,11 +328,19 @@ class Renderer:
         self.focal = focal_length(self.width, self.fov)
         self.near = float(near)
         self.background = int(background)
+        self.depth = bool(depth)
 
     def clear(self, color=None):
         if color is None:
             color = self.background
         self.gint.dclear(int(color))
+        if self.depth:
+            _display._depth_begin()
+
+    def close(self):
+        """Release the shared native depth buffer early."""
+        if self.depth:
+            _display._depth_end()
 
     def draw_mesh(self, vertices, faces, model=None,
                   position=(0.0, 0.0, 0.0), cull=True, wireframe=False,
@@ -344,10 +356,16 @@ class Renderer:
         """Prepare screen-space triangles using this renderer's camera."""
         return prepare_triangles(
             vertices, faces, model, position, self.focal, self.center,
-            self.near, cull, ambient, light_dir, default_color)
+            self.near, cull, ambient, light_dir, default_color, self.depth)
 
     def draw_prepared(self, triangles, wireframe=False, wire_color=0xffff):
         """Draw the triangles returned by prepare_mesh."""
+        if self.depth:
+            if wireframe:
+                raise ValueError("wireframe is unavailable with depth testing")
+            for triangle in triangles:
+                _display._depth_triangle(*triangle[1:])
+            return len(triangles)
         for triangle in triangles:
             _, x0, y0, x1, y1, x2, y2, color = triangle
             self.gint.dtriangle(x0, y0, x1, y1, x2, y2, color)

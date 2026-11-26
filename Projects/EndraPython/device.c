@@ -7,10 +7,16 @@
 
 static uint16_t canvas[EP_WIDTH * EP_HEIGHT];
 static bool canvas_ready;
+static uint16_t *depth_buffer;
 static uint32_t last_tick;
 static uint64_t elapsed_ticks;
 #define TICKS_PERIOD (1u << 30)
 #define TICKS_MASK (TICKS_PERIOD - 1)
+
+void device_release_depth(void) {
+    free(depth_buffer);
+    depth_buffer = NULL;
+}
 
 void device_reset(void) {
     canvas_ready = false;
@@ -201,6 +207,92 @@ static mp_obj_t gint_triangle(size_t n, const mp_obj_t *args) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gint_triangle_obj, 7, 7, gint_triangle);
+
+// One 16-bit reciprocal depth per physical pixel, outside MicroPython's heap.
+static mp_obj_t depth_begin(void) {
+    const size_t bytes = sizeof canvas;
+    if (!depth_buffer) {
+        depth_buffer = malloc(bytes);
+        if (!depth_buffer)
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("cannot allocate 150 KiB depth buffer"));
+    }
+    memset(depth_buffer, 0, bytes);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(depth_begin_obj, depth_begin);
+
+static mp_obj_t depth_end(void) {
+    device_release_depth();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(depth_end_obj, depth_end);
+
+static int64_t edge_value(DrawPoint a, DrawPoint b, DrawPoint p) {
+    return (int64_t)(b.x-a.x)*(p.y-a.y) - (int64_t)(b.y-a.y)*(p.x-a.x);
+}
+
+static mp_obj_t depth_triangle(size_t n, const mp_obj_t *args) {
+    (void)n;
+    if (!depth_buffer)
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("clear depth renderer before drawing"));
+    DrawPoint a = draw_point(args), b = draw_point(args+2), c = draw_point(args+4);
+    int color = gint_color(args[6]);
+    int depths[3];
+    for (int i = 0; i < 3; ++i) {
+        mp_int_t depth = mp_obj_get_int(args[7+i]);
+        if (depth < 1 || depth > UINT16_MAX)
+            mp_raise_ValueError(MP_ERROR_TEXT("depth out of range"));
+        depths[i] = depth;
+    }
+
+    int64_t area = edge_value(a,b,c);
+    if (area == 0 || color == GINT_TRANSPARENT) return mp_const_none;
+    int sign = area > 0 ? 1 : -1;
+    area *= sign;
+    int left = max_int(0,min_int(a.x,min_int(b.x,c.x)));
+    int top = max_int(0,min_int(a.y,min_int(b.y,c.y)));
+    int right = min_int(EP_WIDTH-1,max_int(a.x,max_int(b.x,c.x)));
+    int bottom = min_int(EP_HEIGHT-1,max_int(a.y,max_int(b.y,c.y)));
+    if (left > right || top > bottom) return mp_const_none;
+    init_canvas();
+
+    DrawPoint origin = {left,top};
+    int64_t row_u = sign*edge_value(c,a,origin);
+    int64_t row_v = sign*edge_value(a,b,origin);
+    int step_ux = sign*(c.y-a.y), step_uy = sign*(a.x-c.x);
+    int step_vx = sign*(a.y-b.y), step_vy = sign*(b.x-a.x);
+    int du = depths[1]-depths[0], dv = depths[2]-depths[0];
+    // Interpolate reciprocal depth in screen space with 12 fractional bits.
+    // Only setup divides. Keep the edge products in 64 bits for offscreen vertices.
+    const int fixed = 4096;
+    int64_t row_depth = depths[0]*fixed + (row_u*du + row_v*dv)*fixed/area;
+    int64_t step_zx = ((int64_t)step_ux*du + (int64_t)step_vx*dv)*fixed/area;
+    int64_t step_zy = ((int64_t)step_uy*du + (int64_t)step_vy*dv)*fixed/area;
+    for (int y = top; y <= bottom; ++y) {
+        if ((y-top)%16 == 0 && cancel_pressed())
+            mp_raise_type(&mp_type_KeyboardInterrupt);
+        int64_t u = row_u, v = row_v, depth = row_depth;
+        int pixel = y*EP_WIDTH + left;
+        for (int x = left; x <= right; ++x, ++pixel) {
+            if (u >= 0 && v >= 0 && u+v <= area) {
+                int z = (int)((depth + fixed/2)/fixed);
+                z = max_int(1,min_int(UINT16_MAX,z));
+                if (z > depth_buffer[pixel]) {
+                    depth_buffer[pixel] = z;
+                    canvas[pixel] = color;
+                }
+            }
+            u += step_ux;
+            v += step_vx;
+            depth += step_zx;
+        }
+        row_u += step_uy;
+        row_v += step_vy;
+        row_depth += step_zy;
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(depth_triangle_obj, 10, 10, depth_triangle);
 
 static mp_obj_t gint_poly(mp_obj_t vertices, mp_obj_t fill, mp_obj_t border) {
     size_t n;
@@ -420,6 +512,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(sleep_obj, sleep_seconds);
 #define INTEGER(q, n) {MP_ROM_QSTR(MP_QSTR_##q), MP_ROM_INT(n)}
 static const mp_rom_map_elem_t display_table[] = {
     NAME(display), FUNC(_blit565, blit565_obj),
+    FUNC(_depth_begin,depth_begin_obj), FUNC(_depth_end,depth_end_obj),
+    FUNC(_depth_triangle,depth_triangle_obj),
     FUNC(_gint_line,gint_line_obj), FUNC(_gint_triangle,gint_triangle_obj), FUNC(_gint_poly,gint_poly_obj),
     FUNC(_gint_ellipse,gint_ellipse_obj), FUNC(_gint_circle,gint_circle_obj),
     FUNC(_text_size,text_size_obj), FUNC(_rasterize_text,rasterize_text_obj), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),

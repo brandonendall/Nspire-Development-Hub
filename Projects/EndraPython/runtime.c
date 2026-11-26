@@ -46,6 +46,7 @@ void runtime_start(void *stack_top) {
     mp_stack_set_limit(16 * 1024);
 }
 void runtime_end(void) {
+    device_release_depth();
     gc_sweep_all();
     mp_embed_deinit();
 }

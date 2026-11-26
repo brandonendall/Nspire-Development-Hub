@@ -1,0 +1,52 @@
+"""Per-pixel visibility, frame reset, and draw-order checks."""
+import gc
+import time
+from display import get_pixel
+from py3d import Renderer
+
+renderer = Renderer(background=0x0843, depth=True)
+renderer.focal = 64
+red, blue = (255, 0, 0), (0, 0, 255)
+
+# Both triangles project to (96, 168), (224, 168), (160, 72).
+# Red crosses the flat blue triangle, from in front on the left to behind on the right.
+sloping = ((-1, -0.75, 1), (4, -3, 4), (0, 1.5, 2))
+flat = ((-2, -1.5, 2), (2, -1.5, 2), (0, 1.5, 2))
+a = renderer.prepare_mesh(sloping, ((0, 1, 2, 0xf800),), cull=False, ambient=1)
+b = renderer.prepare_mesh(flat, ((0, 2, 1, 0x001f),), cull=False, ambient=1)
+assert len(a) == len(b) == 1 and len(a[0]) == 11
+
+for front, back in ((a, b), (b, a)):
+  renderer.clear()
+  renderer.draw_prepared(front)
+  renderer.draw_prepared(back)
+  assert get_pixel(130, 145) == red, "near left pixel"
+  assert get_pixel(190, 145) == blue, "near right pixel"
+  assert get_pixel(160, 123) == red, "perspective-correct depth"
+  assert get_pixel(90, 145) == get_pixel(0, 0), "outside triangle"
+  renderer.present()
+print("Both draw orders passed")
+
+renderer.clear()
+renderer.draw_prepared(b)
+assert get_pixel(130, 145) == blue, "clear resets depth"
+renderer.close()
+try:
+  renderer.draw_prepared(a)
+except RuntimeError:
+  pass
+else:
+  raise AssertionError("close releases depth")
+
+# Start a new frame after release, then check projection across the near plane.
+renderer.clear()
+near_crossing = ((-1, -1, 2), (1, -1, 2), (0, 1, 0))
+assert renderer.draw_mesh(near_crossing, ((0, 1, 2, 0xf800),),
+                          cull=False, ambient=1) == 2
+assert get_pixel(160, 120) == red, "near clipping draws the visible part"
+renderer.close()
+time.sleep_ms(1200)
+gc.collect()
+print("Frame reset and clipping passed")
+print("Free Python heap:", gc.mem_free(), "bytes")
+print("py3d depth checks passed")
