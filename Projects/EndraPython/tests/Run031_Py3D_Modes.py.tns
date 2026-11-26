@@ -1,0 +1,45 @@
+"""Compare painter and depth modes with the same scenes and timing code."""
+import gc
+import gint
+import time
+from display import BUILD_RUN
+from py3d import Renderer, compose, cube, rotation_x, rotation_y
+
+vertices, faces = cube()
+positions = ((0, 0, 5), (-2.3, 1, 8), (2.3, -1, 8), (0, -1.8, 8))
+clock = time.ticks_ms
+diff = time.ticks_diff
+
+print("IDE Run" + ("000" + str(BUILD_RUN))[-3:] + " | 24 frames each")
+print("Cubes/Mode  Prep/Draw/LCD (ms)")
+for count in (1, 4):
+  for depth in (False, True):
+    renderer = Renderer(background=0x0843, depth=depth)
+    renderer.clear()
+    gc.collect()
+    prep_ms = draw_ms = lcd_ms = 0
+    try:
+      for frame in range(24):
+        if gint.keydown(gint.KEY_EXIT):
+          raise KeyboardInterrupt
+        start = clock()
+        model = compose(rotation_x(0.35 + frame * 0.04),
+                        rotation_y(0.30 + frame * 0.06))
+        prepared = [renderer.prepare_mesh(vertices, faces, model, positions[i])
+                    for i in range(count)]
+        stamp = clock()
+        renderer.clear()
+        for triangles in prepared:
+          renderer.draw_prepared(triangles)
+        ready = clock()
+        renderer.present()
+        end = clock()
+        prep_ms += diff(stamp, start)
+        draw_ms += diff(ready, stamp)
+        lcd_ms += diff(end, ready)
+        assert all(2 <= len(t) <= 6 for t in prepared)
+    finally:
+      renderer.close()
+    print(count, "Depth" if depth else "Painter",
+          str(prep_ms) + "/" + str(draw_ms) + "/" + str(lcd_ms))
+print("py3d mode benchmark passed")

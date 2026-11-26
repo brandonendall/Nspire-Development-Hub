@@ -519,7 +519,7 @@ static const mp_rom_map_elem_t display_table[] = {
     FUNC(_text_size,text_size_obj), FUNC(_rasterize_text,rasterize_text_obj), FUNC(color, rgb_obj), FUNC(set_pixel, set_pixel_obj), FUNC(get_pixel, get_pixel_obj),
     FUNC(fill_rect, fill_rect_obj), FUNC(clear_screen, clear_screen_obj),
     FUNC(draw_string, draw_string_obj), FUNC(show_screen, show_screen_obj),
-    INTEGER(WIDTH, EP_WIDTH), INTEGER(HEIGHT, EP_HEIGHT),
+    INTEGER(WIDTH, EP_WIDTH), INTEGER(HEIGHT, EP_HEIGHT), INTEGER(BUILD_RUN, EP_BUILD_RUN),
 };
 static MP_DEFINE_CONST_DICT(display_dict, display_table);
 const mp_obj_module_t ep_display_module = {.base={&mp_type_module}, .globals=(mp_obj_dict_t *)&display_dict};
