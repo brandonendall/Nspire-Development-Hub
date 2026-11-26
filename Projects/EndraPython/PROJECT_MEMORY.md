@@ -1,8 +1,14 @@
 # EndraPython project memory
 
+## Interstellar Pilot R03, 2026-11-26
+
+Brandon approved the R02 chase view and asked to advance to stations and other ships. R03 adds three stations, selectable cargo contracts, jump gates, moving freighters with shield damage, limited rechargeable boost, manual alignment and docking, and a results screen with flight time and credits. Enter on the results screen returns to the new station's contract board. Session progress is in memory. Run033 is the runtime and R02 is the hardware-tested game fallback. The entry and world module must be in the same folder. Host verification used the exact two scripts in Run033, including two consecutive contracts to Kepler Exchange and Relay Outpost with 220 credits, a lost-ship run, Esc, boost/recharge, traffic hits, misaligned docking and the Enter edge. Menu, flight and dock approach previews were inspected. The station rendering uses two mesh batches to stay within the constrained Python heap. Calculator playtest pending.
+
+`Interstellar_Pilot_R03.py.tns` SHA-256 `5c1b5edb0c211497a26d391e16dff2b679072f035a2f4fcf224c54b1d4f29dba`. `pilot_world_r03.py.tns` SHA-256 `2fcbe340c630b1bfdc0d06fb6f316eb26450dd647c3e95d714f2b8fa0b36f79d`.
+
 ## Interstellar Pilot R02, 2026-11-26
 
-Brandon requested a third-person view. `games/Interstellar_Pilot_R02.py.tns` adds an original low-poly ship seen from behind, smoothly banks and lifts with the arrow keys, and displays longer warm-colored exhaust while boosting. The ship and gate use the existing Run033 depth renderer. The six-gate R01 route and controls carry forward. This release focuses on the chase camera. Run033 host checks and game simulations passed, including clearing all six gates with full shields, loss after three misses, and Esc. The actual host framebuffer previews show level flight, boost, and banking. Hardware playtest pending. R01 remains the hardware-tested game fallback. SHA-256 `bfd9419750fffe8b61a1abf061ca4909e0e2d99ceb2d8bb1ab2cc2e816ec96be`.
+Brandon requested a third-person view. `games/Interstellar_Pilot_R02.py.tns` adds an original low-poly ship seen from behind, smoothly banks and lifts with the arrow keys, and displays longer warm-colored exhaust while boosting. The ship and gate use the existing Run033 depth renderer. The six-gate R01 route and controls carry forward. This release focuses on the chase camera. Run033 host checks and game simulations passed, including clearing all six gates with full shields, loss after three misses, and Esc. The actual host framebuffer previews show level flight, boost, and banking. Brandon confirmed the R02 chase view on the CX II CAS. The completion screen showed all six gates cleared with all three shields. R02 is the hardware-tested fallback for R03. SHA-256 `bfd9419750fffe8b61a1abf061ca4909e0e2d99ceb2d8bb1ab2cc2e816ec96be`.
 
 ## Interstellar Pilot R01, 2026-11-26
 

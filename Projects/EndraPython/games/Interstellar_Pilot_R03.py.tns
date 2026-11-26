@@ -1,0 +1,195 @@
+"""Interstellar Pilot R03. Launch this file in EndraPython Run033."""
+import gc
+import gint
+import keys
+import time
+from py3d import Renderer, rotation_z
+import pilot_world_r03 as world
+
+BG, TEXT, BLUE, GREEN, AMBER = world.BG, world.TEXT, world.BLUE, world.GREEN, world.AMBER
+STARS = tuple(((i*83+17) % 316+2, (i*i*13+i*23) % 155+38) for i in range(34))
+
+
+def label(x, y, text, color=TEXT):
+  gint.dtext(x, y, color, text)
+
+
+def stars():
+  for x, y in STARS:
+    gint.dpixel(x, y, 0x6390)
+
+
+def begin():
+  gint.dclear(BG)
+  stars()
+  label(18, 13, "INTERSTELLAR PILOT", GREEN)
+  gint.dline(18, 35, 301, 35, BLUE)
+
+
+def clock_label(ms):
+  return str(ms // 1000) + "." + str(ms // 100 % 10) + " s"
+
+
+def board(station, credits, completed):
+  jobs = [job for job in world.CONTRACTS if job[0] != station]
+  choice = 0
+  previous = keys.active()
+  while not keys.keydown(keys.KEY_EXIT):
+    begin()
+    label(18, 48, world.NAMES[station])
+    label(18, 65, str(credits) + " CR    " + str(completed) + " delivered")
+    for i, job in enumerate(jobs):
+      y = 99 + i*43
+      if i == choice:
+        gint.drect(12, y-5, 306, y+31, 0x114b)
+      label(20, y, job[1], GREEN if i == choice else TEXT)
+      label(20, y+15, world.NAMES[job[0]] + "  /  " + str(job[2]) + " CR")
+    label(18, 211, "Up/Down Select   Enter Launch   Esc Exit")
+    gint.dupdate()
+    time.sleep_ms(65)
+    held = keys.active()
+    if keys.KEY_EXE in held and keys.KEY_EXE not in previous:
+      return jobs[choice]
+    if keys.KEY_UP in held and keys.KEY_UP not in previous:
+      choice = (choice - 1) % len(jobs)
+    if keys.KEY_DOWN in held and keys.KEY_DOWN not in previous:
+      choice = (choice + 1) % len(jobs)
+    previous = held
+  return None
+
+
+def flight_hud(f):
+  if f.approaching():
+    header = "Approach " + world.NAMES[f.dest]
+  else:
+    header = "Jump gate " + str(f.cleared+1) + "/" + str(len(f.gates))
+  label(9, 8, header)
+  label(224, 8, "SHIELDS " + str(f.shields))
+  label(224, 26, "BOOST")
+  gint.drect(267, 28, 310, 34, 0x294a)
+  charge = int(f.energy*44)
+  if charge:
+    gint.drect(267, 28, 266+charge, 34, AMBER if f.boost else BLUE)
+  color = GREEN if f.aligned() else AMBER
+  gint.dline(145, 120, 155, 120, color)
+  gint.dline(165, 120, 175, 120, color)
+  gint.dline(160, 105, 160, 115, color)
+  gint.dline(160, 125, 160, 135, color)
+  gint.drect(0, 205, 319, 239, BG)
+  gint.dline(0, 205, 319, 205, BLUE)
+  near_berth = f.approaching() and f.distance <= world.DOCK_RANGE
+  if near_berth:
+    label(9, 209, "ENTER TO DOCK" if f.aligned() else "ALIGN WITH BERTH", color)
+  else:
+    label(9, 209, "Range " + str(int(f.distance)))
+  if f.notice_time and not near_berth:
+    label(137, 209, f.notice, AMBER)
+  label(9, 225, "Arrows Align   Enter Dock   Esc Abort" if near_berth else
+        "Arrows Steer   Enter Boost   Esc Abort")
+
+
+def fly(job):
+  f = world.Flight(job)
+  gate = world.portal()
+  station = world.portal(True)
+  pods = world.station_pods()
+  ship = (world.ship_mesh(False), world.ship_mesh(True))
+  traffic = world.freighter()
+  renderer = Renderer(background=BG, depth=True)
+  bank = lift = 0.0
+  previous = start = time.ticks_ms()
+  enter_held = keys.keydown(keys.KEY_EXE)
+  aborted = False
+  frames = 0
+  gc.collect()
+  try:
+    while f.shields and not f.docked:
+      frame = time.ticks_ms()
+      if keys.keydown(keys.KEY_EXIT):
+        aborted = True
+        break
+      held = keys.active()
+      enter = keys.KEY_EXE in held
+      sx = (keys.KEY_RIGHT in held) - (keys.KEY_LEFT in held)
+      sy = (keys.KEY_UP in held) - (keys.KEY_DOWN in held)
+      dt = min(100, max(0, time.ticks_diff(frame, previous))) / 1000
+      previous = frame
+      f.step(dt, sx, sy, enter, enter and not enter_held)
+      enter_held = enter
+      if f.docked or not f.shields:
+        break
+      if frames % 20 == 0:
+        gc.collect()
+      frames += 1
+      renderer.clear()
+      stars()
+      dx, dy = f.offset()
+      mesh = station if f.approaching() else gate
+      renderer.draw_mesh(*mesh, position=(dx, dy, f.distance), ambient=0.63)
+      if f.approaching():
+        renderer.draw_mesh(*pods, position=(dx, dy, f.distance), ambient=0.68)
+      else:
+        tx, ty, tz = f.traffic()
+        if tz >= 2.6:
+          renderer.draw_mesh(*traffic, position=(tx, ty, tz), ambient=0.67)
+      smooth = min(1, dt*8)
+      bank += (-0.46*sx - bank)*smooth
+      lift += (0.13*sy - lift)*smooth
+      renderer.draw_mesh(*ship[f.boost], model=rotation_z(bank),
+                         position=(-bank*0.44, -0.82+lift, 3.8),
+                         cull=False, ambient=0.82)
+      flight_hud(f)
+      renderer.present()
+      wait = 33 - time.ticks_diff(time.ticks_ms(), frame)
+      if wait > 0:
+        time.sleep_ms(wait)
+  except KeyboardInterrupt:
+    aborted = True
+  finally:
+    renderer.close()
+  return f, time.ticks_diff(time.ticks_ms(), start), aborted
+
+
+def results(f, ms, aborted, credits):
+  begin()
+  title = "DOCKING CONFIRMED" if f.docked else "CONTRACT ABORTED" if aborted else "SHIP DISABLED"
+  label(18, 54, title, GREEN if f.docked else AMBER)
+  label(18, 77, world.NAMES[f.dest] if f.docked else "Returned to launch station")
+  label(18, 105, "Flight time   " + clock_label(ms))
+  label(18, 123, "Shields " + str(f.shields) + "   Gate misses " + str(f.misses))
+  label(18, 141, "Credits " + str(credits))
+  label(18, 211, "Enter Contract Board   Esc Exit")
+  previous = keys.keydown(keys.KEY_EXE)
+  gint.dupdate()
+  while not keys.keydown(keys.KEY_EXIT):
+    time.sleep_ms(40)
+    enter = keys.keydown(keys.KEY_EXE)
+    if enter and not previous:
+      return True
+    previous = enter
+  return False
+
+
+def main():
+  station, credits, completed = 0, 0, 0
+  try:
+    while True:
+      job = board(station, credits, completed)
+      if job is None:
+        break
+      flight, ms, aborted = fly(job)
+      if flight.docked:
+        station = flight.dest
+        credits += flight.reward
+        completed += 1
+        print("Docked at", world.NAMES[station])
+      if aborted or not results(flight, ms, aborted, credits):
+        break
+  except KeyboardInterrupt:
+    pass
+  print("Flight session ended")
+  print("Contracts completed:", completed)
+  print("Credits:", credits)
+
+
+main()

@@ -1,4 +1,6 @@
-> **Interstellar Pilot R02, 2026-11-26.** Adds a third-person chase view with a visible ship, steering bank, and boost exhaust on Run033. Host tests passed. Calculator playtest pending. R01 is the hardware-tested game fallback. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
+> **Interstellar Pilot R03, 2026-11-26.** First multi-station flight game for EndraPython Run033, with contracts, traffic, rechargeable boost, manual docking and session credits. Two consecutive dockings passed in the host runtime. Calculator playtest pending. R02 is the hardware-tested fallback. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
+
+> **Interstellar Pilot R02, 2026-11-26.** Adds a third-person chase view with a visible ship, steering bank, and boost exhaust on Run033. Host tests passed. Brandon cleared all six gates with all three shields on the CX II CAS. R02 is the hardware-tested game fallback for R03. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
 
 > **Interstellar Pilot R01, 2026-11-26.** New standalone 3D cockpit game for EndraPython Run033. Six-gate win, shield exhaustion, and Esc return passed in the host runtime. Brandon cleared all six gates with three shields intact on the CX II CAS. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
 
