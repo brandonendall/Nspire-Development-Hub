@@ -1,4 +1,4 @@
-# EndraPython Run025
+# EndraPython Run026
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -95,7 +95,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run025 scope |
+| Area | Run026 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
@@ -117,6 +117,8 @@ Use `import display as d` for the 320 × 240 RGB565 canvas. Draw with `set_pixel
 The `keys` module exposes held Up, Down, Left, Right, Enter, Menu and Esc states via `keydown`. `time.ticks_ms()` and `time.ticks_diff(a,b)` measure elapsed time with wrap handling. `time.sleep_ms(ms)` and `time.sleep(seconds)` pause while keeping Esc cancellation available. Script completion returns to the regular output view.
 
 Run012 bounds Python sleep using the existing free-running timer. A stalled counter raises RuntimeError. The frame probe exercises one show and one delay before the separate animation test.
+Run026 adds PythonUltra's software `py3d` renderer using Gint's native triangle rasterizer. It supports 4 × 4 transforms, perspective projection, back-face culling, lighting, depth sorting, and optional wireframe outlines. The default viewport is 320 × 240. This first renderer skips faces crossing the near plane and uses painter sorting, so it is best suited to small meshes. The bundled cube test reports elapsed frame time and free Python heap. The existing Pygame `display`, `draw`, `event`, and `key` APIs are also importable as submodules.
+
 Run025 ports PythonUltra's calculator-focused `Vector2` and `Vector3`. Import them from `pygame.math` or access them as `pygame.Vector2` and `pygame.Vector3`. The supported operations include arithmetic, dot and cross products, magnitude, normalization, distance, and interpolation. `Vector2` adds planar angles and rotation. Calculations use the port's floating-point precision.
 
 Run024 expands Pygame input with the mapped CX II keypad, modifier state, key names, optional repeat, and `event.wait`, `peek`, filtered `get` and `clear`, and `custom_type`. Keyboard events include `key`, `mod`, `unicode`, `scancode`, and `repeat`. Poll or pump regularly to capture short taps. A physical Space key sends `K_SPACE` and Enter sends `K_RETURN`; the held state for `K_SPACE` also accepts Enter for older scripts. Esc continues to interrupt scripts, including blocking waits. See `tests/Run024_Pygame_Events.py.tns` for the full-screen handheld check.

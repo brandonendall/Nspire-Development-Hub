@@ -193,7 +193,8 @@ class _Display:
         self.flip()
 
 
-display = _Display()
+_display_backend = _Display()
+display = _display_backend
 
 
 class _Draw:
@@ -357,7 +358,8 @@ def _ellipse_span(rect, y):
             lo = x + 1
     return lo, cx - lo + 1
 
-draw = _Draw()
+_draw_backend = _Draw()
+draw = _draw_backend
 
 
 def _key_snapshot():
@@ -406,7 +408,8 @@ class _Key:
         return self._repeat
 
 
-key = _Key()
+_key_backend = _Key()
+key = _key_backend
 
 
 class Event:
@@ -531,7 +534,8 @@ class _Event:
                 KEYUP: "KeyUp"}.get(event_type, "UserEvent" if USEREVENT <= event_type < NUMEVENTS else "Unknown")
 
 
-event = _Event()
+_event_backend = _Event()
+event = _event_backend
 _initialized = False
 
 
@@ -546,10 +550,10 @@ def quit():
     global _initialized
     font.quit()
     _initialized = False
-    display.surface = None
+    _display_backend.surface = None
     key.set_repeat()
-    event._held.clear()
-    event._queue = []
+    _event_backend._held.clear()
+    _event_backend._queue = []
 
 
 def get_init():

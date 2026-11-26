@@ -1,11 +1,11 @@
-# Run025 handheld check
+# Run026 handheld check
 
-Run024 passed on the CX II CAS and remains the rollback. Run025 adds Pygame Vector2 and Vector3.
+Run025 passed on the CX II CAS and remains the rollback. Run026 adds py3d and Pygame submodule imports.
 
 ```sh
 clear
-push /storage/emulated/0/Download/EndraPython_Run025.tns /upload
-push /storage/emulated/0/Download/Run025_Pygame_Vectors.py.tns /upload
+push /storage/emulated/0/Download/EndraPython_Run026.tns /upload
+push /storage/emulated/0/Download/Run026_Py3D_Cube.py.tns /upload
 ```
 
-Open the test in EndraPython. A cyan vector and its yellow 90-degree rotation should appear for about three seconds. The console should then print `Pygame vector checks passed`.
+Run the script in EndraPython. A shaded cube should rotate full-screen. Try holding Left or Right to change its rotation. Let the demo finish all 72 frames and check for `py3d cube checks passed`, elapsed milliseconds, and free heap. Esc exits the demo or interrupts a running script.

@@ -19,6 +19,7 @@ const char *const catalog_groups[] = {
     "math",
     "numpy",
     "os",
+    "py3d",
     "pygame",
     "random",
     "struct",
@@ -343,6 +344,33 @@ static const CatalogEntry catalog_members[] = {
     {"getcwd", 1},
     {"listdir", 1},
     {"mkdir", 1},
+    /* py3d */
+    {"add", 1},
+    {"compose", 1},
+    {"cross", 1},
+    {"cube", 1},
+    {"dot", 1},
+    {"focal_length", 1},
+    {"identity", 1},
+    {"length", 1},
+    {"matmul4", 1},
+    {"normalize", 1},
+    {"prepare_triangles", 1},
+    {"project", 1},
+    {"Renderer", 1},
+    {"rgb565", 1},
+    {"rotation_x", 1},
+    {"rotation_y", 1},
+    {"rotation_z", 1},
+    {"scale", 1},
+    {"scaling", 1},
+    {"SCREEN_HEIGHT", 0},
+    {"SCREEN_WIDTH", 0},
+    {"shade_rgb565", 1},
+    {"sub", 1},
+    {"transform", 1},
+    {"translation", 1},
+    {"vec3", 1},
     /* pygame */
     {"Color", 1},
     {"display", 0},
@@ -528,9 +556,10 @@ static const struct { int offset, count; } catalog_ranges[] = {
     {228, 27}, /* math */
     {255, 41}, /* numpy */
     {296, 4}, /* os */
-    {300, 135}, /* pygame */
-    {435, 7}, /* random */
-    {442, 5}, /* struct */
-    {447, 9}, /* sys */
-    {456, 4}, /* time */
+    {300, 26}, /* py3d */
+    {326, 135}, /* pygame */
+    {461, 7}, /* random */
+    {468, 5}, /* struct */
+    {473, 9}, /* sys */
+    {482, 4}, /* time */
 };

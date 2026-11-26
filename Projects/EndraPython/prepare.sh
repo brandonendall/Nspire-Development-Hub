@@ -19,7 +19,8 @@ from makemanifest import generate_frozen_str_content
 
 names = ("numpy", "ion", "kandinsky", "gint")
 paths = [f"{name}.py" for name in names]
-paths += [f"pygame/{name}.py" for name in ("__init__", "_geometry", "sprite", "time", "image", "font", "transform", "math")]
+paths += [f"pygame/{name}.py" for name in ("__init__", "_geometry", "sprite", "time", "image", "font", "transform", "math", "draw", "display", "event", "key")]
+paths.append("py3d/__init__.py")
 output = generate_frozen_str_content([(f"modules/{path}", path) for path in paths])
 output += b'const char mp_frozen_names[] = MP_FROZEN_STR_NAMES "\\0";\n'
 Path("micropython_embed/port/frozen_modules.c").write_bytes(output)
