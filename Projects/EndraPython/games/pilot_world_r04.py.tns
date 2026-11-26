@@ -1,0 +1,222 @@
+"""Stations, flight rules and procedural meshes for Interstellar Pilot."""
+import json
+import os
+from py3d import cube, rotation_x, transform
+
+NAMES = ("Meridian Station", "Kepler Exchange", "Relay Outpost")
+# Destination, contract, reward, jump gates, docking axis.
+CONTRACTS = (
+  (1, "Deliver station cargo", 90, ((0, 0), (1.8, 1.1), (-1.4, -0.6)), (0.8, 0.3)),
+  (2, "Deliver rescue supplies", 130, ((0.4, 0.8), (-1.9, 1.3), (1.9, -1.2)), (-0.7, 0.7)),
+  (0, "Carry navigation data", 105, ((-0.5, -0.5), (1.7, -1.2), (-1.6, 1.0)), (0, 0)),
+)
+GATE_X, GATE_Y = 0.94, 0.73
+DOCK_X, DOCK_Y = 0.62, 0.42
+GATE_CROSS, DOCK_STOP, DOCK_RANGE = 2.6, 3.5, 5.3
+GATE_START, STATION_START = 17.0, 21.0
+BG, TEXT, BLUE, GREEN, AMBER = 0x0863, 0xd69d, 0x34bd, 0x5fba, 0xfd46
+
+
+def add_box(vertices, faces, base, size, color):
+  points, sides = BOX
+  i = len(vertices)
+  x, y, z = base
+  w, h, d = size
+  for px, py, pz in points:
+    vertices.append((x + px*w, y + py*h, z + pz*d))
+  for a, b, c, _ in sides:
+    faces.append((a+i, b+i, c+i, color))
+
+
+BOX = cube(1)
+
+
+def portal(station=False):
+  x, y = (1.12, 0.82) if station else (GATE_X, GATE_Y)
+  bar = 0.22 if station else 0.13
+  v, f = [], []
+  for side in (-1, 1):
+    add_box(v, f, (0, side*(y+bar/2), 0), (2*(x+bar), bar, 0.3), BLUE)
+    add_box(v, f, (side*(x+bar/2), 0, 0), (bar, 2*y, 0.3), BLUE)
+  return v, f
+
+
+def station_pods():
+  v, f = [], []
+  for side in (-1, 1):
+    add_box(v, f, (side*1.70, 0, 0.16), (0.72, 1.0, 0.84), 0x9d39)
+    add_box(v, f, (side*1.70, 0, -0.32), (0.43, 0.36, 0.16), GREEN)
+  return v, f
+
+
+def freighter():
+  v, f = [], []
+  add_box(v, f, (0, 0, 0), (0.75, 0.28, 1.38), 0xd5a6)
+  add_box(v, f, (0, 0.17, 0.14), (0.48, 0.18, 0.7), 0x8e3c)
+  return v, f
+
+
+def ship_mesh(boost):
+  # The nose points down the flight path, away from the chase camera.
+  flame = -1.03 if boost else -0.80
+  vertices = (
+    (0, 0.04, 0.87), (-0.23, 0.04, 0.15), (0.23, 0.04, 0.15),
+    (-0.24, 0.05, -0.49), (0.24, 0.05, -0.49), (0, 0.29, 0.03),
+    (-0.16, -0.15, -0.49), (0.16, -0.15, -0.49),
+    (-0.99, -0.02, -0.34), (0.99, -0.02, -0.34),
+    (-0.72, -0.03, -0.55), (0.72, -0.03, -0.55),
+    (-0.19, -0.03, -0.50), (-0.08, -0.03, -0.50),
+    (0.08, -0.03, -0.50), (0.19, -0.03, -0.50),
+    (-0.135, 0.02, flame), (0.135, 0.02, flame),
+  )
+  silver, blue, shade, glass = 0xb69d, 0x549f, 0x31cf, 0x4dfd
+  exhaust = 0xfda8 if boost else 0x567f
+  faces = (
+    (0, 1, 5, silver), (0, 5, 2, silver), (1, 3, 5, blue),
+    (2, 5, 4, blue), (3, 4, 5, glass), (3, 6, 7, shade),
+    (3, 7, 4, shade), (0, 6, 3, shade), (0, 4, 7, shade),
+    (0, 7, 6, shade), (1, 8, 10, silver), (1, 10, 3, blue),
+    (2, 11, 9, silver), (2, 4, 11, blue),
+    (12, 13, 16, exhaust), (14, 15, 17, exhaust),
+  )
+  tilt = rotation_x(-0.26)
+  return [transform(v, tilt) for v in vertices], faces
+
+
+class Flight:
+  def __init__(self, job, coil=0):
+    self.dest, self.cargo, self.reward, self.gates, self.berth = job
+    self.recharge = 0.48 if coil else 0.28
+    self.x = self.y = 0.0
+    self.distance, self.energy = GATE_START, 1.0
+    self.cleared, self.shields, self.misses = 0, 3, 0
+    self.boost = self.docked = self.passed_ship = False
+    self.notice, self.notice_time = "", 0.0
+
+  def approaching(self):
+    return self.cleared == len(self.gates)
+
+  def offset(self):
+    x, y = self.berth if self.approaching() else self.gates[self.cleared]
+    return x - self.x, y - self.y
+
+  def aligned(self):
+    x, y = self.offset()
+    w, h = (DOCK_X, DOCK_Y) if self.approaching() else (GATE_X, GATE_Y)
+    return abs(x) < w and abs(y) < h
+
+  def traffic(self):
+    x, y = self.gates[self.cleared]
+    side = -1 if self.cleared % 2 else 1
+    return (x + side*(1.48 - self.distance*0.073) - self.x,
+            y + side*0.35 - self.y, self.distance - 4.05)
+
+  def tell(self, notice):
+    self.notice, self.notice_time = notice, 1.5
+
+  def step(self, dt, sx, sy, held, pressed):
+    self.x = max(-3.6, min(3.6, self.x + sx*2.35*dt))
+    self.y = max(-2.6, min(2.6, self.y + sy*2.35*dt))
+    self.notice_time = max(0, self.notice_time - dt)
+    final = self.approaching()
+    slow = final and self.distance <= 9.0
+    self.boost = held and not slow and self.energy > 0
+    if self.boost:
+      self.energy = max(0, self.energy - dt*0.49)
+    elif not held:
+      self.energy = min(1, self.energy + dt*self.recharge)
+    self.distance -= (6.3 if self.boost else 2.20 if slow else 3.4)*dt
+    if final:
+      self.distance = max(DOCK_STOP, self.distance)
+      if pressed and self.distance <= DOCK_RANGE:
+        if self.aligned():
+          self.docked = True
+        else:
+          self.tell("Align with berth")
+      return
+
+    tx, ty, tz = self.traffic()
+    if not self.passed_ship and tz <= GATE_CROSS:
+      self.passed_ship = True
+      if abs(tx) < 0.49 and abs(ty) < 0.30:
+        self.shields -= 1
+        self.tell("Traffic strike")
+    if self.distance <= GATE_CROSS:
+      if self.aligned():
+        self.cleared += 1
+        self.tell("Jump confirmed")
+      else:
+        self.misses += 1
+        self.shields -= 1
+        self.tell("Gate missed / Retry")
+      self.distance = STATION_START if self.approaching() else GATE_START
+      self.passed_ship = False
+
+
+# Save slots alternate so a partial write leaves the last verified slot intact.
+SLOTS = ("pilot_career_a.txt.tns", "pilot_career_b.txt.tns")
+FRESH = (0, 0, 0, 0, 0, 0)
+COIL_PRICE = 80
+CAMPAIGN = (
+  "1/3  Establish the cargo corridor",
+  "2/3  Supply the rescue relay",
+  "3/3  Return with navigation data",
+)
+
+
+def seal(record):
+  check = 9437
+  for value in record:
+    check = (check*31 + value) % 65521
+  return check
+
+
+def read_slot(name):
+  try:
+    with open(name) as f:
+      data = json.loads(f.read(512))
+  except (OSError, ValueError):
+    return None
+  if type(data) is not list or len(data) != 8 or data[0] != "IP1":
+    return None
+  record = tuple(data[1:-1])
+  if any(type(value) is not int or value < 0 for value in record):
+    return None
+  seq, station, credits, completed, coil, stage = record
+  if not seq or station >= len(NAMES) or coil > 1 or stage > len(CAMPAIGN):
+    return None
+  return record if data[-1] == seal(record) else None
+
+
+def load_profile():
+  names = os.listdir()
+  valid = []
+  for slot in SLOTS:
+    if slot in names:
+      record = read_slot(slot)
+      if record is not None:
+        valid.append(record)
+  if valid:
+    return max(valid)
+  if any(slot in names for slot in SLOTS):
+    raise ValueError("No valid pilot save")
+  return FRESH
+
+
+def save_profile(old, station, credits, completed, coil, stage):
+  record = (old[0]+1, station, credits, completed, coil, stage)
+  slot = SLOTS[record[0] % 2]
+  with open(slot, "w") as f:
+    f.write(json.dumps(("IP1",) + record + (seal(record),)))
+    f.flush()
+  if read_slot(slot) != record:
+    raise OSError("Pilot save verification failed")
+  return record
+
+
+def campaign_offer(station, stage):
+  if stage >= len(CAMPAIGN):
+    return None, False
+  if station != stage:
+    return next(job for job in CONTRACTS if job[0] == stage), False
+  return CONTRACTS[stage], True

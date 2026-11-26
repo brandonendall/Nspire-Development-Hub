@@ -1,0 +1,4 @@
+"""Interstellar Pilot R05 for EndraPython Run033."""
+from pilot_career import main
+
+main(5)

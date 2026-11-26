@@ -1,5 +1,18 @@
 # EndraPython project memory
 
+## Interstellar Pilot R04–R06, 2026-11-26
+
+Brandon asked for all three gameplay milestones in one batch. EndraPython Run033 launches each numbered file with shared `pilot_career.py.tns` and `pilot_world_r04.py.tns` in the same folder. They share a versioned project-folder pilot profile. R04 saves station, credits and completed contracts after docking, using alternating verified slots. R05 sells one 80-credit boost coil at Kepler Exchange and enables quicker recharge. R06 adds the three-mission campaign with a Meridian rendezvous for pilots elsewhere, world progression on docking, and a completion screen. Distinct launcher entry points gate shop and campaign. Existing profile fields are kept when using an earlier launcher.
+
+Run033 host tests passed a fresh R04 delivery, a relaunch and aborted flight with 90 credits unchanged, a Kepler purchase for 80 credits, R05 relaunch with 10 credits and coil, and a cross-build R06 load. The same pilot docked at the Meridian rendezvous and completed the campaign with 440 credits and the coil. A separate fresh R06 game completed the first mission, relaunched, lost and retried a mission, completed the campaign, and still showed the finale state after relaunch. Truncated newest-slot recovery and rejection of two invalid slots passed. The Run033 regression suite passed and actual host station, purchase and finale screens were inspected. No native rebuild. Calculator playtest pending. R03 is the hardware-tested game fallback.
+
+- `Interstellar_Pilot_R04.py.tns` SHA-256 `cdc77f8e1cd9b28138c2ddc5c7b46a3d271e29e2540d507ad524834a4af6de3f`
+- `Interstellar_Pilot_R05.py.tns` SHA-256 `c0dd4ced29a4c595514240fde429deb5ba8ceeb279417f6cb6dda8274cdd20a3`
+- `Interstellar_Pilot_R06.py.tns` SHA-256 `2e50fb02efbd77d4480823d51089ad682367f8171e155c981235368b2b1d1f7f`
+- `pilot_career.py.tns` SHA-256 `36d1517d1d8c1714d77f83cf3f3ad999400304d47f5be034b4efc75570085613`
+- `pilot_world_r04.py.tns` SHA-256 `67a4c43c41fbae6e0586f78409b58d865fa18d72c096900990485feac8a02367`
+- Delivery ZIP SHA-256 `0c2c21935d03da23a03c6a1cd7379a0b9f86c930386d6c3e7c3d6fd8c7e52ff1`
+
 ## Interstellar Pilot R03, 2026-11-26
 
 Brandon approved the R02 chase view and asked to advance to stations and other ships. R03 adds three stations, selectable cargo contracts, jump gates, moving freighters with shield damage, limited rechargeable boost, manual alignment and docking, and a results screen with flight time and credits. Enter on the results screen returns to the new station's contract board. Session progress is in memory. Run033 is the runtime and R02 is the hardware-tested game fallback. The entry and world module must be in the same folder. Host verification used the exact two scripts in Run033, including two consecutive contracts to Kepler Exchange and Relay Outpost with 220 credits, a lost-ship run, Esc, boost/recharge, traffic hits, misaligned docking and the Enter edge. Menu, flight and dock approach previews were inspected. The station rendering uses two mesh batches to stay within the constrained Python heap. Brandon reports that R03 worked perfectly on his TI-Nspire CX II CAS. R03 is the current hardware-tested game baseline.

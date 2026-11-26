@@ -1,0 +1,233 @@
+"""Run033 career and flight UI shared by Interstellar Pilot R04 through R06."""
+import gc
+import gint
+import keys
+import time
+from py3d import Renderer, rotation_z
+import pilot_world_r04 as world
+
+BG, TEXT, BLUE, GREEN, AMBER = world.BG, world.TEXT, world.BLUE, world.GREEN, world.AMBER
+STARS = tuple(((i*83+17) % 316+2, (i*i*13+i*23) % 155+38) for i in range(34))
+
+
+def label(x, y, text, color=TEXT):
+  gint.dtext(x, y, color, text)
+
+
+def stars():
+  for x, y in STARS:
+    gint.dpixel(x, y, 0x6390)
+
+
+def begin():
+  gint.dclear(BG)
+  stars()
+  label(18, 13, "INTERSTELLAR PILOT", GREEN)
+  gint.dline(18, 35, 301, 35, BLUE)
+
+
+def clock_label(ms):
+  return str(ms // 1000) + "." + str(ms // 100 % 10) + " s"
+
+
+def board(profile, version, notice):
+  _, station, credits, completed, coil, stage = profile
+  offers = [(job[1], world.NAMES[job[0]]+"  /  "+str(job[2])+" CR", job, False)
+            for job in world.CONTRACTS if job[0] != station]
+  if version >= 6 and stage < len(world.CAMPAIGN):
+    job, advance = world.campaign_offer(station, stage)
+    title = world.CAMPAIGN[stage] if advance else "Campaign rendezvous"
+    offers.insert(0, (title, world.NAMES[job[0]], job, advance))
+  if version >= 5 and station == 1 and not coil:
+    offers.append(("Buy boost coil   80 CR", "Faster boost recharge", None, False))
+  choice = 0
+  previous = keys.active()
+  while not keys.keydown(keys.KEY_EXIT):
+    begin()
+    label(18, 48, world.NAMES[station])
+    label(18, 65, str(credits)+" CR    "+str(completed)+" delivered")
+    if version >= 5:
+      status = "Coil installed" if coil else "Coil shop: Kepler"
+      if version >= 6 and stage == len(world.CAMPAIGN):
+        status = "Campaign complete"
+      label(18, 79, notice or status, GREEN)
+    elif notice:
+      label(18, 79, notice, GREEN)
+    for i, (title, detail, job, advance) in enumerate(offers):
+      y = 98+i*31
+      if i == choice:
+        gint.drect(12, y-4, 306, y+23, 0x114b)
+      label(20, y, title, GREEN if i == choice else TEXT)
+      label(20, y+12, detail)
+    label(18, 225, "Up/Down Select   Enter Choose   Esc Exit")
+    gint.dupdate()
+    time.sleep_ms(65)
+    held = keys.active()
+    if keys.KEY_EXE in held and keys.KEY_EXE not in previous:
+      return offers[choice][2:]
+    if keys.KEY_UP in held and keys.KEY_UP not in previous:
+      choice = (choice-1) % len(offers)
+    if keys.KEY_DOWN in held and keys.KEY_DOWN not in previous:
+      choice = (choice+1) % len(offers)
+    previous = held
+  return None
+
+
+def flight_hud(f):
+  if f.approaching():
+    header = "Approach " + world.NAMES[f.dest]
+  else:
+    header = "Jump gate " + str(f.cleared+1) + "/" + str(len(f.gates))
+  label(9, 8, header)
+  label(224, 8, "SHIELDS " + str(f.shields))
+  label(224, 26, "BOOST")
+  gint.drect(267, 28, 310, 34, 0x294a)
+  charge = int(f.energy*44)
+  if charge:
+    gint.drect(267, 28, 266+charge, 34, AMBER if f.boost else BLUE)
+  color = GREEN if f.aligned() else AMBER
+  gint.dline(145, 120, 155, 120, color)
+  gint.dline(165, 120, 175, 120, color)
+  gint.dline(160, 105, 160, 115, color)
+  gint.dline(160, 125, 160, 135, color)
+  gint.drect(0, 205, 319, 239, BG)
+  gint.dline(0, 205, 319, 205, BLUE)
+  near_berth = f.approaching() and f.distance <= world.DOCK_RANGE
+  if near_berth:
+    label(9, 209, "ENTER TO DOCK" if f.aligned() else "ALIGN WITH BERTH", color)
+  else:
+    label(9, 209, "Range " + str(int(f.distance)))
+  if f.notice_time and not near_berth:
+    label(137, 209, f.notice, AMBER)
+  label(9, 225, "Arrows Align   Enter Dock   Esc Abort" if near_berth else
+        "Arrows Steer   Enter Boost   Esc Abort")
+
+
+def fly(job, coil):
+  f = world.Flight(job, coil)
+  gate = world.portal()
+  station = world.portal(True)
+  pods = world.station_pods()
+  ship = (world.ship_mesh(False), world.ship_mesh(True))
+  traffic = world.freighter()
+  renderer = Renderer(background=BG, depth=True)
+  bank = lift = 0.0
+  previous = start = time.ticks_ms()
+  enter_held = keys.keydown(keys.KEY_EXE)
+  aborted = False
+  frames = 0
+  gc.collect()
+  try:
+    while f.shields and not f.docked:
+      frame = time.ticks_ms()
+      if keys.keydown(keys.KEY_EXIT):
+        aborted = True
+        break
+      held = keys.active()
+      enter = keys.KEY_EXE in held
+      sx = (keys.KEY_RIGHT in held) - (keys.KEY_LEFT in held)
+      sy = (keys.KEY_UP in held) - (keys.KEY_DOWN in held)
+      dt = min(100, max(0, time.ticks_diff(frame, previous))) / 1000
+      previous = frame
+      f.step(dt, sx, sy, enter, enter and not enter_held)
+      enter_held = enter
+      if f.docked or not f.shields:
+        break
+      if frames % 20 == 0:
+        gc.collect()
+      frames += 1
+      renderer.clear()
+      stars()
+      dx, dy = f.offset()
+      mesh = station if f.approaching() else gate
+      renderer.draw_mesh(*mesh, position=(dx, dy, f.distance), ambient=0.63)
+      if f.approaching():
+        renderer.draw_mesh(*pods, position=(dx, dy, f.distance), ambient=0.68)
+      else:
+        tx, ty, tz = f.traffic()
+        if tz >= 2.6:
+          renderer.draw_mesh(*traffic, position=(tx, ty, tz), ambient=0.67)
+      smooth = min(1, dt*8)
+      bank += (-0.46*sx - bank)*smooth
+      lift += (0.13*sy - lift)*smooth
+      renderer.draw_mesh(*ship[f.boost], model=rotation_z(bank),
+                         position=(-bank*0.44, -0.82+lift, 3.8),
+                         cull=False, ambient=0.82)
+      flight_hud(f)
+      renderer.present()
+      wait = 33 - time.ticks_diff(time.ticks_ms(), frame)
+      if wait > 0:
+        time.sleep_ms(wait)
+  except KeyboardInterrupt:
+    aborted = True
+  finally:
+    renderer.close()
+  return f, time.ticks_diff(time.ticks_ms(), start), aborted
+
+
+def results(f, ms, credits, finale):
+  begin()
+  title = "CAMPAIGN COMPLETE" if finale else "DOCKING CONFIRMED" if f.docked else "SHIP DISABLED"
+  label(18, 54, title, GREEN if f.docked else AMBER)
+  label(18, 77, world.NAMES[f.dest] if f.docked else "Returned to launch station")
+  label(18, 105, "Flight time   " + clock_label(ms))
+  label(18, 123, "Shields " + str(f.shields) + "   Gate misses " + str(f.misses))
+  label(18, 141, "Credits " + str(credits))
+  label(18, 211, "Enter Contract Board   Esc Exit")
+  previous = keys.keydown(keys.KEY_EXE)
+  gint.dupdate()
+  while not keys.keydown(keys.KEY_EXIT):
+    time.sleep_ms(40)
+    enter = keys.keydown(keys.KEY_EXE)
+    if enter and not previous:
+      return True
+    previous = enter
+  return False
+
+
+def main(version):
+  try:
+    profile = world.load_profile()
+  except (OSError, ValueError):
+    print("Pilot save could not be loaded")
+    return
+  notice = ""
+  try:
+    while True:
+      _, station, credits, completed, coil, stage = profile
+      choice = board(profile, version, notice)
+      if choice is None:
+        break
+      job, advance = choice
+      notice = ""
+      if job is None:
+        if credits < world.COIL_PRICE:
+          notice = "You need 80 credits"
+        else:
+          profile = world.save_profile(profile, station, credits-world.COIL_PRICE,
+                                       completed, 1, stage)
+          notice = "Boost coil installed"
+        continue
+      flight, ms, aborted = fly(job, coil if version >= 5 else 0)
+      if aborted:
+        break
+      finale = False
+      if flight.docked:
+        stage += int(advance)
+        finale = advance and stage == len(world.CAMPAIGN)
+        profile = world.save_profile(profile, flight.dest, credits+flight.reward,
+                                     completed+1, coil, stage)
+        print("Docked at", world.NAMES[flight.dest])
+        if finale:
+          print("Campaign complete")
+      if not results(flight, ms, profile[2], finale):
+        break
+  except OSError:
+    print("Save failed. Reload your pilot.")
+  except KeyboardInterrupt:
+    pass
+  print("Station:", world.NAMES[profile[1]])
+  print("Contracts completed:", profile[3])
+  print("Credits:", profile[2])
+  if version >= 6:
+    print("Campaign missions:", profile[5], "of", len(world.CAMPAIGN))
