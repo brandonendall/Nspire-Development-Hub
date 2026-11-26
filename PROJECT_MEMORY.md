@@ -1,3 +1,5 @@
+> **EndraPython Run034, 2026-11-26.** Python-only REPL. The IDE's colon commands and related hints are removed. Native and host builds passed; CI matches the delivered TNS. Calculator check pending. Run033 is the hardware-tested IDE fallback. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
+
 > **Interstellar Pilot R11, 2026-11-26.** Open-sector flight for Run033 with independent traffic, planet scenery, optional navigation and manual docking. Existing career, market and optional contract progression carry forward. Host flight and reload passed. Brandon confirmed R11 works on the CX II CAS. R11 is the current hardware-tested baseline. R10 remains the fallback. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
 
 > **Interstellar Pilot R07–R10, 2026-11-26.** Run033 sector map, saved trading and outfitting, Farpoint frontier missions, and fresh-pilot onboarding. Original ship and station meshes ship in all four builds. Sequential migration and fresh career passed in the host runtime. Brandon reported all four calculator playtests succeeded. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).

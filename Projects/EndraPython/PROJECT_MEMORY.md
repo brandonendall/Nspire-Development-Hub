@@ -1,5 +1,11 @@
 # EndraPython project memory
 
+## EndraPython Run034, 2026-11-26
+
+Brandon requested a Python-only shell and a separate terminal later. Run034 removes the shell command dispatcher and the eight former colon shortcut commands, along with their startup hint and help row. All input goes to the MicroPython REPL. Python help, catalog, project file APIs and Files actions continue to work. Source `15c3bcff76daf74f9b9646ca8e22d913ec8a491a`. Host tests covered the eight inputs yielding SyntaxError, normal Python arithmetic, import, listdir, history, Files and catalog. R11 sandbox replay also passed with Run034 host objects. [CI](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45892829975) passed and the [standalone 232153-byte TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45892829975/artifacts/15153060036) matches SHA-256 `6f8bf244d7c24dbcc818e5ae3fb2906aa55d5641686fbdf933254b8ed08d1936`. Calculator check pending. Run033 remains the hardware-tested IDE fallback.
+
+Next roadmap after gaming: project workspace with main-script run and quick file switching, multiline Python shell and a session restart, then a non-game file-to-report workflow. File terminal work is a separate future project.
+
 ## Interstellar Pilot R11, 2026-11-26
 
 Brandon verified R07–R10 on hardware, then requested open space rather than gate-based flights. R11 adds continuous yaw/pitch, throttle, brake and boost, four fixed station locations, three procedurally drawn world-space planets, three independent traffic loops and optional navigation markers. Steering and travel are free in 3D space; the marker has no effect on motion or docking. Approach a station and brake below docking speed before pressing Enter. Farpoint clearance remains tied to the first campaign. Optional station contracts advance by docking at the named destination. The same IP2 slots, credits, campaign, outfitter and markets carry forward. Excursions close at Esc and the career resumes from the last saved dock. Planet surfaces are scenery. R10 is the verified hardware fallback.
