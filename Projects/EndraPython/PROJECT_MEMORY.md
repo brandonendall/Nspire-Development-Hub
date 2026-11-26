@@ -15,7 +15,9 @@ Hardware validation on the TI-Nspire CX II CAS, 2026-11-26. Both 24-frame worklo
 | Run028 | 1 | 139 | 132 | 183 | 454 | 113552 |
 | Run028 | 4 | 482 | 264 | 181 | 927 | 113280 |
 
-Run030 printed `Both draw orders passed`, `Frame reset and clipping passed`, and `py3d depth checks passed`, with 113584 bytes of free Python heap after close and collection. Run030 is the latest handheld-tested build. Run028 remains the known rollback. For four cubes, preparation was roughly 52% of measured stage time in both benchmark runs. The small differences between builds come from one sample per build. Next: use the same benchmark to measure changes to mesh preparation and add a comparable painter-versus-depth timing run.
+Run030 printed `Both draw orders passed`, `Frame reset and clipping passed`, and `py3d depth checks passed`, with 113584 bytes of free Python heap after close and collection. Run030 is the latest handheld-tested build. Run028 remains the known rollback. For four cubes, preparation was roughly 52% of measured stage time in both benchmark runs. The small differences between builds come from one sample per build. Brandon confirmed that the additional CX II CAS screenshot ran `Run029_Py3D_Benchmark.py.tns` inside EndraPython Run030. It printed `py3d benchmark passed`. For one cube, the preparation, clear and raster, and display update stages took 144/134/129 ms (407 ms sum), with 112864 bytes of free Python heap. For four cubes, they took 501/269/131 ms (901 ms sum), with 112592 bytes free. Four-cube preparation was 56% of measured stage time. The benchmark uses painter rendering. The three builds have one sample each, and shorter display update times account for the lower measured totals in this Run030 sample.
+
+Next: use the same benchmark to measure changes to mesh preparation and add a comparable painter-versus-depth timing run.
 
 ## Runs027 and 028, 2026-11-26
 
