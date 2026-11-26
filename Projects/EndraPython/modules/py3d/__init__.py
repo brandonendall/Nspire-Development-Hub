@@ -170,13 +170,13 @@ def project(vertex, focal=None, center=None, near=0.1):
     return _project_visible(vertex, focal, center)
 
 
-def _project_visible(vertex, focal, center):
+def _project_visible(vertex, focal, center, depth_near=None):
     x, y, z = vertex
-    return (
-        int(center[0] + x * focal / z),
-        int(center[1] - y * focal / z),
-        z,
-    )
+    sx = int(center[0] + x * focal / z)
+    sy = int(center[1] - y * focal / z)
+    if depth_near is not None:
+        return (sx, sy, z, min(65535, 1 + int((depth_near / z) * 65534)))
+    return (sx, sy, z)
 
 
 def rgb565(r, g, b):
@@ -212,6 +212,25 @@ def _clip_near(a, b, c, near):
     return polygon
 
 
+def _transform_mesh(vertices, model, position):
+    px, py, pz = position
+    transformed = []
+    if (model[12] == 0.0 and model[13] == 0.0 and
+            model[14] == 0.0 and model[15] == 1.0):
+        xx, xy, xz, dx = model[0], model[1], model[2], model[3]
+        yx, yy, yz, dy = model[4], model[5], model[6], model[7]
+        zx, zy, zz, dz = model[8], model[9], model[10], model[11]
+        for x, y, z in vertices:
+            transformed.append((xx*x + xy*y + xz*z + dx + px,
+                                yx*x + yy*y + yz*z + dy + py,
+                                zx*x + zy*y + zz*z + dz + pz))
+    else:
+        for vertex in vertices:
+            x, y, z = transform(vertex, model)
+            transformed.append((x + px, y + py, z + pz))
+    return transformed
+
+
 def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
                       focal=None, center=None, near=0.1, cull=True,
                       ambient=0.28, light_dir=(-0.35, -0.45, -1.0),
@@ -232,44 +251,47 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
     if center is None:
         center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
 
-    px, py, pz = position
-    transformed = []
-    for vertex in vertices:
-        value = transform(vertex, model)
-        transformed.append((value[0] + px, value[1] + py, value[2] + pz))
-
+    transformed = _transform_mesh(vertices, model, position)
     projected = [None] * len(transformed)
-    light = normalize(light_dir)
+    depth_near = near if depth else None
+    lx, ly, lz = normalize(light_dir)
     triangles = []
     for face in faces:
         ia, ib, ic = face[:3]
         a, b, c = transformed[ia], transformed[ib], transformed[ic]
-
-        min_z = min(a[2], b[2], c[2])
-        if max(a[2], b[2], c[2]) < near:
+        ax, ay, az = a
+        bx, by, bz = b
+        cx, cy, cz = c
+        if max(az, bz, cz) < near:
             continue
 
-        normal = cross(sub(b, a), sub(c, a))
-        # The camera is at the origin looking along +Z. Outward-wound faces
-        # point toward the camera when normal dot vertex is negative.
-        if cull and dot(normal, a) >= 0:
+        ux, uy, uz = bx - ax, by - ay, bz - az
+        vx, vy, vz = cx - ax, cy - ay, cz - az
+        nx = uy*vz - uz*vy
+        ny = uz*vx - ux*vz
+        nz = ux*vy - uy*vx
+        # The camera looks along +Z. An outward normal points toward it when
+        # its dot product with the first vertex is negative.
+        if cull and nx*ax + ny*ay + nz*az >= 0:
             continue
 
-        normal_length = length(normal)
+        normal_length = math.sqrt(nx*nx + ny*ny + nz*nz)
         if normal_length == 0:
             continue
 
-        if min_z < near:
-            points = [_project_visible(v, focal, center) for v in _clip_near(a, b, c, near)]
+        if min(az, bz, cz) < near:
+            points = [_project_visible(v, focal, center, depth_near)
+                      for v in _clip_near(a, b, c, near)]
         else:
             for index in (ia, ib, ic):
                 if projected[index] is None:
-                    projected[index] = _project_visible(transformed[index], focal, center)
+                    projected[index] = _project_visible(
+                        transformed[index], focal, center, depth_near)
             points = (projected[ia], projected[ib], projected[ic])
 
         base_color = face[3] if len(face) > 3 else default_color
-        unit_normal = scale(normal, 1.0 / normal_length)
-        diffuse = dot(unit_normal, light)
+        inverse_length = 1.0 / normal_length
+        diffuse = (nx*inverse_length)*lx + (ny*inverse_length)*ly + (nz*inverse_length)*lz
         if diffuse < 0.0:
             diffuse = 0.0
         intensity = ambient + (1.0 - ambient) * diffuse
@@ -280,8 +302,7 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
             average_z = (pa[2] + pb[2] + pc[2]) / 3.0
             triangle = (average_z, pa[0], pa[1], pb[0], pb[1], pc[0], pc[1], color)
             if depth:
-                triangle += tuple(min(65535, 1 + int((near / point[2]) * 65534))
-                                  for point in (pa, pb, pc))
+                triangle += (pa[3], pb[3], pc[3])
             triangles.append(triangle)
 
     if not depth:

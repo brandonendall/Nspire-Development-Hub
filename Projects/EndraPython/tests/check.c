@@ -705,7 +705,12 @@ static void py3d_checks(const char *root, void *stack) {
         "r=Renderer(); v,f=cube(); r.clear()\n"
         "t=r.prepare_mesh(v,f,position=(0,0,5))\n"
         "assert len(t)==2 and r.draw_prepared(t)==2\n"
-        "assert r.draw_mesh(v,f,position=(0,0,5))==len(t)\n",0));
+        "assert r.draw_mesh(v,f,position=(0,0,5))==len(t)\n"
+        "from py3d import identity, transform\n"
+        "m=identity()[:-4]+(0,0,0.25,1)\n"
+        "actual=r.prepare_mesh(v,f,model=m,position=(0,0,5))\n"
+        "expected=r.prepare_mesh([transform(p,m) for p in v],f,position=(0,0,5))\n"
+        "assert actual==expected\n",0));
     assert(runtime_exec("<pygame-imports>",
         "import pygame as p\n"
         "import pygame.display as d\n"
