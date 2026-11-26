@@ -1,4 +1,4 @@
-name: EndraPython Run032
+name: EndraPython Run033
 on:
   push:
     branches: [feature/endrapython-run001]
@@ -28,17 +28,17 @@ jobs:
       - name: Verify and package
         working-directory: Projects/EndraPython
         run: |
-          test "$(head -c4 EndraPython_Run032.tns)" = Zehn
+          test "$(head -c4 EndraPython_Run033.tns)" = Zehn
           readelf -h build/endrapython.elf | grep -E 'Machine: +ARM'
-          sha256sum EndraPython_Run032.tns > build/SHA256SUMS.txt
-          wc -c EndraPython_Run032.tns
+          sha256sum EndraPython_Run033.tns > build/SHA256SUMS.txt
+          wc -c EndraPython_Run033.tns
           cat build/SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraPython_Run032
+          name: EndraPython_Run033
           if-no-files-found: error
           path: |
-            Projects/EndraPython/EndraPython_Run032.tns
+            Projects/EndraPython/EndraPython_Run033.tns
             Projects/EndraPython/build/SHA256SUMS.txt
             Projects/EndraPython/build/previews/
             Projects/EndraPython/licenses/
@@ -58,10 +58,11 @@ jobs:
             Projects/EndraPython/tests/Run029_Py3D_Benchmark.py.tns
             Projects/EndraPython/tests/Run030_Py3D_Depth.py.tns
             Projects/EndraPython/tests/Run031_Py3D_Modes.py.tns
+            Projects/EndraPython/tests/Run033_Py3D_Interactive.py.tns
             Projects/EndraPython/build/Run015_Badge.bmp.tns
       - name: Offer the standalone calculator download
         uses: actions/upload-artifact@v7
         with:
-          path: Projects/EndraPython/EndraPython_Run032.tns
+          path: Projects/EndraPython/EndraPython_Run033.tns
           archive: false
           if-no-files-found: error

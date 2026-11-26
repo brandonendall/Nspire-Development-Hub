@@ -1,3 +1,7 @@
-# Run029 handheld check
+# Runs031–033 handheld checks
 
-Run028 is the confirmed fallback. Run `Run029_Py3D_Benchmark.py.tns` in Run028 and Run029 for three passes per build. Each pass runs 24 frames for one cube and 24 frames for four cubes with no intentional pause. Record the prepare, raster and update totals and free heap for each scene. The last line should say `py3d benchmark passed`. Esc interrupts the script.
+Run030 is the hardware-tested rollback. Transfer the three IDE builds and the two scripts. In the Files list, select the script and press Enter.
+
+1. Run `Run031_Py3D_Modes.py.tns` in Run031. Photograph the four timing rows and the IDE version.
+2. Run the exact same script in Run032. Photograph the new timing rows.
+3. Run `Run033_Py3D_Interactive.py.tns` in Run033. Test arrows, plus/minus, Enter and Esc. Esc should return to the console with `Interactive 3D complete`. The demo also stops after 1200 frames.

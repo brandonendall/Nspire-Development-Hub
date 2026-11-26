@@ -45,7 +45,7 @@ const char *catalog_signature(void){
     static const struct { const char *name, *signature; } signatures[] = {
         {"display.fill_rect", "display.fill_rect(x,y,w,h,rgb)"},
         {"display.draw_string", "display.draw_string(x,y,text[,rgb[,font]])"},
-        {"keys.keydown", "keys.keydown(key)"}, {"time.sleep_ms", "time.sleep_ms(ms)"},
+        {"keys.keydown", "keys.keydown(key)"}, {"keys.active", "keys.active()"}, {"time.sleep_ms", "time.sleep_ms(ms)"},
         {"time.ticks_diff", "time.ticks_diff(a, b)"},
         {"numpy.array", "numpy.array(value[, dtype])"}, {"numpy.dot", "numpy.dot(a, b)"},
         {"numpy.matmul", "numpy.matmul(a, b)"}, {"numpy.transpose", "numpy.transpose(a)"},

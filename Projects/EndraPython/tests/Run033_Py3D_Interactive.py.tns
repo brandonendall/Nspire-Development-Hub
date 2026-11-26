@@ -1,0 +1,52 @@
+"""Full-screen, keypad-controlled scene with overlapping solid objects."""
+import gint
+import keys
+import time
+from py3d import Renderer, compose, cube, rotation_x, rotation_y
+
+renderer = Renderer(background=0x0843, depth=True)
+vertices, faces = cube()
+positions = ((-1.55, 0.58, 6.6), (1.45, -0.43, 6.5),
+             (0.05, -0.20, 5.4), (0.48, 2.03, 7.7))
+
+pitch, yaw, zoom = 0.40, 0.56, 0.0
+spin = True
+enter_held = gint.keydown(gint.KEY_EXE)
+frames = 0
+start = time.ticks_ms()
+try:
+  while frames < 1200:
+    frame_start = time.ticks_ms()
+    if gint.keydown(gint.KEY_EXIT):
+      break
+    held = keys.active()
+    enter = gint.KEY_EXE in held
+    if enter and not enter_held:
+      spin = not spin
+    enter_held = enter
+    pitch += 0.07 * ((gint.KEY_UP in held) - (gint.KEY_DOWN in held))
+    yaw += 0.08 * ((gint.KEY_RIGHT in held) - (gint.KEY_LEFT in held))
+    zoom += 0.10 * ((gint.KEY_SUB in held) - (gint.KEY_ADD in held))
+    zoom = max(-1.25, min(5.0, zoom))
+    if spin:
+      yaw += 0.025
+    model = compose(rotation_x(pitch), rotation_y(yaw))
+    renderer.clear()
+    for x, y, z in positions:
+      renderer.draw_mesh(vertices, faces, model, (x, y, z + zoom))
+    gint.dtext(8, 208, 0xce79, "Arrows Rotate   +/- Zoom")
+    gint.dtext(8, 222, 0xce79,
+               "Enter Pause   Esc Exit" if spin else "Enter Spin    Esc Exit")
+    renderer.present()
+    frames += 1
+    spare = 33 - time.ticks_diff(time.ticks_ms(), frame_start)
+    if spare > 0:
+      time.sleep_ms(spare)
+except KeyboardInterrupt:
+  pass
+finally:
+  renderer.close()
+
+elapsed = time.ticks_diff(time.ticks_ms(), start)
+print("Interactive 3D complete")
+print(frames, "frames in", elapsed, "ms")

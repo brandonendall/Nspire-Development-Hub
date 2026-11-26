@@ -526,7 +526,7 @@ const mp_obj_module_t ep_display_module = {.base={&mp_type_module}, .globals=(mp
 MP_REGISTER_MODULE(MP_QSTR_display, ep_display_module);
 
 static const mp_rom_map_elem_t keys_table[] = {
-    NAME(keys), FUNC(_active, script_keys_obj), FUNC(keydown, keydown_obj), INTEGER(KEY_LEFT, LEFT), INTEGER(KEY_RIGHT, RIGHT),
+    NAME(keys), FUNC(active, script_keys_obj), FUNC(_active, script_keys_obj), FUNC(keydown, keydown_obj), INTEGER(KEY_LEFT, LEFT), INTEGER(KEY_RIGHT, RIGHT),
     INTEGER(KEY_UP, UP), INTEGER(KEY_DOWN, DOWN), INTEGER(KEY_OK, ENTER),
     INTEGER(KEY_EXE, ENTER), INTEGER(KEY_MENU, MENU), INTEGER(KEY_ESC, ESC), INTEGER(KEY_EXIT, ESC),
 };
