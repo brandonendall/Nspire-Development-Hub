@@ -341,16 +341,31 @@ static void workbench_checks(const char *root, void *stack) {
         "class Widget:\n    pass\nprint(original())\n");
     app_init(root,stack);
     choose_command(OPEN_SHELL);
-    type(":cd Workbench Test");app_key(ENTER);
-    type(":pwd");app_key(ENTER);assert(output_has("/Workbench Test"));
-    type(":ls");app_key(ENTER);assert(output_has("Demo Script.py.tns"));
-    type(":cat Demo Script.py.tns");app_key(ENTER);assert(output_has("class Widget:"));
-    type(":edit missing.py.tns");app_key(ENTER);assert(app.page==SHELL && output_has("Unreadable"));
-    type(":clear");app_key(ENTER);assert(app.rows==1 && !app.output[0][0]);
-    type(":python Demo Script.py.tns");app_key(ENTER);
-    assert(app.page==OUTPUT && !app.error && output_has("marker"));
-    app_key(ESC);
-    assert(!strcmp(app.root,folder));
+    const char *former_commands[] = {":help", ":ls", ":pwd", ":cd Workbench Test",
+        ":cat Demo Script.py.tns", ":edit Demo Script.py.tns",
+        ":python Demo Script.py.tns", ":clear"};
+    for (size_t i=0;i<sizeof former_commands/sizeof former_commands[0];i++) {
+        int rows=app.rows;
+        type(former_commands[i]);app_key(ENTER);
+        assert(app.page==SHELL && app.rows>rows && app.rows<OUT_LINES);
+        int syntax_error=0;
+        for (int row=rows;row<app.rows;row++)
+            syntax_error |= strstr(app.output[(app.first+row)%OUT_LINES],"SyntaxError")!=NULL;
+        assert(syntax_error);
+    }
+    type("import os");app_key(ENTER);
+    type("os.getcwd() == '/'");app_key(ENTER);
+    assert(app.page==SHELL && output_has("True"));
+    type("print('Root listing:', 'Workbench Test' in os.listdir())");app_key(ENTER);
+    assert(output_has("Root listing: True"));
+    type("print('a:b', 20+22)");app_key(ENTER);
+    assert(output_has("a:b 42"));
+    app_key(UP);
+    assert(!strcmp(app.command,"print('a:b', 20+22)"));
+    app_key(ESC);assert(app.page==FILES);
+    assert(browse_folder(folder));
+    app_key(ENTER);assert(app.page==OUTPUT && !app.error && output_has("marker"));
+    app_key(ESC);assert(app.page==EDITOR && !strcmp(app.root,folder));
     choose_command(SHOW_OUTLINE);assert(app.outline_line==5);preview("outline");
     app_key(DOWN);assert(app.outline_line==7);app_key(ENTER);
     assert(line_number(app.doc.text,app.doc.cursor)==6);
@@ -367,16 +382,14 @@ static void workbench_checks(const char *root, void *stack) {
     app_key(ESC);app_key(ESC);
     assert(app.page==FILES);app_key(ENTER);
     assert(app.page==OUTPUT && output_has("updated"));
-    app_key(ESC);app_key(ESC);choose_command(OPEN_SHELL);
-    assert(app.page==SHELL);
-    type(":edit Demo Script.py.tns");app_key(ENTER);assert(app.page==EDITOR);
+    app_key(ESC);app_key(ESC);app_key(RIGHT);assert(app.page==EDITOR);
     choose_command(OPEN_CATALOG);type("json");app_key(ENTER);type("load");
     assert(!strcmp(catalog_signature(),"json.load(file)"));
     preview("catalog_signatures");
     app_key(INDENT);assert(app.page==EDITOR && !strncmp(app.doc.text,"import json",11));
     snprintf(path,sizeof path,"%s/Demo Script.py.tns",folder);assert(!unlink(path));
     assert(!rmdir(folder));
-    puts("PASS: direct run and edit, outline, line jump, undoable replace, terminal commands and catalog imports.");
+    puts("PASS: direct run and edit, outline, line jump, undoable replace, Python-only REPL and catalog imports.");
 }
 
 static void numerics_checks(const char *root, void *stack) {

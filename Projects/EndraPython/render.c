@@ -221,9 +221,6 @@ static void console(void){
     fitted(34,34,BODY,WHITE,input?"Python input":shell?"MicroPython 1.24.1":app.doc.name,309);
     box(0,52,320,1,LINE);
     int visible=shell?10:12,last=app.rows-app.offset,first=last>visible?last-visible:0;
-    if(shell && !input && app.rows==1 && !app.output[app.first][0]){
-        text(10,62,CODE,MUTED,":help for terminal commands",312);
-    }
     for(int i=first;i<last;i++){
         const char *line=app.output[(app.first+i)%OUT_LINES];
         int c=!strncmp(line,">>>",3)?AQUA:(!shell&&app.error&&i==last-2)?ERROR:WHITE;
@@ -308,8 +305,8 @@ static const HelpTopic topics[HELP_COUNT]={
     [HELP_EDITS]={"Selection and clipboard",{{"Shift + arrows","Extend selection"},
         {"Ctrl+A","Select all"},{"Ctrl+C","Copy"},{"Ctrl+X","Cut"},{"Ctrl+V","Paste"},
         {"Ctrl+Z","Undo"},{"Ctrl+Y","Redo"}}},
-    [HELP_SHELL]={"Python shell",{{"Enter","Run the command"},{"Up","Recall last command"},
-        {"Left / Right","Scroll earlier / later output"},{":help","List terminal commands"},
+    [HELP_SHELL]={"Python shell",{{"Enter","Evaluate Python"},{"Up","Recall last command"},
+        {"Left / Right","Scroll earlier / later output"},{"help()","Show Python help"},
         {"? key","Insert a symbol"},{"Menu > Catalog","Browse Python modules"},{"Esc","Return to Files"}}},
     [HELP_OUTPUT]={"Script output",{{"Ctrl+R","Run the script again"},{"Up / Down","Scroll output"},
         {"Enter on error","Go to the failing line"},{"Hold Esc during run","Interrupt Python"},

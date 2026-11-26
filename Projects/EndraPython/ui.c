@@ -113,32 +113,10 @@ static void shell_submit(void) {
     app.offset = 0;
     strcpy(app.history, app.command);
     app.command[0] = 0;
-    if (!strcmp(app.history, ":clear")) {
-        reset_output();
-        return;
-    }
     console_write(">>> ", 4);
     console_write(app.history, strlen(app.history));
     console_write("\n", 1);
-    char path[PATH_CAP];
-    int action = terminal_command(app.history, path);
-    if (!action) runtime_exec("<shell>", app.history, 1);
-    if (action < 2) return;
-
-    char *name = strrchr(path, '/');
-    *name++ = 0;
-    const char *previous = app.root;
-    app.root = path;
-    int loaded = load_script(name);
-    app.root = previous;
-    if (!loaded || (strcmp(path, previous) && !browse_folder(path))) {
-        console_write(app.status, strlen(app.status));
-        console_write("\n", 1);
-        return;
-    }
-    runtime_end();
-    app.page = EDITOR;
-    if (action == 3) run();
+    runtime_exec("<shell>", app.history, 1);
 }
 
 void app_key(int k) {

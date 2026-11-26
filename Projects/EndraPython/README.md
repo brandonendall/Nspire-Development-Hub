@@ -1,4 +1,4 @@
-# EndraPython Run033
+# EndraPython Run034
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -38,7 +38,7 @@ At startup the script’s folder is its virtual `/`. `os.getcwd()`, `os.listdir(
 
 Open the editor’s **Menu** to choose **Go to line**, **Outline**, or **Replace all**. The outline lists function and class declarations. Highlight a declaration and press Enter to jump there. Replace all uses literal, case-sensitive matching. Leave the replacement blank to delete matches. Ctrl+Z undoes the entire operation. Ctrl+S saves your changes.
 
-In the Python shell, type `:help` to list commands. `:ls [path]` lists files, `:pwd` prints the working directory, `:cd path` changes it, and `:cat file` displays up to 4 KiB. Enter the rest of the line as the path, including spaces. `:edit file` opens a script and `:python file` runs it. These two commands leave the shell session. `:clear` clears the display. Terminal paths are relative to the active project root or working directory, like Python file operations.
+The Python shell evaluates Python expressions and statements. Use `help()` for Python help, `help("modules")` for available modules, and the Files view to open or run scripts.
 
 The command catalog shows signatures for common module calls. Press Tab in a module’s group to insert its import statement at the cursor.
 
@@ -95,7 +95,7 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
 
-| Area | Run033 scope |
+| Area | Run034 scope |
 | --- | --- |
 | Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
