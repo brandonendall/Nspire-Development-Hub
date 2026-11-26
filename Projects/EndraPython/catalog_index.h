@@ -443,6 +443,9 @@ static const CatalogEntry catalog_members[] = {
     {"KMOD_CTRL", 0},
     {"KMOD_NONE", 0},
     {"KMOD_SHIFT", 0},
+    {"math", 0},
+    {"math.Vector2", 1},
+    {"math.Vector3", 1},
     {"NOEVENT", 0},
     {"NUMEVENTS", 0},
     {"QUIT", 0},
@@ -474,6 +477,8 @@ static const CatalogEntry catalog_members[] = {
     {"transform.scale_by", 1},
     {"transform.smoothscale", 1},
     {"USEREVENT", 0},
+    {"Vector2", 1},
+    {"Vector3", 1},
     /* random */
     {"choice", 1},
     {"getrandbits", 1},
@@ -523,9 +528,9 @@ static const struct { int offset, count; } catalog_ranges[] = {
     {228, 27}, /* math */
     {255, 41}, /* numpy */
     {296, 4}, /* os */
-    {300, 130}, /* pygame */
-    {430, 7}, /* random */
-    {437, 5}, /* struct */
-    {442, 9}, /* sys */
-    {451, 4}, /* time */
+    {300, 135}, /* pygame */
+    {435, 7}, /* random */
+    {442, 5}, /* struct */
+    {447, 9}, /* sys */
+    {456, 4}, /* time */
 };

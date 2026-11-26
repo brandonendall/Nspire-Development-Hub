@@ -665,6 +665,47 @@ static void pygame_draw_checks(const char *root, void *stack) {
     puts("PASS: Pygame primitives, clipped drawing, RGB565 transforms and color keys.");
 }
 
+static void pygame_vector_checks(const char *root, void *stack) {
+    const char *name="Run025_Pygame_Vectors.py.tns";
+    char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
+    FILE *fixture=fopen("tests/Run025_Pygame_Vectors.py.tns","rb");
+    assert(fixture);
+    size_t len=fread(source,1,sizeof source,fixture);
+    assert(len<sizeof source && !ferror(fixture) && !fclose(fixture));
+    source[len]=0;
+    write_file(root,name,source);
+    app_init(root,stack);
+    assert(load_script(name));
+    app.page=EDITOR;
+    choose_command(OPEN_CATALOG);type("pygame");app_key(ENTER);type("math.Vector3");
+    assert(catalog_signature() && !strcmp(catalog_signature(),"pygame.math.Vector3([x,y,z] or sequence)"));
+    app_key(ESC);app_key(ESC);
+    frames=0;
+    app_key(RUN);
+    if(app.error)for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[i]);
+    assert(app.page==OUTPUT && !app.error && frames==1 && output_has("Pygame vector checks passed"));
+    assert(script_pixels[0]==script_pixels[EP_WIDTH*EP_HEIGHT-1]);
+    save_script_pixels("build/pygame_vectors.ppm");
+    runtime_start(stack);
+    assert(runtime_exec("<pygame-vectors>",
+        "from pygame.math import Vector2, Vector3\n"
+        "a=Vector2(2,3); b=Vector2(a); b.x=5; assert a.x==2 and b[0]==5\n"
+        "b += a; b /= 2; assert tuple(b)==(3.5,3.0)\n"
+        "a.rotate_ip(90); assert abs(a.x+3)<0.001 and abs(a.y-2)<0.001\n"
+        "v=Vector3([1,2,3]); v.update(0,3,4); v.scale_to_length(10)\n"
+        "assert tuple(v)==(0,6,8) and v.magnitude()==10\n"
+        "try: Vector3().normalize()\n"
+        "except ValueError: pass\n"
+        "else: raise AssertionError('normalized a zero vector')\n"
+        "try: Vector2(1,2)/0\n"
+        "except ZeroDivisionError: pass\n"
+        "else: raise AssertionError('division by zero accepted')\n",0));
+    runtime_end();
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+    puts("PASS: Pygame vector imports, arithmetic, normalization, rotation, cross product and errors.");
+}
+
 static void pygame_event_checks(const char *root, void *stack) {
     const char *name="Run024_Pygame_Events.py.tns";
     char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
@@ -981,6 +1022,7 @@ int main(void){
     pygame_checks(scripts,&stack);
     pygame_draw_checks(scripts,&stack);
     pygame_event_checks(scripts,&stack);
+    pygame_vector_checks(scripts,&stack);
     assets_checks(scripts,&stack);
     indentation_checks(scripts,&stack);
     graphics_checks(scripts,&stack);
@@ -996,5 +1038,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 39 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 40 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }
