@@ -665,10 +665,11 @@ static void pygame_draw_checks(const char *root, void *stack) {
     puts("PASS: Pygame primitives, clipped drawing, RGB565 transforms and color keys.");
 }
 
-static void py3d_checks(const char *root, void *stack) {
-    const char *name="Run026_Py3D_Cube.py.tns";
+static void py3d_fixture(const char *root, void *stack, const char *name,
+                         const char *frame_path, const char *pass, int frame_count) {
     char source[SOURCE_CAP+1], path[PATH_CAP+NAME_CAP];
-    FILE *fixture=fopen("tests/Run026_Py3D_Cube.py.tns","rb");
+    snprintf(path,sizeof path,"tests/%s",name);
+    FILE *fixture=fopen(path,"rb");
     assert(fixture);
     size_t len=fread(source,1,sizeof source,fixture);
     assert(len<sizeof source && !ferror(fixture) && !fclose(fixture));
@@ -683,10 +684,17 @@ static void py3d_checks(const char *root, void *stack) {
     frames=0;
     app_key(RUN);
     if(app.error)for(int i=0;i<app.rows;i++)fprintf(stderr,"%s\n",app.output[i]);
-    assert(app.page==OUTPUT && !app.error && frames==72 && output_has("py3d cube checks passed"));
+    assert(app.page==OUTPUT && !app.error && frames==frame_count && output_has(pass));
     assert(script_pixels[0]==0x0843 && script_pixels[EP_WIDTH*EP_HEIGHT-1]==0x0843);
     assert(script_pixels[120*EP_WIDTH+160]!=0x0843);
-    save_script_pixels("build/py3d_cube.ppm");
+    save_script_pixels(frame_path);
+    snprintf(path,sizeof path,"%s/%s",root,name);
+    assert(!unlink(path));
+}
+
+static void py3d_checks(const char *root, void *stack) {
+    py3d_fixture(root,stack,"Run026_Py3D_Cube.py.tns","build/py3d_cube.ppm","py3d cube checks passed",72);
+    py3d_fixture(root,stack,"Run027_Py3D_Profile.py.tns","build/py3d_profile.ppm","Render and present:",72);
     runtime_start(stack);
     assert(runtime_exec("<pygame-imports>",
         "import pygame as p\n"
@@ -701,8 +709,6 @@ static void py3d_checks(const char *root, void *stack) {
         "event.post(event.Event(p.USEREVENT)); assert p.event.poll().type==p.USEREVENT\n"
         "p.quit(); assert d.get_surface() is None and key.get_repeat()==(0,0)\n",0));
     runtime_end();
-    snprintf(path,sizeof path,"%s/%s",root,name);
-    assert(!unlink(path));
     puts("PASS: py3d cube, projection, culling, and importable Pygame APIs.");
 }
 
@@ -1080,5 +1086,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 41 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 42 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }

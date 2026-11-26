@@ -211,12 +211,12 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
         value = transform(vertex, model)
         transformed.append((value[0] + px, value[1] + py, value[2] + pz))
 
+    projected = [None] * len(transformed)
     light = normalize(light_dir)
     triangles = []
     for face in faces:
-        a = transformed[face[0]]
-        b = transformed[face[1]]
-        c = transformed[face[2]]
+        ia, ib, ic = face[:3]
+        a, b, c = transformed[ia], transformed[ib], transformed[ic]
 
         # Milestone 1 keeps clipping cheap: triangles crossing the near plane
         # are skipped rather than split. This avoids bad perspective divides.
@@ -224,20 +224,19 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
             continue
 
         normal = cross(sub(b, a), sub(c, a))
-        normal_length = length(normal)
-        if normal_length == 0:
-            continue
-
         # The camera is at the origin looking along +Z. Outward-wound faces
         # point toward the camera when normal dot vertex is negative.
         if cull and dot(normal, a) >= 0:
             continue
 
-        pa = project(a, focal, center, near)
-        pb = project(b, focal, center, near)
-        pc = project(c, focal, center, near)
-        if pa is None or pb is None or pc is None:
+        normal_length = length(normal)
+        if normal_length == 0:
             continue
+
+        for index in (ia, ib, ic):
+            if projected[index] is None:
+                projected[index] = project(transformed[index], focal, center, near)
+        pa, pb, pc = projected[ia], projected[ib], projected[ic]
 
         base_color = face[3] if len(face) > 3 else default_color
         unit_normal = scale(normal, 1.0 / normal_length)

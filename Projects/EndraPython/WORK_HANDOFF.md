@@ -1,11 +1,5 @@
-# Run026 handheld check
+# Run027 handheld check
 
-Run025 passed on the CX II CAS and remains the rollback. Run026 adds py3d and Pygame submodule imports.
+Keep Run025 as the confirmed fallback. Run026 is the original 3D build. Run027 optimizes triangle preparation while keeping the same scene and controls.
 
-```sh
-clear
-push /storage/emulated/0/Download/EndraPython_Run026.tns /upload
-push /storage/emulated/0/Download/Run026_Py3D_Cube.py.tns /upload
-```
-
-Run the script in EndraPython. A shaded cube should rotate full-screen. Try holding Left or Right to change its rotation. Let the demo finish all 72 frames and check for `py3d cube checks passed`, elapsed milliseconds, and free heap. Esc exits the demo or interrupts a running script.
+Run `Run027_Py3D_Profile.py.tns` in both Run026 and Run027. Allow all 72 frames to finish without holding keys for a comparable measurement. Record `Render and present`, total elapsed milliseconds, and free heap. The test should print `py3d cube checks passed` in both builds.

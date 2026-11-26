@@ -1,0 +1,37 @@
+"""Render a shaded cube and report elapsed time and free Python heap."""
+import gc
+import gint
+import time
+from py3d import Renderer, compose, cube, project, rotation_x, rotation_y
+
+assert project((0, 0, 3))[:2] == (160, 120)
+assert project((0, 0, 0)) is None
+vertices, faces = cube()
+renderer = Renderer(background=0x0843)
+yaw = 0.35
+render_ms = 0
+start = time.ticks_ms()
+for frame in range(72):
+    if gint.keydown(gint.KEY_EXIT):
+        break
+    yaw += 0.065
+    if gint.keydown(gint.KEY_RIGHT):
+        yaw += 0.10
+    if gint.keydown(gint.KEY_LEFT):
+        yaw -= 0.10
+    frame_start = time.ticks_ms()
+    renderer.clear()
+    triangles = renderer.draw_mesh(vertices, faces,
+        model=compose(rotation_x(0.42 + frame * 0.028), rotation_y(yaw)),
+        position=(0, 0, 5))
+    assert 2 <= triangles <= 6 and triangles % 2 == 0
+    renderer.present()
+    render_ms += time.ticks_diff(time.ticks_ms(), frame_start)
+    time.sleep_ms(25)
+else:
+    elapsed = time.ticks_diff(time.ticks_ms(), start)
+    gc.collect()
+    print("py3d cube checks passed")
+    print("72 frames in", elapsed, "ms")
+    print("Render and present:", render_ms, "ms")
+    print("Free heap:", gc.mem_free(), "bytes")
