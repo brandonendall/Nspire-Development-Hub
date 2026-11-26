@@ -10,7 +10,22 @@ Run033. Adds a full-screen interactive scene with four overlapping cubes, depth 
 
 Test scripts and SHA-256. Run031_Py3D_Modes.py.tns `1dad5dd8a592f97781b1f05f6ed88b088772db17151f5470b48d9328f0771c09`. Run033_Py3D_Interactive.py.tns `b8780ca80c1d793c09b021072298657a9edfaf39e2678f9c7c2e9652f0afdacd`.
 
-Handheld checks pending. Run030 is the verified rollback. Use the same Run031 script on Run031 and Run032 for the timing comparison, then use the Run033 interactive script on Run033. Compare preparation and draw times before claiming a performance gain. Hardware controls and sustained depth rendering remain to be checked.
+Hardware validation, 2026-11-26. The TI-Nspire CX II CAS printed `py3d mode benchmark passed` in both IDE builds using `Run031_Py3D_Modes.py.tns`. Measured sums exclude work outside the three timed stages. Each row covers 24 frames.
+
+| Build | Cubes | Mode | Prepare (ms) | Draw (ms) | LCD (ms) | Sum (ms) |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| Run031 | 1 | Painter | 144 | 129 | 130 | 403 |
+| Run031 | 1 | Depth | 164 | 236 | 130 | 530 |
+| Run031 | 4 | Painter | 507 | 245 | 138 | 890 |
+| Run031 | 4 | Depth | 587 | 441 | 134 | 1162 |
+| Run032 | 1 | Painter | 116 | 128 | 133 | 377 |
+| Run032 | 1 | Depth | 119 | 240 | 132 | 491 |
+| Run032 | 4 | Painter | 394 | 249 | 131 | 774 |
+| Run032 | 4 | Depth | 407 | 449 | 126 | 982 |
+
+Four-cube preparation time dropped 22% in painter mode and 31% in depth mode. Four-cube throughput estimated from the stage sums went from 27.0 to 31.0 FPS for painter and from 20.7 to 24.4 FPS for depth. Draw time with four cubes changed from 245 to 249 ms for painter and 441 to 449 ms for depth, consistent with Run032 targeting preparation. Each build has one captured sample.
+
+Brandon confirmed the Run033 demo controls worked, including the arrows, Enter pause, and zoom in and out. The output screenshot reports `Interactive 3D complete` and 1200 frames in 48489 ms, or 24.75 FPS over the full interactive run including frame pacing. It reached the automatic 1200-frame limit and returned to the console. Brandon reported completing all requested checks. Run033 is the latest hardware-tested build and Run030 remains the earlier fallback. Next roadmap stage is to test existing PythonUltra scripts for compatibility gaps.
 
 ## Runs029 and 030, 2026-11-26
 
