@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Interstellar Pilot R02, 2026-11-26
+
+Brandon requested a third-person view. `games/Interstellar_Pilot_R02.py.tns` adds an original low-poly ship seen from behind, smoothly banks and lifts with the arrow keys, and displays longer warm-colored exhaust while boosting. The ship and gate use the existing Run033 depth renderer. The six-gate R01 route and controls carry forward. This release focuses on the chase camera. Run033 host checks and game simulations passed, including clearing all six gates with full shields, loss after three misses, and Esc. The actual host framebuffer previews show level flight, boost, and banking. Hardware playtest pending. R01 remains the hardware-tested game fallback. SHA-256 `bfd9419750fffe8b61a1abf061ca4909e0e2d99ceb2d8bb1ab2cc2e816ec96be`.
+
 ## Interstellar Pilot R01, 2026-11-26
 
 Brandon set the direction to new Nspire programs and requested an interstellar pilot game. The standalone `games/Interstellar_Pilot_R01.py.tns` uses hardware-tested EndraPython Run033. Arrows steer, Enter boosts when held, and Esc ends the flight. The goal is to clear six 3D jump gates before spending three shields. A miss retries the current gate. This game has no external assets. The exact delivered script passed three host runs with the Run033 MicroPython build: all six gates with full shields, loss after three misses, and Esc back to the console. Brandon confirmed a perfect run on the TI-Nspire CX II CAS. The completion screen shows Flight trial complete, all six gates cleared, and all three shields remaining. Interstellar Pilot R01 is hardware-verified on the current Run033 playtest setup. SHA-256 `bcac12a4f26e2d853a6b1f264ed0a06014d635703bdee2904343a668df477a9e`.

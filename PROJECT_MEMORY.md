@@ -1,3 +1,5 @@
+> **Interstellar Pilot R02, 2026-11-26.** Adds a third-person chase view with a visible ship, steering bank, and boost exhaust on Run033. Host tests passed. Calculator playtest pending. R01 is the hardware-tested game fallback. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
+
 > **Interstellar Pilot R01, 2026-11-26.** New standalone 3D cockpit game for EndraPython Run033. Six-gate win, shield exhaustion, and Esc return passed in the host runtime. Brandon cleared all six gates with three shields intact on the CX II CAS. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
 
 > **EndraPython Runs031–033, 2026-11-26.** Run031 compares painter and depth mode. Run032 reduces mesh preparation work and matched all six comparison frames. Run033 adds a full-screen interactive depth demo. All three builds passed hardware testing. Run032 cut four-cube preparation time by 22% in painter mode and 31% in depth mode. Run033 completed its 1,200-frame interactive demo at about 24.7 FPS with keypad controls confirmed. Run030 remains the earlier fallback. [Project memory](Projects/EndraPython/PROJECT_MEMORY.md).
