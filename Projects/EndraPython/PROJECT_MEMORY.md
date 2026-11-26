@@ -6,7 +6,7 @@ Run027. Caches shared vertex projection per mesh, culls before calculating norma
 
 Run028. Clips triangles crossing the near plane, triangulates the visible polygon, and retains painter sorting. Host coverage includes fully visible, fully hidden, and one- and two-vertex crossings. Source `9031739d5af9e91cfbe0ddcf00f7cbe3aca07f5d`. Native and host checks passed. [CI 45870523131](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45870523131) and [standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45870523131/artifacts/15142362561) match the local ARM Zehn build (231258 bytes, `sha256:3c2257222f4a77f3f5ff1e4bf67f4c1b2f1b9fa7f0821184b8d60044f993e824`). On the CX II CAS the Run028 smoke test printed `py3d clipping checks passed` and `Run complete`.
 
-Run028 is the latest handheld smoke-tested 3D baseline. The photos show script names. Run026 and Run027 used different scripts, so the 17 ms elapsed difference does not establish an optimization gain. Compare the identical Run027 profiler on both builds to measure it.
+Run028 is the latest handheld smoke-tested 3D baseline. Brandon then ran the same Run027 profiler on all three CX II CAS builds. In the supplied Run026, Run027, Run028 photo order, all 72-frame runs passed. Total / render and present / free heap: Run026 3183 ms / 1289 ms / 114880 bytes, Run027 3162 ms / 1275 ms / 114848 bytes, Run028 3187 ms / 1297 ms / 114304 bytes. Run027 saved 14 ms (~1.1%) of render and present time vs Run026. Run028 added 22 ms (~1.7%) and used 544 more bytes of heap vs Run027 on the cube workload. The timing differences are small and based on one comparison per build.
 
 ## Run026 py3d and Pygame submodules, 2026-11-26
 
