@@ -1,0 +1,25 @@
+"""Exercise a triangle crossing the camera's near plane."""
+import gint
+import time
+from py3d import Renderer, prepare_triangles
+
+face = ((0, 1, 2, 0xffe0),)
+mesh = ((-0.66, -0.45, 1.9), (0.66, -0.45, 1.9), (0, 0.58, 0.5))
+params = {"near": 1.0, "focal": 120, "cull": False}
+assert len(prepare_triangles(mesh, face, **params)) == 2
+assert len(prepare_triangles(mesh, face, position=(0, 0, 1), **params)) == 1
+assert not prepare_triangles(mesh, face, position=(0, 0, -2), **params)
+assert len(prepare_triangles(mesh, face, position=(0, 0, -1), **params)) == 0
+assert len(prepare_triangles((mesh[0], (0.66, -0.45, 0.6), mesh[2]), face, **params)) == 1
+renderer = Renderer(near=1.0, background=0x0843)
+for frame in range(72):
+    if gint.keydown(gint.KEY_EXIT):
+        break
+    offset = (abs(36 - frame) - 18) / 30
+    renderer.clear()
+    count = renderer.draw_mesh(mesh, face, position=(0, 0, offset), cull=False, ambient=1)
+    assert count == (1 if mesh[2][2] + offset >= 1.0 else 2)
+    renderer.present()
+    time.sleep_ms(25)
+else:
+    print("py3d clipping checks passed")

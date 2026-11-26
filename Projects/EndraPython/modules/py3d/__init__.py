@@ -166,6 +166,11 @@ def project(vertex, focal=None, center=None, near=0.1):
         focal = focal_length()
     if center is None:
         center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+    return _project_visible(vertex, focal, center)
+
+
+def _project_visible(vertex, focal, center):
+    x, y, z = vertex
     return (
         int(center[0] + x * focal / z),
         int(center[1] - y * focal / z),
@@ -188,6 +193,24 @@ def shade_rgb565(color, amount):
     return (r << 11) | (g << 5) | b
 
 
+def _clip_near(a, b, c, near):
+    polygon = []
+    previous = c
+    for current in (a, b, c):
+        before, after = previous[2], current[2]
+        if min(before, after) < near < max(before, after):
+            t = (near - before) / (after - before)
+            polygon.append((
+                previous[0] + (current[0] - previous[0]) * t,
+                previous[1] + (current[1] - previous[1]) * t,
+                near,
+            ))
+        if after >= near:
+            polygon.append(current)
+        previous = current
+    return polygon
+
+
 def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
                       focal=None, center=None, near=0.1, cull=True,
                       ambient=0.28, light_dir=(-0.35, -0.45, -1.0),
@@ -198,6 +221,8 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
     value is painter-sorted from far to near and can be rendered directly with
     ``gint.dtriangle``.
     """
+    if not near > 0:
+        raise ValueError("near plane must be positive")
     if model is None:
         model = identity()
     if focal is None:
@@ -218,9 +243,8 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
         ia, ib, ic = face[:3]
         a, b, c = transformed[ia], transformed[ib], transformed[ic]
 
-        # Milestone 1 keeps clipping cheap: triangles crossing the near plane
-        # are skipped rather than split. This avoids bad perspective divides.
-        if a[2] <= near or b[2] <= near or c[2] <= near:
+        min_z = min(a[2], b[2], c[2])
+        if max(a[2], b[2], c[2]) < near:
             continue
 
         normal = cross(sub(b, a), sub(c, a))
@@ -233,10 +257,13 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
         if normal_length == 0:
             continue
 
-        for index in (ia, ib, ic):
-            if projected[index] is None:
-                projected[index] = project(transformed[index], focal, center, near)
-        pa, pb, pc = projected[ia], projected[ib], projected[ic]
+        if min_z < near:
+            points = [_project_visible(v, focal, center) for v in _clip_near(a, b, c, near)]
+        else:
+            for index in (ia, ib, ic):
+                if projected[index] is None:
+                    projected[index] = _project_visible(transformed[index], focal, center)
+            points = (projected[ia], projected[ib], projected[ic])
 
         base_color = face[3] if len(face) > 3 else default_color
         unit_normal = scale(normal, 1.0 / normal_length)
@@ -245,12 +272,14 @@ def prepare_triangles(vertices, faces, model=None, position=(0.0, 0.0, 0.0),
             diffuse = 0.0
         intensity = ambient + (1.0 - ambient) * diffuse
         color = shade_rgb565(base_color, intensity)
-        depth = (a[2] + b[2] + c[2]) / 3.0
-
-        triangles.append((
-            depth,
-            pa[0], pa[1], pb[0], pb[1], pc[0], pc[1], color,
-        ))
+        pa = points[0]
+        for i in range(1, len(points) - 1):
+            pb, pc = points[i], points[i + 1]
+            depth = (pa[2] + pb[2] + pc[2]) / 3.0
+            triangles.append((
+                depth,
+                pa[0], pa[1], pb[0], pb[1], pc[0], pc[1], color,
+            ))
 
     triangles.sort(key=lambda triangle: triangle[0], reverse=True)
     return triangles

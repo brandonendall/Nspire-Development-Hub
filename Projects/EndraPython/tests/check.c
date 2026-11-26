@@ -695,6 +695,7 @@ static void py3d_fixture(const char *root, void *stack, const char *name,
 static void py3d_checks(const char *root, void *stack) {
     py3d_fixture(root,stack,"Run026_Py3D_Cube.py.tns","build/py3d_cube.ppm","py3d cube checks passed",72);
     py3d_fixture(root,stack,"Run027_Py3D_Profile.py.tns","build/py3d_profile.ppm","Render and present:",72);
+    py3d_fixture(root,stack,"Run028_Py3D_Clipping.py.tns","build/py3d_clipping.ppm","py3d clipping checks passed",72);
     runtime_start(stack);
     assert(runtime_exec("<pygame-imports>",
         "import pygame as p\n"
@@ -1086,5 +1087,5 @@ int main(void){
     char hello[256];snprintf(hello,sizeof hello,"%s/%s",scripts,names[0]);assert(!unlink(hello));
     assert(!rmdir(scripts)&&!rmdir(root));
     test_save_folder(&stack);
-    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 42 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
+    puts("PASS: script lifecycle, edit/run, console, syntax locations, REPL, modules, heap exhaustion, interrupt, 24 reruns, storage failures, file boundaries, 100-line navigation and 43 framebuffer previews, two-space stops, contextual help, command catalog and input, punctuation picker, UTF-16/UTF-8, nested browse/edit/run, clipboard, find, undo/redo, error jumps and module discovery.");
 }
