@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Run025 Pygame vectors, 2026-11-26
+
+Run025 ports the PythonUltra calculator subset of Pygame Vector2 and Vector3 through pygame and pygame.math. Host tests passed imports, arithmetic, copies, normalization, rotation, cross products, errors and 40 framebuffer previews. ARM Zehn build 227398 bytes, SHA-256 `deb5f06c5f405c7d37b11d7b71406191f8c6b00da53bf0d8d84f131ae1b528d2`. Source `0b5f3b4bd332a3d3a1d6810334a6ec340b41954f` on `feature/endrapython-run001`. [CI](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45868480121) passed and the [standalone artifact](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45868480121/artifacts/15141361716) matches the local SHA-256. Handheld check pending. Run `Run025_Pygame_Vectors.py.tns` and confirm `Pygame vector checks passed`. Run024 is the confirmed rollback. Next: remaining Pygame compatibility before py3d.
+
 ## Run024 Pygame input and events, 2026-11-25
 
 Run024 adds Pygame mapped keypad state, letters, digits and modifiers, key names, configurable repeat, and event waiting, peeking, filtering and custom IDs. Key events expose `key`, `mod`, `unicode`, `scancode`, and `repeat`. The event queue samples the existing native keypad snapshot and keeps the legacy Enter alias for held `K_SPACE`, while physical Space has its own event. The full-screen demo checks Right press/held/release, A press/release, custom events and an idle timeout.
