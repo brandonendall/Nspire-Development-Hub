@@ -1,5 +1,9 @@
 # EndraPython project memory
 
+## Interstellar Pilot R01, 2026-11-26
+
+Brandon set the direction to new Nspire programs and requested an interstellar pilot game. The standalone `games/Interstellar_Pilot_R01.py.tns` uses hardware-tested EndraPython Run033. Arrows steer, Enter boosts when held, and Esc ends the flight. The goal is to clear six 3D jump gates before spending three shields. A miss retries the current gate. This game has no external assets. The exact delivered script passed three host runs with the Run033 MicroPython build: all six gates with full shields, loss after three misses, and Esc back to the console. Calculator playtest pending. SHA-256 `bcac12a4f26e2d853a6b1f264ed0a06014d635703bdee2904343a668df477a9e`.
+
 ## Runs031–033, 2026-11-26
 
 Run031. Adds a two-mode hardware benchmark for the same one- and four-cube scenes. Each of four rows reports the measured preparation, clear/raster, and screen update totals for 24 frames. The benchmark prints the IDE version from display.BUILD_RUN. The host paired benchmark rendered 96 frames and both modes passed. Source `899ca2a450954c01560050ee33975c9bc7f48cc4`. Local ARM and host checks passed. [CI 45876735615](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45876735615) passed and the [standalone TNS](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45876735615/artifacts/15144894065) matches the local build (233028 bytes, SHA-256 `801cb630016c79efb08c927605ba569552b9571d7fa83cb3ca279e4dc1d10441`). [ZIP with tests](https://github.com/brandonendall/Nspire-Development-Hub/actions/runs/45876735615/artifacts/15145283730).

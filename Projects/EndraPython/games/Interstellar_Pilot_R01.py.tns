@@ -1,0 +1,130 @@
+"""Interstellar Pilot. A six-gate flight trial for EndraPython."""
+import keys
+import gint
+import time
+from py3d import Renderer, cube
+
+ROUTE = ((0.0, 0.0), (1.8, 1.1), (-1.7, 1.4),
+         (-2.0, -1.2), (1.6, -1.5), (0.1, 1.7))
+OPEN_X, OPEN_Y = 0.94, 0.73
+GATE_START, GATE_CROSS = 17.0, 2.6
+BG, TEXT, FRAME = 0x0863, 0xd69d, 0x32bc
+LOCK, CAUTION = 0x5fba, 0xfd46
+SPEED, BOOST_SPEED, STEER = 3.4, 6.3, 2.35
+
+
+def gate_mesh():
+  unit_vertices, unit_faces = cube(1)
+  bar = 0.13
+  bars = ((0, OPEN_Y + bar / 2, 2 * (OPEN_X + bar), bar),
+          (0, -OPEN_Y - bar / 2, 2 * (OPEN_X + bar), bar),
+          (-OPEN_X - bar / 2, 0, bar, 2 * OPEN_Y),
+          (OPEN_X + bar / 2, 0, bar, 2 * OPEN_Y))
+  vertices, faces = [], []
+  for x, y, width, height in bars:
+    base = len(vertices)
+    for ux, uy, uz in unit_vertices:
+      vertices.append((x + ux * width, y + uy * height, uz * 0.30))
+    for a, b, c, _ in unit_faces:
+      faces.append((a + base, b + base, c + base, FRAME))
+  return vertices, faces
+
+
+class Flight:
+  def __init__(self):
+    self.x, self.y, self.distance = 0.0, 0.0, GATE_START
+    self.cleared, self.shields = 0, 3
+    self.notice, self.notice_time = "", 0.0
+
+  def offset(self):
+    x, y = ROUTE[self.cleared]
+    return x - self.x, y - self.y
+
+  def step(self, seconds, steer_x, steer_y, boost):
+    self.x = max(-3.4, min(3.4, self.x + steer_x * STEER * seconds))
+    self.y = max(-2.6, min(2.6, self.y + steer_y * STEER * seconds))
+    self.notice_time = max(0.0, self.notice_time - seconds)
+    self.distance -= (BOOST_SPEED if boost else SPEED) * seconds
+    if self.distance > GATE_CROSS:
+      return
+    dx, dy = self.offset()
+    if abs(dx) < OPEN_X and abs(dy) < OPEN_Y:
+      self.cleared += 1
+      self.notice = "Jump locked"
+    else:
+      self.shields -= 1
+      self.notice = "Gate missed  /  Retry"
+    self.notice_time = 1.1
+    self.distance = GATE_START
+
+
+def cockpit(flight, boosting, aligned):
+  gint.dtext(10, 8, TEXT, "INTERSTELLAR PILOT")
+  gint.dtext(10, 24, TEXT, "GATE " + str(flight.cleared + 1) + "/6")
+  gint.dtext(224, 24, TEXT, "SHIELDS " + str(flight.shields))
+  color = LOCK if aligned else CAUTION
+  gint.dline(145, 120, 155, 120, color)
+  gint.dline(165, 120, 175, 120, color)
+  gint.dline(160, 105, 160, 115, color)
+  gint.dline(160, 125, 160, 135, color)
+  gint.dline(0, 158, 43, 195, FRAME)
+  gint.dline(319, 158, 276, 195, FRAME)
+  gint.drect(0, 196, 319, 239, BG)
+  gint.dline(0, 196, 319, 196, FRAME)
+  status = "Boost" if boosting else "Cruise"
+  gint.dtext(10, 201, TEXT, status + "   Range " + str(int(flight.distance)))
+  if flight.notice_time > 0:
+    gint.dtext(162, 201, LOCK if flight.notice == "Jump locked" else CAUTION,
+               flight.notice)
+  gint.dtext(10, 220, TEXT, "Arrows Steer   Enter Boost   Esc Exit")
+
+
+def play():
+  flight = Flight()
+  vertices, faces = gate_mesh()
+  stars = tuple(((i * 83 + 17) % 316 + 2, (i*i*13 + i*23) % 154 + 39)
+                for i in range(34))
+  renderer = Renderer(background=BG, depth=True)
+  previous = time.ticks_ms()
+  try:
+    while flight.shields and flight.cleared < len(ROUTE):
+      start = time.ticks_ms()
+      if keys.keydown(keys.KEY_EXIT):
+        break
+      held = keys.active()
+      boost = keys.KEY_EXE in held
+      steer_x = (keys.KEY_RIGHT in held) - (keys.KEY_LEFT in held)
+      steer_y = (keys.KEY_UP in held) - (keys.KEY_DOWN in held)
+      seconds = min(100, max(0, time.ticks_diff(start, previous))) / 1000
+      previous = start
+      flight.step(seconds, steer_x, steer_y, boost)
+      if not flight.shields or flight.cleared == len(ROUTE):
+        break
+
+      renderer.clear()
+      for x, y in stars:
+        gint.dpixel(x, y, 0x6390)
+      dx, dy = flight.offset()
+      renderer.draw_mesh(vertices, faces, position=(dx, dy, flight.distance),
+                         ambient=0.58)
+      cockpit(flight, boost, abs(dx) < OPEN_X and abs(dy) < OPEN_Y)
+      renderer.present()
+      spare = 33 - time.ticks_diff(time.ticks_ms(), start)
+      if spare > 0:
+        time.sleep_ms(spare)
+  except KeyboardInterrupt:
+    pass
+  finally:
+    renderer.close()
+  return flight
+
+
+flight = play()
+if flight.cleared == len(ROUTE):
+  print("Flight trial complete")
+elif flight.shields == 0:
+  print("Flight trial failed")
+else:
+  print("Flight ended")
+print("Gates cleared:", flight.cleared, "of", len(ROUTE))
+print("Shields left:", flight.shields)
