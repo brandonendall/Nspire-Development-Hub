@@ -1,5 +1,21 @@
 # EndraPython project memory
 
+## Interstellar Pilot R07–R10, 2026-11-26
+
+Brandon requested all four post-campaign builds and recognizable ships and stations. R07 adds a route map and travel without contract payouts. R08 adds two commodities with four station price lists, capacity limits, transactions, Meridian's cargo rack and Kepler's boost coil. R09 opens Farpoint Anchorage after the first campaign, via Meridian or Relay, and adds two frontier contracts with four-gate high-traffic routes. R10 adds a new-pilot briefing and packages all map, market, and campaign features for the existing EndraPython Run033. The batch shares an IP2 pilot profile while reading R06 IP1 files in the same folder before the first IP2 save. IP1 files are retained as an earlier-game fallback. New progress is in the two IP2 slots. All releases use original swept-wing player/traffic meshes and station-specific octagonal docking gantries. Menu backs out of the map and shops.
+
+Run033 host acceptance passed an R06-format 660-credit completed save, R07 free flight and reload, purchase of 15-credit alloy and sale for 29 credits, cargo rack from 4 to 8, existing coil retained, frontier provisioning and survey across launches, and a fresh R10 profile through all three campaign missions and into free flight. Also passed empty sale, full hold, station-specific service enforcement, truncated newest-slot fallback, and Menu navigation. Run033 regressions passed. Host frame captures reviewed for map, ships, briefing, and docking. Hardware playtest pending. R06 is the calculator-confirmed campaign fallback.
+
+- `Interstellar_Pilot_R07.py.tns` SHA-256 `7a974f9fa72fde3f61849bd3a606c707ac67c40c413d48960a177dcb2abcf576`
+- `Interstellar_Pilot_R08.py.tns` SHA-256 `d3a637d1906bf7bd147af25ca0d37131e6abbfd645943288c3bdc9d9c982c95a`
+- `Interstellar_Pilot_R09.py.tns` SHA-256 `84faffb016195d57b033a5b62cf091d822b0d638a6b8b758f2b9d82b881dd176`
+- `Interstellar_Pilot_R10.py.tns` SHA-256 `2b43570049f2a96d0f2eeab718f57b34f174f986f2706b7a695d5a107cfd6964`
+- `ip_flight.py.tns` SHA-256 `28c276d552f7491399a9f885ac11e306ccb76e9eef3b06d7f76b9a6f7278f21d`
+- `ip_mesh.py.tns` SHA-256 `e25d629c014e283612ddc1b024a456beeeecfe065d5b0216c15d96cf7f4ffe80`
+- `ip_sector.py.tns` SHA-256 `31c61e35e87afc5b2c7ac1188dee7dd58c0206300abc7d1fe018015aa87870e7`
+- `ip_state.py.tns` SHA-256 `bf08991758992daec6e8692f6cffa5cf6632bffc5b4637bbfcdc2298ab86eafd`
+- Delivery ZIP SHA-256 `7a830752bd3f989cc321f8a5c359fb930eccfc8639fc29a459da76c7d26ebdae`
+
 ## Interstellar Pilot R04–R06, 2026-11-26
 
 Brandon asked for all three gameplay milestones in one batch. EndraPython Run033 launches each numbered file with shared `pilot_career.py.tns` and `pilot_world_r04.py.tns` in the same folder. They share a versioned project-folder pilot profile. R04 saves station, credits and completed contracts after docking, using alternating verified slots. R05 sells one 80-credit boost coil at Kepler Exchange and enables quicker recharge. R06 adds the three-mission campaign with a Meridian rendezvous for pilots elsewhere, world progression on docking, and a completion screen. Distinct launcher entry points gate shop and campaign. Existing profile fields are kept when using an earlier launcher.

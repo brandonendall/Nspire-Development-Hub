@@ -1,0 +1,213 @@
+"""Sector routes, pilot storage and station economy."""
+import json
+import os
+
+NAMES = ("Meridian Station", "Kepler Exchange", "Relay Outpost", "Farpoint Anchorage")
+CONTRACTS = (
+  (1, "Deliver station cargo", 90, ((0, 0), (1.8, 1.1), (-1.4, -0.6)), (0.8, 0.3)),
+  (2, "Deliver rescue supplies", 130, ((0.4, 0.8), (-1.9, 1.3), (1.9, -1.2)), (-0.7, 0.7)),
+  (0, "Carry navigation data", 105, ((-0.5, -0.5), (1.7, -1.2), (-1.6, 1.0)), (0, 0)),
+  (3, "Carry frontier equipment", 160, ((0, 0), (2.2, -0.8), (-2.1, 1.4), (1.9, -1.2)), (0.6, 0.5)),
+)
+CAMPAIGN = (
+  "1/3 Establish the cargo corridor",
+  "2/3 Supply the rescue relay",
+  "3/3 Return with navigation data",
+)
+FRONTIER = ("1/2 Provision Farpoint", "2/2 Return the frontier survey")
+GOODS = ("Alloy", "Medkits")
+PRICES = ((15, 34), (29, 25), (26, 44), (37, 39))
+COIL_PRICE, RACK_PRICE = 80, 120
+
+GATE_X, GATE_Y = 0.94, 0.73
+DOCK_X, DOCK_Y = 0.62, 0.42
+GATE_CROSS, DOCK_STOP, DOCK_RANGE = 2.6, 3.5, 5.3
+GATE_START, STATION_START = 17.0, 21.0
+BG, TEXT, BLUE, GREEN, AMBER = 0x0863, 0xd69d, 0x34bd, 0x5fba, 0xfd46
+
+
+class Flight:
+  def __init__(self, job, coil=0):
+    self.dest, self.cargo, self.reward, self.gates, self.berth = job
+    self.hazard = self.dest == 3 or len(self.gates) == 4
+    self.recharge = 0.48 if coil else 0.28
+    self.x = self.y = 0.0
+    self.distance, self.energy = GATE_START, 1.0
+    self.cleared, self.shields, self.misses = 0, 3, 0
+    self.boost = self.docked = self.passed_ship = False
+    self.notice, self.notice_time = "", 0.0
+
+  def approaching(self):
+    return self.cleared == len(self.gates)
+
+  def offset(self):
+    x, y = self.berth if self.approaching() else self.gates[self.cleared]
+    return x - self.x, y - self.y
+
+  def aligned(self):
+    x, y = self.offset()
+    w, h = (DOCK_X, DOCK_Y) if self.approaching() else (GATE_X, GATE_Y)
+    return abs(x) < w and abs(y) < h
+
+  def traffic(self):
+    x, y = self.gates[self.cleared]
+    side = -1 if self.cleared % 2 else 1
+    drift = 0.25 if self.hazard else 0.0
+    return (x + side*(1.48 - self.distance*0.073 - drift) - self.x,
+            y + side*(0.20 if self.hazard else 0.35) - self.y, self.distance - 4.05)
+
+  def tell(self, notice):
+    self.notice, self.notice_time = notice, 1.5
+
+  def step(self, dt, sx, sy, held, pressed):
+    self.x = max(-3.6, min(3.6, self.x + sx*2.35*dt))
+    self.y = max(-2.6, min(2.6, self.y + sy*2.35*dt))
+    self.notice_time = max(0, self.notice_time - dt)
+    final = self.approaching()
+    slow = final and self.distance <= 9.0
+    self.boost = held and not slow and self.energy > 0
+    if self.boost:
+      self.energy = max(0, self.energy - dt*0.49)
+    elif not held:
+      self.energy = min(1, self.energy + dt*self.recharge)
+    self.distance -= (6.3 if self.boost else 2.20 if slow else 3.4)*dt
+    if final:
+      self.distance = max(DOCK_STOP, self.distance)
+      if pressed and self.distance <= DOCK_RANGE:
+        if self.aligned():
+          self.docked = True
+        else:
+          self.tell("Align with berth")
+      return
+
+    tx, ty, tz = self.traffic()
+    if not self.passed_ship and tz <= GATE_CROSS:
+      self.passed_ship = True
+      if abs(tx) < (0.62 if self.hazard else 0.49) and abs(ty) < 0.30:
+        self.shields -= 1
+        self.tell("Traffic strike")
+    if self.distance <= GATE_CROSS:
+      if self.aligned():
+        self.cleared += 1
+        self.tell("Jump confirmed")
+      else:
+        self.misses += 1
+        self.shields -= 1
+        self.tell("Gate missed / Retry")
+      self.distance = STATION_START if self.approaching() else GATE_START
+      self.passed_ship = False
+
+
+SLOTS = ("pilot_sector_a.txt.tns", "pilot_sector_b.txt.tns")
+OLD_SLOTS = ("pilot_career_a.txt.tns", "pilot_career_b.txt.tns")
+# Sequence, station, credits, jobs, coil, campaign, alloy, medkits, rack, frontier.
+FRESH = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+
+def seal(record):
+  check = 9437
+  for value in record:
+    check = (check*31 + value) % 65521
+  return check
+
+
+def capacity(p):
+  return 8 if p[8] else 4
+
+
+def read_slot(name, old):
+  try:
+    with open(name) as f:
+      data = json.loads(f.read(512))
+  except (ValueError, OSError):
+    return None
+  if type(data) is not list or len(data) != (8 if old else 12):
+    return None
+  if data[0] != ("IP1" if old else "IP2"):
+    return None
+  p = tuple(data[1:-1])
+  if any(type(value) is not int or value < 0 for value in p):
+    return None
+  if not p[0] or p[1] >= (3 if old else 4) or p[4] > 1 or p[5] > 3:
+    return None
+  if type(data[-1]) is not int or data[-1] != seal(p):
+    return None
+  if old:
+    return p + (0, 0, 0, 0)
+  if p[8] > 1 or p[9] > 2 or p[6]+p[7] > capacity(p):
+    return None
+  if (p[9] or p[1] == 3) and p[5] != 3:
+    return None
+  return p
+
+
+def load():
+  names = os.listdir()
+  for slots, old in ((SLOTS, False), (OLD_SLOTS, True)):
+    if not any(name in names for name in slots):
+      continue
+    found = []
+    for name in slots:
+      if name in names:
+        p = read_slot(name, old)
+        if p is not None:
+          found.append(p)
+    if found:
+      return max(found)
+    raise ValueError("No valid pilot save")
+  return FRESH
+
+
+def save(p, changes):
+  record = list(p)
+  record[0] += 1
+  for field, value in changes:
+    record[field] = value
+  record = tuple(record)
+  name = SLOTS[record[0] % 2]
+  with open(name, "w") as f:
+    f.write(json.dumps(("IP2",) + record + (seal(record),)))
+    f.flush()
+  if read_slot(name, False) != record:
+    raise OSError("Pilot save verification failed")
+  return record
+
+
+def transact(p, item, buying):
+  field = 6+item
+  price = PRICES[p[1]][item]
+  amount = 1 if buying else -1
+  if buying:
+    if p[6]+p[7] >= capacity(p):
+      return p, "Cargo hold full"
+    if p[2] < price:
+      return p, "Insufficient credits"
+  elif not p[field]:
+    return p, "No cargo to sell"
+  return save(p, ((2, p[2]-price*amount), (field, p[field]+amount))), "Trade saved"
+
+
+def fit(p, field):
+  station, cost = (1, COIL_PRICE) if field == 4 else (0, RACK_PRICE)
+  if p[1] != station:
+    return p, "Service unavailable here"
+  if p[field]:
+    return p, "Already fitted"
+  if p[2] < cost:
+    return p, "Insufficient credits"
+  return save(p, ((2, p[2]-cost), (field, 1))), "Upgrade fitted"
+
+
+def route(dest, hazardous=False):
+  for job in CONTRACTS:
+    if job[0] == dest:
+      if hazardous and len(job[3]) < 4:
+        return job[:3] + (job[3] + ((-2.0, 1.2),), job[4])
+      return job
+
+
+def arrived(p, job, kind):
+  reward = 0 if kind == "free" else job[2]
+  return save(p, ((1, job[0]), (2, p[2]+reward),
+                  (3, p[3]+int(kind != "free")), (5, p[5]+int(kind == "campaign")),
+                  (9, p[9]+int(kind == "frontier"))))

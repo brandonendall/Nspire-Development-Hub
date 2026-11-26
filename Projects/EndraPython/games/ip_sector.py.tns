@@ -1,0 +1,219 @@
+"""Station menus, sector map, and career progression."""
+import gint
+import keys
+import time
+import ip_state as w
+from ip_flight import begin, fly, label, clock_label
+
+POINTS = ((55, 143), (148, 81), (190, 151), (261, 76))
+SHORT = ("Meridian", "Kepler", "Relay", "Farpoint")
+
+
+def event(previous):
+  time.sleep_ms(42)
+  held = keys.active()
+  for key in (keys.KEY_EXE, keys.KEY_UP, keys.KEY_DOWN,
+              keys.KEY_LEFT, keys.KEY_RIGHT, keys.KEY_MENU):
+    if key in held and key not in previous:
+      return held, key
+  return held, None
+
+
+def select(title, status, options, detail="", back=True):
+  selected = 0
+  previous = keys.active()
+  while not keys.keydown(keys.KEY_EXIT):
+    begin()
+    label(18, 47, title)
+    label(18, 66, status, w.GREEN)
+    for i, item in enumerate(options):
+      y = 87+i*17
+      if i == selected:
+        gint.drect(14, y-2, 305, y+12, 0x114b)
+      label(18, y, item)
+    if detail:
+      label(18, 205, detail)
+    label(18, 224, "Up/Down   Enter Choose   Menu Back" if back else
+          "Up/Down   Enter Choose   Esc Exit")
+    gint.dupdate()
+    previous, key = event(previous)
+    if key == keys.KEY_UP:
+      selected = (selected-1) % len(options)
+    elif key == keys.KEY_DOWN:
+      selected = (selected+1) % len(options)
+    elif key == keys.KEY_EXE:
+      return selected
+    elif key == keys.KEY_MENU and back:
+      return None
+  return None
+
+
+def sector_map(p, version):
+  origin = p[1]
+  unlocked = origin == 3 or (version >= 9 and p[5] == 3)
+  count = 4 if unlocked else 3
+  options = [i for i in range(count) if i != origin and (origin,i) not in ((1,3),(3,1))]
+  selected = 0
+  previous = keys.active()
+  while not keys.keydown(keys.KEY_EXIT):
+    begin()
+    label(18, 45, "Sector map / " + SHORT[origin])
+    dest = options[selected]
+    links = ((0,1),(0,2),(1,2),(0,3),(2,3))
+    for a,b in links:
+      if a < count and b < count:
+        x,y = POINTS[a]
+        u,v = POINTS[b]
+        gint.dline(x,y,u,v,w.GREEN if (a,b) in ((origin,dest),(dest,origin)) else w.BLUE)
+    for i in range(count):
+      x,y = POINTS[i]
+      color = w.GREEN if i == origin else w.AMBER if i == dest else w.TEXT
+      gint.drect(x-3,y-3,x+3,y+3,color)
+      label(x-24,y+6,SHORT[i],color)
+    label(18, 185, "Destination: " + w.NAMES[dest])
+    risky = origin == 3 or dest == 3
+    label(18, 202, "4 gates / Heavy traffic" if risky else "3 gates / Standard traffic")
+    label(18, 224, "Arrows Route    Enter Fly    Menu Back")
+    gint.dupdate()
+    previous, key = event(previous)
+    if key in (keys.KEY_LEFT, keys.KEY_UP):
+      selected = (selected-1) % len(options)
+    elif key in (keys.KEY_RIGHT, keys.KEY_DOWN):
+      selected = (selected+1) % len(options)
+    elif key == keys.KEY_EXE:
+      return w.route(dest, risky)
+    elif key == keys.KEY_MENU:
+      return None
+  return None
+
+
+def market(p):
+  notice = ""
+  while True:
+    a,b = w.PRICES[p[1]]
+    options = ("Buy alloy   "+str(a)+" CR", "Sell alloy   "+str(a)+" CR",
+               "Buy medkit  "+str(b)+" CR", "Sell medkit  "+str(b)+" CR")
+    status = str(p[2])+" CR   Cargo "+str(p[6]+p[7])+"/"+str(w.capacity(p))
+    detail = notice or ("Alloy "+str(p[6])+"   Medkits "+str(p[7]))
+    pick = select("Market / "+SHORT[p[1]], status, options, detail)
+    if pick is None:
+      return p
+    p, notice = w.transact(p,pick//2,pick%2==0)
+
+
+def outfitter(p):
+  field = 4 if p[1] == 1 else 8
+  part, price = ("Boost coil",w.COIL_PRICE) if field == 4 else ("Cargo rack",w.RACK_PRICE)
+  status = "Fitted" if p[field] else str(price)+" CR"
+  benefit = "Faster boost recharge" if field == 4 else "Expands cargo from 4 to 8"
+  pick = select("Outfitter / "+SHORT[p[1]], str(p[2])+" CR",
+                (part+" / "+status,), benefit)
+  if pick is None:
+    return p, ""
+  return w.fit(p,field)
+
+
+def missions(p, version):
+  origin, stage, frontier = p[1],p[5],p[9]
+  offers = []
+  if stage < 3:
+    if origin == stage:
+      job = w.CONTRACTS[stage]
+      offers.append((w.CAMPAIGN[stage],job,"campaign"))
+    else:
+      offers.append(("Campaign rendezvous",w.route(stage),"contract"))
+  elif version >= 9 and frontier < 2:
+    start, end = (2,3) if frontier == 0 else (3,0)
+    if origin == start:
+      offers.append((w.FRONTIER[frontier],w.route(end,True),"frontier"))
+    else:
+      dest = 2 if origin == 1 and start == 3 else start
+      offers.append(("Frontier rendezvous: "+SHORT[dest],w.route(dest,origin==3 or dest==3),"free"))
+  for job in w.CONTRACTS:
+    dest = job[0]
+    if dest != origin and (dest != 3 or (version >= 9 and stage == 3 and origin != 1)):
+      if origin != 3 or dest != 1:
+        offers.append((job[1],w.route(dest,origin==3 or dest==3),"contract"))
+  pick = select("Contract board", "Departing "+SHORT[origin], tuple(item[0] for item in offers))
+  return offers[pick][1:] if pick is not None else (None,"")
+
+
+def message(title, lines):
+  begin()
+  label(18, 48, title, w.GREEN)
+  for i, line in enumerate(lines):
+    label(18, 75+i*21, line)
+  label(18, 224, "Enter Continue     Esc Exit")
+  gint.dupdate()
+  previous = keys.active()
+  while not keys.keydown(keys.KEY_EXIT):
+    previous,key = event(previous)
+    if key == keys.KEY_EXE:
+      return True
+  return False
+
+
+def main(version):
+  try:
+    p = w.load()
+  except (OSError,ValueError):
+    print("Pilot save could not be loaded")
+    return
+  notice = ""
+  try:
+    if version >= 10 and not p[0]:
+      if not message("New pilot briefing", ("Start at Meridian Station.",
+                    "Take your first job at the contract board.",
+                    "Arrow keys steer. Hold Enter to boost.",
+                    "Align and press Enter when cleared to dock.",
+                    "Your career saves after docking or trade.")):
+        return
+    while True:
+      options = ["Sector map / Free flight","Contract board"]
+      if version >= 8:
+        options.append("Commodity market")
+        if p[1] < 2:
+          options.append("Ship outfitter")
+      detail = notice or ("Alloy "+str(p[6])+" / Medkits "+str(p[7]) if version >= 8 else "")
+      pick = select(w.NAMES[p[1]], str(p[2])+" CR   "+str(p[3])+" delivered", options, detail, False)
+      notice = ""
+      if pick is None:
+        break
+      if pick==2:
+        p = market(p)
+        continue
+      if pick==3:
+        p,notice = outfitter(p)
+        continue
+      if pick==0:
+        job,kind = sector_map(p,version),"free"
+      else:
+        job,kind = missions(p,version)
+      if job is None:
+        continue
+      flight,ms,aborted = fly(job,p[4])
+      if aborted:
+        break
+      if flight.docked:
+        p = w.arrived(p,job,kind)
+        print("Docked at",w.NAMES[p[1]])
+        title = "Docking confirmed"
+        if kind=="campaign" and p[5]==3:
+          title = "Campaign complete"
+        elif kind=="frontier" and p[9]==2:
+          title = "Frontier survey complete"
+        elif kind=="frontier":
+          title = "Farpoint provisioned"
+      else:
+        title = "Ship disabled"
+      if not message(title, (w.NAMES[p[1]], "Flight time "+clock_label(ms),
+                             "Credits "+str(p[2]), "Shields "+str(flight.shields))):
+        break
+  except OSError:
+    print("Save failed. Reload your pilot.")
+  except KeyboardInterrupt:
+    pass
+  print("Station:",w.NAMES[p[1]])
+  print("Credits:",p[2])
+  print("Campaign:",p[5],"of 3")
+  print("Frontier:",p[9],"of 2")

@@ -1,0 +1,127 @@
+"""Run033 display helpers and flight loop."""
+import gc
+import gint
+import keys
+import time
+from py3d import Renderer, rotation_z
+import ip_state as world
+import ip_mesh as art
+
+BG, TEXT, BLUE, GREEN, AMBER = world.BG, world.TEXT, world.BLUE, world.GREEN, world.AMBER
+STARS = tuple(((i*83+17) % 316+2, (i*i*13+i*23) % 155+38) for i in range(34))
+
+
+def label(x, y, text, color=TEXT):
+  gint.dtext(x, y, color, text)
+
+
+def stars():
+  for x, y in STARS:
+    gint.dpixel(x, y, 0x6390)
+
+
+def begin():
+  gint.dclear(BG)
+  stars()
+  label(18, 13, "INTERSTELLAR PILOT", GREEN)
+  gint.dline(18, 35, 301, 35, BLUE)
+
+
+def clock_label(ms):
+  return str(ms // 1000) + "." + str(ms // 100 % 10) + " s"
+
+
+def flight_hud(f):
+  if f.approaching():
+    header = "Approach " + world.NAMES[f.dest]
+  else:
+    header = "Jump gate " + str(f.cleared+1) + "/" + str(len(f.gates))
+  label(9, 8, header)
+  label(224, 8, "SHIELDS " + str(f.shields))
+  label(224, 26, "BOOST")
+  gint.drect(267, 28, 310, 34, 0x294a)
+  charge = int(f.energy*44)
+  if charge:
+    gint.drect(267, 28, 266+charge, 34, AMBER if f.boost else BLUE)
+  color = GREEN if f.aligned() else AMBER
+  gint.dline(145, 120, 155, 120, color)
+  gint.dline(165, 120, 175, 120, color)
+  gint.dline(160, 105, 160, 115, color)
+  gint.dline(160, 125, 160, 135, color)
+  gint.drect(0, 205, 319, 239, BG)
+  gint.dline(0, 205, 319, 205, BLUE)
+  near_berth = f.approaching() and f.distance <= world.DOCK_RANGE
+  if near_berth:
+    label(9, 209, "ENTER TO DOCK" if f.aligned() else "ALIGN WITH BERTH", color)
+  else:
+    label(9, 209, "Range " + str(int(f.distance)))
+  if f.notice_time and not near_berth:
+    label(137, 209, f.notice, AMBER)
+  label(9, 225, "Arrows Align   Enter Dock   Esc Abort" if near_berth else
+        "Arrows Steer   Enter Boost   Esc Abort")
+
+
+def fly(job, coil):
+  f = world.Flight(job, coil)
+  gate = art.gate()
+  station = art.ring(f.dest)
+  pods = art.gantry(f.dest)
+  ship = (art.ship_mesh(False), art.ship_mesh(True))
+  traffic = art.freighter()
+  renderer = Renderer(background=BG, depth=True)
+  bank = lift = 0.0
+  previous = start = time.ticks_ms()
+  enter_held = keys.keydown(keys.KEY_EXE)
+  aborted = False
+  frames = 0
+  gc.collect()
+  try:
+    while f.shields and not f.docked:
+      frame = time.ticks_ms()
+      if keys.keydown(keys.KEY_EXIT):
+        aborted = True
+        break
+      held = keys.active()
+      enter = keys.KEY_EXE in held
+      sx = (keys.KEY_RIGHT in held) - (keys.KEY_LEFT in held)
+      sy = (keys.KEY_UP in held) - (keys.KEY_DOWN in held)
+      dt = min(100, max(0, time.ticks_diff(frame, previous))) / 1000
+      previous = frame
+      f.step(dt, sx, sy, enter, enter and not enter_held)
+      enter_held = enter
+      if f.docked or not f.shields:
+        break
+      if frames % 20 == 0:
+        gc.collect()
+      frames += 1
+      renderer.clear()
+      stars()
+      dx, dy = f.offset()
+      mesh = station if f.approaching() else gate
+      renderer.draw_mesh(*mesh, position=(dx, dy, f.distance),
+                         cull=not f.approaching(), ambient=0.69)
+      if f.approaching():
+        renderer.draw_mesh(*pods, position=(dx, dy, f.distance),
+                           cull=False, ambient=0.69)
+      else:
+        tx, ty, tz = f.traffic()
+        if tz >= 2.6:
+          renderer.draw_mesh(*traffic, position=(tx, ty, tz), cull=False, ambient=0.78)
+      smooth = min(1, dt*8)
+      bank += (-0.46*sx - bank)*smooth
+      lift += (0.13*sy - lift)*smooth
+      renderer.draw_mesh(*ship[f.boost], model=rotation_z(bank),
+                         position=(-bank*0.44, -0.82+lift, 3.8),
+                         cull=False, ambient=0.82)
+      flight_hud(f)
+      renderer.present()
+      wait = 33 - time.ticks_diff(time.ticks_ms(), frame)
+      if wait > 0:
+        time.sleep_ms(wait)
+  except KeyboardInterrupt:
+    aborted = True
+  finally:
+    renderer.close()
+  return f, time.ticks_diff(time.ticks_ms(), start), aborted
+
+

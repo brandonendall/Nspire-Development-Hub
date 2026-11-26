@@ -1,0 +1,105 @@
+"""Original low-poly ships and docking stations."""
+from py3d import cube, rotation_x, transform
+from ip_state import GATE_X, GATE_Y, BLUE, GREEN
+
+PALETTES = (
+  (0x7c9c, 0x2951, 0x567f), (0xc5aa, 0x624a, 0xfde8),
+  (0x57b7, 0x22d0, 0x87eb), (0xb47c, 0x594d, 0xf49f),
+)
+BOX = cube(1)
+
+
+def gate():
+  v, f = [], []
+  bar = .11
+  for sign in (-1, 1):
+    for x, y, w, h in ((0, sign*(GATE_Y+bar/2), 2*(GATE_X+bar), bar),
+                       (sign*(GATE_X+bar/2), 0, bar, 2*GATE_Y)):
+      i = len(v)
+      for px, py, pz in BOX[0]:
+        v.append((x+px*w, y+py*h, pz*.25))
+      for a, b, c, _ in BOX[1]:
+        f.append((a+i, b+i, c+i, BLUE))
+  return v, f
+
+
+def quad(f, a, b, c, d, color):
+  f.extend(((a,b,c,color), (a,c,d,color)))
+
+
+def ring(station):
+  light, dark, trim = PALETTES[station]
+  outline = ((-.73,-1), (.73,-1), (1,-.66), (1,.66),
+             (.73,1), (-.73,1), (-1,.66), (-1,-.66))
+  v, f = [], []
+  for w,h,z in ((1.08,.77,-.29), (1.34,1.05,-.19), (1.38,1.08,.49)):
+    for x,y in outline:
+      v.append((x*w,y*h,z))
+  for a in range(8):
+    b = (a+1)%8
+    quad(f,a,b,b+8,a+8,trim if a in (0,4) else light)
+    quad(f,a+8,b+8,b+16,a+16,dark)
+  return v,f
+
+
+def gantry(station):
+  light, dark, trim = PALETTES[station]
+  v,f = [],[]
+  # Extruded side pods with raked tips. Each uses only 12 vertices.
+  shapes = (
+    ((1.20,-.25),(2.04,-.50),(2.33,-.12),(2.32,.21),(1.87,.44),(1.20,.25)),
+    ((1.20,-.25),(2.03,-.72),(2.36,-.17),(2.36,.17),(2.03,.72),(1.20,.25)),
+    ((1.20,-.25),(1.65,-.54),(2.17,.20),(2.10,.87),(1.65,.91),(1.20,.25)),
+    ((1.20,-.25),(1.69,-.50),(2.39,-.36),(2.39,.36),(1.69,.50),(1.20,.25)),
+  )
+  for sign in (-1,1):
+    base = len(v)
+    for z in (-.12,.48):
+      for x,y in shapes[station]:
+        v.append((x*sign,y,z))
+    for i in range(1,5):
+      f.append((base,base+i,base+i+1,trim if i==2 else light))
+    for i in range(6):
+      j=(i+1)%6
+      quad(f,base+i,base+j,base+j+6,base+i+6,dark)
+  return v,f
+
+
+def freighter():
+  # Ahead of the pilot with a broad equipment deck and two engine flares.
+  v = ((0,.02,.85),(-.35,.05,.34),(.35,.05,.34),
+       (-.42,.1,-.45),(.42,.1,-.45),(0,.31,.17),
+       (-.32,-.15,-.52),(.32,-.15,-.52),(-.73,0,-.32),(.73,0,-.32),
+       (-.23,0,-.82),(.23,0,-.82))
+  shell, deck, skid, flame = 0xd62d,0xa443,0x6245,0x65ff
+  f = ((0,1,5,shell),(0,5,2,shell),(1,3,5,deck),(2,5,4,shell),
+       (3,4,5,deck),(3,6,7,skid),(3,7,4,skid),(1,8,3,shell),
+       (2,4,9,shell),(3,6,10,flame),(4,11,7,flame))
+  return v,f
+
+
+def ship_mesh(boost):
+  # The nose points down the flight path, away from the chase camera.
+  flame = -1.03 if boost else -0.80
+  vertices = (
+    (0, 0.04, 0.87), (-0.23, 0.04, 0.15), (0.23, 0.04, 0.15),
+    (-0.24, 0.05, -0.49), (0.24, 0.05, -0.49), (0, 0.35, 0.13),
+    (-0.16, -0.15, -0.49), (0.16, -0.15, -0.49),
+    (-1.04, 0.02, -0.42), (1.04, 0.02, -0.42),
+    (-0.73, -0.04, -0.62), (0.73, -0.04, -0.62),
+    (-0.19, -0.03, -0.50), (-0.08, -0.03, -0.50),
+    (0.08, -0.03, -0.50), (0.19, -0.03, -0.50),
+    (-0.135, 0.02, flame), (0.135, 0.02, flame),
+  )
+  silver, blue, shade, glass = 0xb69d, 0x549f, 0x31cf, 0x4dfd
+  exhaust = 0xfda8 if boost else 0x567f
+  faces = (
+    (0, 1, 5, silver), (0, 5, 2, silver), (1, 3, 5, blue),
+    (2, 5, 4, blue), (3, 4, 5, glass), (3, 6, 7, shade),
+    (3, 7, 4, shade), (0, 6, 3, shade), (0, 4, 7, shade),
+    (0, 7, 6, shade), (1, 8, 10, silver), (1, 10, 3, blue),
+    (2, 11, 9, silver), (2, 4, 11, blue),
+    (12, 13, 16, exhaust), (14, 15, 17, exhaust),
+  )
+  tilt = rotation_x(-0.26)
+  return [transform(v, tilt) for v in vertices], faces

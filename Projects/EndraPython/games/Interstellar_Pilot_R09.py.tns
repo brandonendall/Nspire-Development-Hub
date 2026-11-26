@@ -1,0 +1,4 @@
+"""Interstellar Pilot R09 for EndraPython Run033."""
+from ip_sector import main
+
+main(9)
