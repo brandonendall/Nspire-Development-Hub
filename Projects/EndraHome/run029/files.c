@@ -100,8 +100,30 @@ static int within_root(const Eh17Files *v,const char *path){
  size_t n=strlen(v->nav.root);
  return !strncmp(path,v->nav.root,n)&&(path[n]=='/'||path[n]==0);
 }
+static unsigned char fold_ascii(unsigned char c){return c>='A'&&c<='Z'?c+32:c;}
+static int name_contains(const char *name,const char *query){
+ for(;*name;++name){
+  size_t i=0;
+  while(query[i] && name[i] && fold_ascii(name[i])==fold_ascii(query[i]))++i;
+  if(!query[i])return 1;
+ }
+ return 0;
+}
+static void find_name(Eh17Files *v){
+ Eh13Picker *p=&v->nav;
+ for(int i=1;i<=p->count;++i){
+  int index=(p->selected+i)%p->count;
+  if(!name_contains(p->items[index].name,v->query))continue;
+  p->selected=index;
+  if(index<p->scroll)p->scroll=index;
+  if(index>=p->scroll+EH13_VIEW_ROWS)p->scroll=index-EH13_VIEW_ROWS+1;
+  v->screen=0;v->status.text[0]=0;return;
+ }
+ eh_toast_set(&v->status,"NO MATCH IN LIST");
+}
 static void file_action(Eh17Files *v,int action){
  char src[EH7_PATH_CAP],dst[EH7_PATH_CAP];int dir=0;
+ if(action==EH_FIND_NAME){v->screen=EH_FILES_FIND;v->status.text[0]=0;return;}
  if(action==6||action==EH_NEW_FILE){v->edit_folder=action==6?1:2;v->edit_name[0]=0;v->edit_error=0;v->screen=4;return;}
  if(action==3){ /* Paste into current folder. */
   if(!v->clip_mode||!within_root(v,v->clip_path)){eh_toast_set(&v->status,"CLIPBOARD EMPTY");return;}
@@ -157,6 +179,11 @@ void eh17_files_close(Eh17Files *v){
 }
 int eh17_files_handle(Eh17Files *v,EhKey key){
  if(!v||!v->active||key==EH_KEY_NONE)return 0;
+ if(v->screen==EH_FILES_FIND){
+  if(key==EH_KEY_ESC){v->screen=0;v->status.text[0]=0;}
+  else if(key==EH_KEY_ENTER && v->query[0])find_name(v);
+  return 1;
+ }
  if(v->screen==EH_FILES_ARCHIVE){
   Eh13Picker *p=&v->archive;
   char prefix[EH7_PATH_CAP];
@@ -349,6 +376,14 @@ int eh21_files_text(Eh17Files *v,int ch){
    eh_toast_set(&v->status,"TEXT LIMIT: 4096 BYTES");return 1;
   }
   return 0;
+ }
+ if(v->screen==EH_FILES_FIND){
+  size_t n=strlen(v->query);
+  if(ch==8 && n)v->query[n-1]=0;
+  else if(ch>=32 && ch<=126 && n+1<sizeof(v->query)){
+   v->query[n]=(char)ch;v->query[n+1]=0;
+  }
+  v->status.text[0]=0;return 1;
  }
  if(v->screen!=4)return 0;
  size_t n=strlen(v->edit_name);

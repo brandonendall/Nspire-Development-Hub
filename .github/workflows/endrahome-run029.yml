@@ -1,5 +1,5 @@
-name: EndraHome Run051 - Integrated Desktop
-# Integrated Run051 appearance build: branch source changes trigger host + native validation.
+name: EndraHome Run052 - Integrated Desktop
+# Integrated Run052 appearance build: branch source changes trigger host + native validation.
 on:
   push:
     branches: [feature/endrahome-run001]
@@ -8,7 +8,7 @@ on:
       - '.github/workflows/endrahome-run029.yml'
   workflow_dispatch:
 concurrency:
-  group: endrahome-run051-single-build
+  group: endrahome-run052-single-build
   cancel-in-progress: true
 permissions:
   contents: read
@@ -40,7 +40,7 @@ jobs:
           ! grep -Eq '^[[:space:]]*refresh_osscr\(' Projects/EndraHome/run029/platform.c Projects/EndraHome/run029/main.c
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraHome_Run051_Previews
+          name: EndraHome_Run052_Previews
           path: Projects/EndraHome/run029/build/*.ppm
   native:
     needs: host
@@ -57,15 +57,15 @@ jobs:
       - name: Verify output and checksum
         run: |
           cd Projects/EndraHome/run029
-          test -s EndraHome_Run051_Desktop.tns
+          test -s EndraHome_Run052_Desktop.tns
           test -s EndraHome_Apps.cfg.tns
-          test "$(head -c 4 EndraHome_Run051_Desktop.tns)" = Zehn
-          sha256sum EndraHome_Run051_Desktop.tns > SHA256SUMS.txt
+          test "$(head -c 4 EndraHome_Run052_Desktop.tns)" = Zehn
+          sha256sum EndraHome_Run052_Desktop.tns > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EndraHome_Run051_Desktop
+          name: EndraHome_Run052_Desktop
           path: |
-            Projects/EndraHome/run029/EndraHome_Run051_Desktop.tns
+            Projects/EndraHome/run029/EndraHome_Run052_Desktop.tns
             Projects/EndraHome/run029/README.md
             Projects/EndraHome/run029/SHA256SUMS.txt
           if-no-files-found: error
@@ -101,7 +101,7 @@ jobs:
           **Host tests:** $HOST_RESULT
           **Native Ndless build:** $NATIVE_RESULT
 
-          **Artifact if native succeeded:** EndraHome_Run051_Desktop
+          **Artifact if native succeeded:** EndraHome_Run052_Desktop
           Download it from the run's **Artifacts** section.
 
           **Troubleshooting:** Open the run link, select the failed job, then inspect its log. The issue is automatically updated after each run, including failures. A green report job alone does not mean the native build passed.

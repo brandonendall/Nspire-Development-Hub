@@ -1,4 +1,4 @@
-APP := EndraHome_Run051_Desktop
+APP := EndraHome_Run052_Desktop
 CC := nspire-gcc
 LD := nspire-ld
 GENZEHN := genzehn
@@ -33,7 +33,7 @@ build/logic7.o: ../run005/logic7.c | build
 build/$(APP).elf: $(OBJECTS)
 	$(LD) -marm $^ -o $@ -lm
 $(APP).tns: build/$(APP).elf
-	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Desktop 051" --input $< --output $@
+	$(GENZEHN) --version 31 --author "EndraHome" --clickpad-support=false --color-support=true --240x320-support=true --compress --ndless-min 31 --ndless-rev-min 2001 --name "EndraHome Desktop 052" --input $< --output $@
 
 HEADERS := $(wildcard *.h) ../run005/logic7.h ../gba-ui/logic.h
 build/test_clock: test_clock.c

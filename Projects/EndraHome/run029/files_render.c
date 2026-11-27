@@ -71,6 +71,14 @@ static void render_editor(uint16_t *f,const Eh17Files *v,const EhPalette *p){
 void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
  if(!f||!v||!v->active||!apps)return;
  EhPalette p=eh_palette(apps->appearance);
+ if(v->screen==EH_FILES_FIND){
+  box(f,0,0,320,240,p.panel);
+  eh_small_text(f,14,14,"FIND NAME",p.ink,2,24);
+  txt(f,14,67,"SEARCH CURRENT FOLDER",p.ink,32);
+  txt(f,14,96,tail(v->query,35),p.ink,35);
+  if(v->status.text[0])txt(f,14,155,v->status.text,p.ink,35);
+  eh_small_text(f,12,226,"ENTER FIND NEXT    ESC BACK",p.ink,1,42);return;
+ }
  if(v->screen==EH_FILES_TEXT_EDIT){render_editor(f,v,&p);return;}
  if(v->screen==EH_FILES_ARCHIVE){
   eh13_picker_render(f,&v->archive,apps);
@@ -82,7 +90,7 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   if(v->status.text[0]){box(f,8,200,304,19,p.panel);eh_fit_text(f,12,205,v->status.text,p.ink,37);}
   if(v->clip_mode && !v->status.text[0]){box(f,8,200,304,19,p.panel);txt(f,12,205,v->clip_mode==1?"Clipboard: copy":"Clipboard: cut",p.ink,28);}
   if(v->menu_open){
-   static const char *menu[EH_ACTION_COUNT]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES","NEW FILE / NOTE","CREATE ZIP","EXTRACT ZIP"};
+   static const char *menu[EH_ACTION_COUNT]={"OPEN","COPY","CUT","PASTE","RENAME","DELETE","NEW FOLDER","PROPERTIES","NEW FILE / NOTE","CREATE ZIP","EXTRACT ZIP","FIND NAME"};
    /* Keep the neon frame while masking file names behind the popup. */
    eh_theme_glass(f,57,24,206,191,99,&p);
    box(f,57,24,206,1,eh_skin(&p,EH_RGB(67,220,253)));

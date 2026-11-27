@@ -101,6 +101,10 @@ int main(void){
  assert(f.active&&f.nav.show_all&&f.nav.count==11);
  assert(f.nav.items[0].directory);
  for(unsigned i=0;i<sizeof(exts)/sizeof(exts[0]);i++)has(&f.nav,exts[i],1);
+ action(&f,EH_FIND_NAME);assert(f.screen==EH_FILES_FIND);
+ eh21_files_text(&f,'s');eh21_files_text(&f,'A');eh21_files_text(&f,'v');
+ eh17_files_handle(&f,EH_KEY_ENTER);
+ assert(!f.screen&&!strcmp(f.nav.items[f.nav.selected].name,"Save.JSON.TNS"));
  assert(select_name(&f.nav,"Save.JSON.TNS"));
  snprintf(file,sizeof(file),"%s/Save.JSON.TNS",dir);
  FILE *large=fopen(file,"wb");assert(large);fputs("{\"data\":\"",large);

@@ -7,11 +7,13 @@
 #include "text_edit.h"
 #include <stdint.h>
 #define EH17_TEXT_CAP EH_TEXT_CAP
+#define EH_FILES_FIND 7
 #define EH_FILES_ARCHIVE 6
-enum { EH_NEW_FILE=8, EH_CREATE_ZIP, EH_EXTRACT_ZIP, EH_ACTION_COUNT };
+enum { EH_NEW_FILE=8, EH_CREATE_ZIP, EH_EXTRACT_ZIP, EH_FIND_NAME, EH_ACTION_COUNT };
 #define EH_FILES_TEXT_EDIT 5
 typedef struct {
  Eh13Picker nav,archive;
+ char query[44];
  int pdf_requested;
  int active,screen,preview_ok,preview_truncated,line_count,scroll;
  unsigned long file_size,preview_offset;
