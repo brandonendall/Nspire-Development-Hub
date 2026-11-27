@@ -1,4 +1,6 @@
-# EndraHome Run053 Desktop
+# EndraHome Run054 Desktop
+
+Desktop shortcuts can display app-supplied PNG icons. Place MyApp.png.tns beside MyApp.tns (up to 128 x 128 pixels and 64 KiB) and relaunch EndraHome. Missing or invalid artwork uses your selected built-in icon.
 
 Menu in the JSON reader finds keys or values across the entire file. Enter finds the next occurrence; after the last result, Enter searches again from the start.
 

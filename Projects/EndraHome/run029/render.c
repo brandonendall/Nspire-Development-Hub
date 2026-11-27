@@ -1,4 +1,5 @@
 #include "render.h"
+#include "image_viewer.h"
 #include "desktop.h"
 #include "display.h"
 #include "art.h"
@@ -62,7 +63,9 @@ static void caption_ring(uint16_t *f,int x,int y,int width,uint16_t ink){
 }
 
 static void draw_tile(uint16_t *f,const EhTile *t,const EhRegistry *r,const EhPalette *p,int selected){
- int cx=t->center,y=t->top;eh_icon_paint(f,r->appearance,cx-EH_ICON_SIZE/2,y);
+ int cx=t->center,y=t->top;
+ if(!eh_app_icon_draw(f,t->slot,r->slots[t->slot].path,cx-EH_ICON_SIZE/2,y))
+  eh_icon_paint(f,r->appearance,cx-EH_ICON_SIZE/2,y);
  const char *name=t->slot==EH_FILES_SLOT?"Files":r->slots[t->slot].label;
  char label[13];size_t n=strlen(name);
  if(n>12){memcpy(label,name,9);memcpy(label+9,"...",4);n=12;}

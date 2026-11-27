@@ -12,6 +12,7 @@ typedef struct {
  int width,height,zoom,fit_zoom,pan_x,pan_y;
  char error[48];
 } Eh18Image;
+int eh_app_icon_draw(uint16_t *frame,int slot,const char *app,int x,int y);
 int eh18_is_image_name(const char *path);
 int eh18_image_open(Eh18Image *image,const char *path);
 void eh18_image_close(Eh18Image *image);

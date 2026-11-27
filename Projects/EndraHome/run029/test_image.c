@@ -64,6 +64,10 @@ int main(void){
  assert(img.width==4&&img.height==4&&img.pixels);
  uint16_t col=img.pixels[1];
  assert(col!=0);
+ char app[128];snprintf(app,sizeof(app),"/tmp/eh18_%ld.tns",(long)getpid());
+ memset(fb,0,sizeof(fb));assert(eh_app_icon_draw(fb,0,app,0,0));
+ assert(fb[12]==col);
+ assert(!eh_app_icon_draw(fb,0,"/missing/example.tns",0,0));
  eh18_image_close(&img);assert(remove(path)==0);
 
  snprintf(path,sizeof(path),"/tmp/eh18_%ld.jpg.tns",(long)getpid());

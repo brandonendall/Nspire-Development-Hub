@@ -6,6 +6,8 @@
  * Only bounded static memory plus image pixels are held between frames.
  */
 #include "image_viewer.h"
+#include "art.h"
+#include "registry.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -192,4 +194,67 @@ int eh18_image_pan(Eh18Image *v,int dx,int dy){
  v->pan_x+=dx;v->pan_y+=dy;
  clamp_pan(v);
  return v->pan_x!=oldx||v->pan_y!=oldy;
+}
+
+/* Probe each assigned path once, including misses, so the clock redraw never
+ * reopens an icon. Keep only the bounded, display-sized RGBA result. */
+typedef struct {
+ char app[EH7_PATH_CAP];
+ unsigned char *pixels;
+ int width,height;
+} AppIcon;
+static AppIcon app_icons[EH7_SLOT_COUNT];
+
+static void load_app_icon(AppIcon *icon,const char *app){
+ free(icon->pixels);icon->pixels=NULL;
+ snprintf(icon->app,sizeof(icon->app),"%s",app);
+ if(!ext(app,".tns"))return;
+ char path[EH7_PATH_CAP+8];
+ snprintf(path,sizeof(path),"%.*s.png.tns",(int)strlen(app)-4,app);
+ FILE *in=fopen(path,"rb");if(!in)return;
+ unsigned char sig[8];
+ int w,h,channels;
+ int valid=fread(sig,1,8,in)==8 && !memcmp(sig,"\x89PNG\r\n\x1a\n",8)
+    && fseek(in,0,SEEK_END)==0;
+ long size=valid?ftell(in):-1;
+ rewind(in);
+ valid=size>0 && size<=65536 && stbi_info_from_file(in,&w,&h,&channels)
+     && w>0 && h>0 && w<=128 && h<=128;
+ rewind(in);
+ unsigned char *rgba=valid?stbi_load_from_file(in,&w,&h,&channels,4):NULL;
+ fclose(in);
+ if(!rgba)return;
+ int longest=w>h?w:h;
+ icon->width=(w*EH_ICON_SIZE+longest/2)/longest;
+ icon->height=(h*EH_ICON_SIZE+longest/2)/longest;
+ if(!icon->width)icon->width=1;
+ if(!icon->height)icon->height=1;
+ icon->pixels=malloc((size_t)icon->width*icon->height*4);
+ if(icon->pixels){
+  for(int y=0;y<icon->height;++y)for(int x=0;x<icon->width;++x){
+   int src=(y*h/icon->height*w+x*w/icon->width)*4;
+   memcpy(icon->pixels+(y*icon->width+x)*4,rgba+src,4);
+  }
+ }
+ stbi_image_free(rgba);
+}
+
+int eh_app_icon_draw(uint16_t *frame,int slot,const char *app,int x,int y){
+ if(!frame||slot<0||slot>=EH7_SLOT_COUNT||!app)return 0;
+ AppIcon *icon=&app_icons[slot];
+ if(strcmp(icon->app,app))load_app_icon(icon,app);
+ if(!icon->pixels)return 0;
+ x+=(EH_ICON_SIZE-icon->width)/2;y+=(EH_ICON_SIZE-icon->height)/2;
+ for(int row=0;row<icon->height;++row)for(int col=0;col<icon->width;++col){
+  int px=x+col,py=y+row;
+  if(px<0||px>=320||py<0||py>=240)continue;
+  const unsigned char *rgba=icon->pixels+(row*icon->width+col)*4;
+  unsigned alpha=rgba[3],inv=255-alpha;
+  uint16_t *dest=frame+py*320+px,old=*dest;
+  unsigned red=((rgba[0]>>3)*alpha+(old>>11)*inv+127)/255;
+  unsigned green=((rgba[1]>>2)*alpha+((old>>5)&63)*inv+127)/255;
+  unsigned blue=((rgba[2]>>3)*alpha+(old&31)*inv+127)/255;
+  *dest=(uint16_t)((red<<11)|(green<<5)|blue);
+ }
+ return 1;
 }
