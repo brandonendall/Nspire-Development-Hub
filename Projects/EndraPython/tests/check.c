@@ -214,6 +214,41 @@ static void ide_checks(const char *root,void *stack){
     for(int i=0;i<2;i++){snprintf(path,sizeof path,"%s/%s",root,samples[i]);assert(!unlink(path));}
 }
 
+static void study_checks(const char *documents, void *stack) {
+    char folder[PATH_CAP], path[PATH_CAP + NAME_CAP], source[SOURCE_CAP + 1];
+    const char *files[] = {"Run035_Study_Check.py.tns", "study_models.py.tns",
+        "Run035_Study_Data.csv.tns", "Run035_Study_Data.json.tns"};
+    snprintf(folder, sizeof folder, "%s/study", documents);
+    assert(!mkdir(folder, 0700));
+    for (size_t i = 0; i < 2; i++) {
+        snprintf(path, sizeof path, "tests/%s", files[i]);
+        FILE *fixture = fopen(path, "rb");
+        assert(fixture);
+        size_t bytes = fread(source, 1, sizeof source, fixture);
+        assert(bytes < sizeof source && !ferror(fixture) && !fclose(fixture));
+        source[bytes] = 0;
+        write_file(folder, files[i], source);
+    }
+    app_init(documents, stack);
+    assert(browse_folder(folder) && load_script(files[0]));
+    app.page = EDITOR;
+    answer = "alex green";
+    app_key(RUN);
+    answer = NULL;
+    if (app.error) {
+        for (int i = 0; i < app.rows; i++) fprintf(stderr, "%s\n", app.output[(app.first + i) % OUT_LINES]);
+    }
+    assert(app.page == OUTPUT && !app.error && output_has("Run035 study checks passed"));
+    assert(output_has("Ready to study, Alex Green."));
+    preview("study_result");
+    for (size_t i = 0; i < sizeof files / sizeof *files; i++) {
+        snprintf(path, sizeof path, "%s/%s", folder, files[i]);
+        assert(!unlink(path));
+    }
+    assert(!rmdir(folder));
+    puts("PASS: Run035 classes, sibling import, strings, collections, CSV, JSON, statistics and input.");
+}
+
 static void project_import_checks(const char *documents, void *stack) {
     char project[PATH_CAP];
     snprintf(project, sizeof project, "%s/project", documents);
@@ -1112,6 +1147,7 @@ int main(void){
     workbench_checks(root,&stack);
     storage_io_checks(root,&stack);
     project_import_checks(root,&stack);
+    study_checks(root,&stack);
     catalog_checks(scripts,&stack);
     ide_checks(scripts,&stack);
     browse_checks(scripts,&stack);

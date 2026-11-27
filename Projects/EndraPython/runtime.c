@@ -12,7 +12,7 @@
 
 #include "shared/readline/readline.h"
 
-static uintptr_t heap[128 * 1024 / sizeof(uintptr_t)];
+static uintptr_t heap[160 * 1024 / sizeof(uintptr_t)];
 static unsigned polls;
 static int error_line;
 static char error_file[NAME_CAP];

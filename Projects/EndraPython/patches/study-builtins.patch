@@ -1,0 +1,34 @@
+--- a/py/objstr.c
++++ b/py/objstr.c
+@@ -1880,6 +1880,8 @@
+     return str_caseconv(unichar_toupper, self_in);
+ }
+ MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
++
++#include "patches/text_case.h"
+
+ static mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
+     GET_STR_DATA_LEN(self_in, self_data, self_len);
+@@ -2103,6 +2105,8 @@
+     #endif
+     { MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj) },
+     { MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj) },
++    { MP_ROM_QSTR(MP_QSTR_title), MP_ROM_PTR(&ep_str_title_obj) },
++    { MP_ROM_QSTR(MP_QSTR_capitalize), MP_ROM_PTR(&ep_str_capitalize_obj) },
+     { MP_ROM_QSTR(MP_QSTR_isspace), MP_ROM_PTR(&str_isspace_obj) },
+     { MP_ROM_QSTR(MP_QSTR_isalpha), MP_ROM_PTR(&str_isalpha_obj) },
+     { MP_ROM_QSTR(MP_QSTR_isdigit), MP_ROM_PTR(&str_isdigit_obj) },
+--- a/py/objnamedtuple.c
++++ b/py/objnamedtuple.c
+@@ -172,11 +172,9 @@
+     qstr name = mp_obj_str_get_qstr(name_in);
+     size_t n_fields;
+     mp_obj_t *fields;
+-    #if MICROPY_CPYTHON_COMPAT
+     if (mp_obj_is_str(fields_in)) {
+         fields_in = mp_obj_str_split(1, &fields_in);
+     }
+-    #endif
+     mp_obj_get_array(fields_in, &n_fields, &fields);
+     return mp_obj_new_namedtuple_type(name, n_fields, fields);
+ }

@@ -144,9 +144,11 @@ mp_obj_t mp_builtin_open(size_t argc, const mp_obj_t *argv, mp_map_t *kwargs) {
     static const mp_arg_t signature[] = {
         {MP_QSTR_file, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         {MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)}},
+        {MP_QSTR_encoding, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_newline, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
     };
-    mp_arg_val_t args[2];
-    mp_arg_parse_all(argc, argv, kwargs, 2, signature, args);
+    mp_arg_val_t args[MP_ARRAY_SIZE(signature)];
+    mp_arg_parse_all(argc, argv, kwargs, MP_ARRAY_SIZE(signature), signature, args);
     char full[PATH_CAP];
     project_path(args[0].u_obj, full);
     size_t n;
@@ -156,6 +158,21 @@ mp_obj_t mp_builtin_open(size_t argc, const mp_obj_t *argv, mp_map_t *kwargs) {
         mp_raise_ValueError(MP_ERROR_TEXT("use r, w or a with optional b or t"));
     bool binary = n == 2 && mode[1] == 'b';
     ProjectFile *f = mp_obj_malloc_with_finaliser(ProjectFile, binary ? &binary_file : &text_file);
+    if (args[2].u_obj != MP_OBJ_NULL && args[2].u_obj != mp_const_none) {
+        size_t length;
+        const char *encoding = mp_obj_str_get_data(args[2].u_obj, &length);
+        if (binary || !((length == 5 && !strncasecmp(encoding, "utf-8", 5)) ||
+                        (length == 4 && !strncasecmp(encoding, "utf8", 4)))) {
+            mp_raise_ValueError(MP_ERROR_TEXT("text files support UTF-8 encoding"));
+        }
+    }
+    if (args[3].u_obj != MP_OBJ_NULL && args[3].u_obj != mp_const_none) {
+        size_t length;
+        mp_obj_str_get_data(args[3].u_obj, &length);
+        if (binary || length) {
+            mp_raise_ValueError(MP_ERROR_TEXT("use newline='' for raw line endings"));
+        }
+    }
     char native_mode[] = {mode[0], 'b', 0};
     f->writing = mode[0] != 'r';
     f->fp = NULL;

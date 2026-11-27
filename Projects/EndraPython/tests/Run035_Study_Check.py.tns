@@ -1,0 +1,73 @@
+import csv
+import json
+import math
+import statistics
+from collections import deque, namedtuple
+from io import StringIO
+from study_models import Reading, AdjustedReading
+
+reading = AdjustedReading("  north ridge  ", 18, 2)
+assert isinstance(reading, Reading)
+assert reading.label() == "North Ridge: 18 C (adjusted: 20)"
+reading.value += 1
+assert reading.corrected == 21
+print("Classes and imports passed")
+
+assert "hELLO wORLD".capitalize() == "Hello world"
+assert "they're here".title() == "They'Re Here"
+assert "élan straße".title() == "Élan Straße"
+assert "ßTRASSE".capitalize() == "Sstrasse"
+assert "ΟΣ".title() == "Ος"
+assert "".capitalize() == ""
+assert b"one\xfftwo".title() == b"One\xffTwo"
+assert "one TWO".upper() == "ONE TWO" and "ONE".lower() == "one"
+assert f"{reading.corrected:04d}" == "0021"
+assert "x,y".partition(",") == ("x", ",", "y")
+assert "a\r\nb\n".splitlines() == ["a", "b"]
+assert {i % 3 for i in range(7)} == {0, 1, 2}
+assert frozenset((1, 2)) | {3} == {1, 2, 3}
+assert list(filter(lambda num: num > 0, [-1, 2])) == [2]
+assert list(reversed("abc")) == ["c", "b", "a"]
+assert list(memoryview(b"ab")) == [97, 98]
+assert next(iter([]), "done") == "done"
+assert round(25, -1) == 20
+assert deque([2, 3], 2).popleft() == 2
+Point = namedtuple("Point", "x y")
+point_fields = Point(2, 4)._asdict()
+assert point_fields["x"] == 2 and point_fields["y"] == 4
+print("Strings and built-ins passed")
+
+with open("Run035_Study_Data.csv.tns", "w", encoding="utf-8", newline="") as file:
+    report = csv.DictWriter(file, ["place", "value"])
+    report.writeheader()
+    report.writerow({"place": 'North, "Ridge"\nLab', "value": reading.corrected})
+
+with open("Run035_Study_Data.csv.tns", encoding="utf-8", newline="") as file:
+    rows = list(csv.DictReader(file))
+assert rows == [{"place": 'North, "Ridge"\nLab', "value": "21"}]
+assert list(csv.reader(["a;b", "c;d"], delimiter=";")) == [["a", "b"], ["c", "d"]]
+assert list(csv.DictReader([])) == []
+stream = StringIO()
+csv.writer(stream).writerow([""])
+assert stream.getvalue() == '""\r\n'
+
+with open("Run035_Study_Data.json.tns", "w") as file:
+    json.dump(rows, file)
+with open("Run035_Study_Data.json.tns") as file:
+    assert json.load(file) == rows
+print("CSV, JSON and files passed")
+
+sample = [1, 3, 3, 5]
+assert statistics.mean(sample) == 3
+assert statistics.median(sample) == 3
+assert statistics.mode(sample) == 3
+assert statistics.multimode([5, 3, 5, 3]) == [5, 3]
+assert statistics.pvariance(sample) == 2
+assert math.isclose(statistics.stdev(sample), 1.632993, rel_tol=0.00001)
+assert math.factorial(5) == 120
+print("Math and statistics passed")
+
+name = input("Enter your name: ").strip()
+if name:
+    print(f"Ready to study, {name.title()}.")
+print("Run035 study checks passed")

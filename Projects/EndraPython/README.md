@@ -1,4 +1,4 @@
-# EndraPython Run034
+# EndraPython Run035
 
 Standalone editor and embedded MicroPython for the TI-Nspire CX II CAS, targeting OS 6.4.0.74 with an existing Ndless installation. Brandon confirmed Run007 imports, traceback reporting and navigation to the helper’s second line on hardware. Run008 passed the JSON counter test on the CX II CAS. Run009 expands the workbench.
 
@@ -48,7 +48,7 @@ The app starts in the EndraPython folder. Enter runs the selected Python script 
 
 ## Pygame on the calculator
 
-`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 128 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Run015 adds image loading and bitmap fonts. The next graphics milestones are Gint drawing, Gint keyboard events, and Pygame parity with PythonUltra, followed by py3d.
+`import pygame as pg` loads a small 2D compatibility layer adapted from PythonUltra. It includes `Surface`, `Rect`, `Color`, clipping, RGB565 color-key blitting, line and rectangle drawing, arrow and Enter key state, sampled key events, `time.Clock`, sprite groups and rectangle collisions. Drawing uses the existing 320 × 240 display. Keep offscreen surfaces small for the 160 KiB Python heap. The screen surface itself uses the native canvas. This stage covers 2D drawing and input. Run015 adds image loading and bitmap fonts. The next graphics milestones are Gint drawing, Gint keyboard events, and Pygame parity with PythonUltra, followed by py3d.
 
 ## Pygame assets
 
@@ -93,22 +93,30 @@ Files starts in /documents/EndraPython/ and can browse nested folders under Docu
 
 ## Runtime decision and capabilities
 
-Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. The Casio PythonUltra source informed the keyboard/editor design only.
+Upstream MicroPython v1.24.1, pinned at ecfdd5d6f9be971852003c2049600dc7b3e2a838, provides its own compiler, bytecode interpreter, tracing and garbage collection through its portable C embed port. It cross-links with the pinned ARM926EJ-S Ndless ABI and runs the same source in host tests. We chose it over a second interpreter such as PocketPy because the upstream embed interface already met the Run001 gates and has adjustable fixed-heap allocation. PocketPy has not been benchmarked. Run035 restores general-purpose built-ins enabled in Casio PythonUltra and adds Unicode title and capitalize methods.
 
-| Area | Run034 scope |
+| Area | Run035 scope |
 | --- | --- |
-| Language | Functions, loops, exceptions, lists, dictionaries, integer arithmetic including large integers, single-precision floats |
+| Language | Classes, inheritance, functions, comprehensions, loops, exceptions, f-strings, sets, lists, dictionaries, large integers and single-precision floats |
 | Imports | Registered modules include array, builtins, __main__, cmath, collections, gc, io, json, math, os, random and struct. The shell command `help("modules")` lists the compiled inventory. `help()` gives controls and `help(math)` describes an imported module |
-| Scripts and files | Sibling source imports from the selected folder. Project-relative text and binary file I/O, directory operations and JSON |
+| Scripts and files | Sibling source imports from the selected folder. Project-relative text and binary file I/O, directory operations, JSON and CSV |
 | Console | print, line-numbered exceptions, single-line REPL, previous-command recall |
-| Resource limits | 128 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
+| Resource limits | 160 KiB fixed Python heap and 16 KiB stack check. Cooperative Esc polling at VM loop checkpoints. Long operations inside C built-ins may delay interruption. These limits do not provide process isolation |
 | Other modules | display, keys, time and selected compatibility helpers. a compact Pygame subset supports 2D scripts |
+
+## Offline Python study
+
+Run035 supports classes with constructors, methods, inheritance, `super()`, properties and sibling-file imports. String methods include `title()`, `capitalize()`, `upper()`, `lower()`, `count()`, `center()`, `partition()` and `splitlines()`. The new title and capitalize methods use Unicode 15.0 case tables. Text files accept `encoding="utf-8"` and a raw `newline=""` mode for CSV.
+
+The bundled `csv` module supports reader, writer, DictReader and DictWriter with delimiters and quoted fields. It covers the documented calculator subset of CSV options. The bundled `statistics` module covers mean, median, mode, variance and standard deviation for ordinary integer and single-precision float samples. Use `help("modules")` for the interpreter inventory. Desktop Python packages and networking are outside this build's scope.
+
+Transfer both test scripts listed in [WORK_HANDOFF.md](WORK_HANDOFF.md) for the handheld study check.
 
 ## Calculator numerics
 
 `import numpy as np` loads the bundled PythonUltra numerical module. It supports small arrays and matrices, reshaping and transpose, vector dot products and normalization, two-dimensional matrix multiplication and `matrix.I` for inversion. The command catalog lists the available names. Use `np.matmul(a, b)` for multiplication of arrays and `a * b` for PythonUltra matrix objects.
 
-This port uses the existing 128 KiB MicroPython heap and single-precision floats. Matrix capacity depends on the live arrays, element values, and operation. The Stage 5 test script reports the completed square products and free heap after collection.
+This port uses the existing 160 KiB MicroPython heap and single-precision floats. Matrix capacity depends on the live arrays, element values, and operation. The Stage 5 test script reports the completed square products and free heap after collection.
 
 ## Script graphics, input, and timing
 
@@ -123,7 +131,7 @@ Run032 reduces allocations in mesh preparation, specializes affine transforms, a
 
 Run031 adds a hardware benchmark for painter and depth modes using the same one- and four-cube scenes. Each line reports preparation, clear and raster, and screen update totals in milliseconds for 24 frames. The script reports `display.BUILD_RUN` so photos identify the IDE build.
 
-Run030 adds optional per-pixel depth testing for filled triangles. Set `Renderer(depth=True)`, call `clear()` once per frame, then draw all opaque meshes and call `present()`. Use one camera and depth renderer per frame because the canvas and depth buffer are shared. `close()` releases the buffer early. Ending the Python session also releases it. The buffer allocates 150 KiB of native memory on the first clear, outside the 128 KiB MicroPython heap. If allocation raises `MemoryError`, scripts can switch to the default painter renderer. Depth mode uses 16-bit reciprocal depth with more precision near the camera. It supports opaque fill. Painter mode retains wireframe outlines.
+Run030 adds optional per-pixel depth testing for filled triangles. Set `Renderer(depth=True)`, call `clear()` once per frame, then draw all opaque meshes and call `present()`. Use one camera and depth renderer per frame because the canvas and depth buffer are shared. `close()` releases the buffer early. Ending the Python session also releases it. The buffer allocates 150 KiB of native memory on the first clear, outside the 160 KiB MicroPython heap. If allocation raises `MemoryError`, scripts can switch to the default painter renderer. Depth mode uses 16-bit reciprocal depth with more precision near the camera. It supports opaque fill. Painter mode retains wireframe outlines.
 
 Run029 separates frame preparation and rasterization through `Renderer.prepare_mesh()` and `draw_prepared()`. Its benchmark runs in Run028 and later with identical timed workloads and no scripted pause. It reports preparation, clear-and-raster time, display update time, and free heap after collection for one and four cubes.
 

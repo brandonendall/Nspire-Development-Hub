@@ -17,7 +17,7 @@ PYTHONPATH="$src/tools" python3 - <<'PY'
 from pathlib import Path
 from makemanifest import generate_frozen_str_content
 
-names = ("numpy", "ion", "kandinsky", "gint")
+names = ("numpy", "ion", "kandinsky", "gint", "csv", "statistics")
 paths = [f"{name}.py" for name in names]
 paths += [f"pygame/{name}.py" for name in ("__init__", "_geometry", "sprite", "time", "image", "font", "transform", "math", "draw", "display", "event", "key")]
 paths.append("py3d/__init__.py")
@@ -29,3 +29,4 @@ PY
 sed -i 's/^    #if MICROPY_MODULE_FROZEN_STR \&\& MICROPY_MODULE_FROZEN_MPY$/    #if MICROPY_MODULE_FROZEN_STR/' micropython_embed/py/frozenmod.c
 # Use fixed decimal scaling on the single-precision calculator port.
 patch -s -d micropython_embed -p1 < patches/decimal-float.patch
+patch -s -d micropython_embed -p1 < patches/study-builtins.patch

@@ -1,0 +1,2 @@
+Q(title)
+Q(capitalize)

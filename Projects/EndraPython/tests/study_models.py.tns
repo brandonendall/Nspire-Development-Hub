@@ -1,0 +1,22 @@
+class Reading:
+    unit = "C"
+
+    def __init__(self, place, value):
+        self.place = place.strip().title()
+        self.value = value
+
+    def label(self):
+        return f"{self.place}: {self.value} {self.unit}"
+
+
+class AdjustedReading(Reading):
+    def __init__(self, place, value, offset):
+        super().__init__(place, value)
+        self.offset = offset
+
+    @property
+    def corrected(self):
+        return self.value + self.offset
+
+    def label(self):
+        return f"{super().label()} (adjusted: {self.corrected})"

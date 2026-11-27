@@ -8,6 +8,7 @@ const char *const catalog_groups[] = {
     "builtins",
     "cmath",
     "collections",
+    "csv",
     "display",
     "gc",
     "gint",
@@ -22,6 +23,8 @@ const char *const catalog_groups[] = {
     "py3d",
     "pygame",
     "random",
+    "statistics",
+    "str",
     "struct",
     "sys",
     "time",
@@ -63,6 +66,7 @@ static const CatalogEntry catalog_members[] = {
     {"callable", 1},
     {"chr", 1},
     {"classmethod", 1},
+    {"compile", 1},
     {"complex", 1},
     {"dict", 1},
     {"dir", 1},
@@ -73,7 +77,9 @@ static const CatalogEntry catalog_members[] = {
     {"eval", 1},
     {"Exception", 1},
     {"exec", 1},
+    {"filter", 1},
     {"float", 1},
+    {"frozenset", 1},
     {"GeneratorExit", 1},
     {"getattr", 1},
     {"globals", 1},
@@ -99,6 +105,7 @@ static const CatalogEntry catalog_members[] = {
     {"map", 1},
     {"max", 1},
     {"MemoryError", 1},
+    {"memoryview", 1},
     {"min", 1},
     {"NameError", 1},
     {"next", 1},
@@ -115,8 +122,10 @@ static const CatalogEntry catalog_members[] = {
     {"property", 1},
     {"range", 1},
     {"repr", 1},
+    {"reversed", 1},
     {"round", 1},
     {"RuntimeError", 1},
+    {"set", 1},
     {"setattr", 1},
     {"slice", 1},
     {"sorted", 1},
@@ -146,7 +155,18 @@ static const CatalogEntry catalog_members[] = {
     {"sin", 1},
     {"sqrt", 1},
     /* collections */
+    {"OrderedDict", 1},
+    {"deque", 1},
     {"namedtuple", 1},
+    /* csv */
+    {"DictReader", 1},
+    {"DictWriter", 1},
+    {"Error", 1},
+    {"QUOTE_ALL", 0},
+    {"QUOTE_MINIMAL", 0},
+    {"QUOTE_NONE", 0},
+    {"reader", 1},
+    {"writer", 1},
     /* display */
     {"clear_screen", 1},
     {"color", 1},
@@ -281,9 +301,11 @@ static const CatalogEntry catalog_members[] = {
     {"e", 0},
     {"exp", 1},
     {"fabs", 1},
+    {"factorial", 1},
     {"floor", 1},
     {"fmod", 1},
     {"frexp", 1},
+    {"isclose", 1},
     {"isfinite", 1},
     {"isinf", 1},
     {"isnan", 1},
@@ -515,6 +537,21 @@ static const CatalogEntry catalog_members[] = {
     {"randrange", 1},
     {"seed", 1},
     {"uniform", 1},
+    /* statistics */
+    {"StatisticsError", 1},
+    {"mean", 1},
+    {"median", 1},
+    {"median_high", 1},
+    {"median_low", 1},
+    {"mode", 1},
+    {"multimode", 1},
+    {"pstdev", 1},
+    {"pvariance", 1},
+    {"stdev", 1},
+    {"variance", 1},
+    /* str */
+    {"capitalize", 1},
+    {"title", 1},
     /* struct */
     {"calcsize", 1},
     {"pack", 1},
@@ -542,24 +579,27 @@ static const struct { int offset, count; } catalog_ranges[] = {
     {0, 17}, /* Common */
     {17, 0}, /* __main__ */
     {17, 1}, /* array */
-    {18, 85}, /* builtins */
-    {103, 10}, /* cmath */
-    {113, 1}, /* collections */
-    {114, 9}, /* display */
-    {123, 6}, /* gc */
-    {129, 66}, /* gint */
-    {195, 3}, /* io */
-    {198, 11}, /* ion */
-    {209, 4}, /* json */
-    {213, 5}, /* kandinsky */
-    {218, 10}, /* keys */
-    {228, 27}, /* math */
-    {255, 41}, /* numpy */
-    {296, 4}, /* os */
-    {300, 26}, /* py3d */
-    {326, 135}, /* pygame */
-    {461, 7}, /* random */
-    {468, 5}, /* struct */
-    {473, 9}, /* sys */
-    {482, 4}, /* time */
+    {18, 91}, /* builtins */
+    {109, 10}, /* cmath */
+    {119, 3}, /* collections */
+    {122, 8}, /* csv */
+    {130, 9}, /* display */
+    {139, 6}, /* gc */
+    {145, 66}, /* gint */
+    {211, 3}, /* io */
+    {214, 11}, /* ion */
+    {225, 4}, /* json */
+    {229, 5}, /* kandinsky */
+    {234, 10}, /* keys */
+    {244, 29}, /* math */
+    {273, 41}, /* numpy */
+    {314, 4}, /* os */
+    {318, 26}, /* py3d */
+    {344, 135}, /* pygame */
+    {479, 7}, /* random */
+    {486, 11}, /* statistics */
+    {497, 2}, /* str */
+    {499, 5}, /* struct */
+    {504, 9}, /* sys */
+    {513, 4}, /* time */
 };

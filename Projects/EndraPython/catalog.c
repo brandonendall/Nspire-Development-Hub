@@ -54,6 +54,16 @@ const char *catalog_signature(void){
         {"os.listdir", "os.listdir([path])"}, {"os.mkdir", "os.mkdir(path)"},
         {"json.dump", "json.dump(obj, file)"}, {"json.load", "json.load(file)"},
         {"json.dumps", "json.dumps(obj)"}, {"json.loads", "json.loads(text)"},
+        {"csv.reader", "csv.reader(lines[, delimiter=...])"},
+        {"csv.writer", "csv.writer(file[, delimiter=...])"},
+        {"csv.DictReader", "csv.DictReader(lines[, fieldnames])"},
+        {"csv.DictWriter", "csv.DictWriter(file, fieldnames)"},
+        {"statistics.mean", "statistics.mean(data)"},
+        {"statistics.median", "statistics.median(data)"},
+        {"statistics.mode", "statistics.mode(data)"},
+        {"statistics.stdev", "statistics.stdev(data[, xbar])"},
+        {"str.title", "text.title()"},
+        {"str.capitalize", "text.capitalize()"},
         {"math.sqrt", "math.sqrt(x)"}, {"math.sin", "math.sin(radians)"},
         {"math.cos", "math.cos(radians)"}, {"math.tan", "math.tan(radians)"},
         {"math.atan2", "math.atan2(y, x)"}, {"math.floor", "math.floor(x)"},
@@ -179,7 +189,7 @@ void catalog_key(int k) {
         if (strncasecmp(catalog_groups[catalog_group], catalog_filter, len)) return;
         catalog_browsing_modules = 0;
         load_group();
-    } else if (k == INDENT && !catalog_browsing_modules && qualified()) {
+    } else if (k == INDENT && !catalog_browsing_modules && qualified() && strcmp(catalog_groups[catalog_group], "str")) {
         char statement[80];
         snprintf(statement, sizeof statement, "import %s", catalog_groups[catalog_group]);
         app.page = app.origin;
