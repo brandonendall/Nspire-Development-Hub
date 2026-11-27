@@ -1,4 +1,6 @@
-# EndraHome Run050 Desktop
+# EndraHome Run051 Desktop
+
+Open .json or .json.tns directly in Files. Up/down scrolls, left/right changes 4 KiB sections. Enter edits a complete ASCII file up to 4096 bytes; Menu saves. New File / Note with a name such as settings.json creates settings.json.tns. Reading displays the original layout. Non-ASCII bytes use the existing font fallback.
 
 Set clock accepts a restarted RTC counter, including zero. If the counter is unavailable or stalls, the desktop timer advances local time while EndraHome runs. Set local time again after a reset if needed. The PDF companion is reused from Run049.
 

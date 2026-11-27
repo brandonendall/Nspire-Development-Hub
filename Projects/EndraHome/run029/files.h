@@ -14,7 +14,8 @@ typedef struct {
  Eh13Picker nav,archive;
  int pdf_requested;
  int active,screen,preview_ok,preview_truncated,line_count,scroll;
- unsigned long file_size;
+ unsigned long file_size,preview_offset;
+ int json_view;
  Eh18Image image;
  EhTextEdit text_edit;
  char path[EH7_PATH_CAP];

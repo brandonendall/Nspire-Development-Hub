@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 int eh_text_editable(const char *path,const char *data,unsigned length){
-    static const char *const endings[]={".txt",".txt.tns",".md",".md.tns",".csv",".csv.tns"};
+    static const char *const endings[]={".txt",".txt.tns",".md",".md.tns",".csv",".csv.tns",".json",".json.tns"};
     if(!path||!data||length>EH_TEXT_CAP)return 0;
     size_t n=strlen(path);
     int supported=0;

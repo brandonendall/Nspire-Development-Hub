@@ -86,7 +86,7 @@ int main(void){
  snprintf(sub,sizeof(sub),"%s/Projects",dir);
  assert(!mkdir(dir,0700));assert(!mkdir(sub,0700));
  const char *exts[]={"notes.txt","data.cfg","photo.jpg","slides.pdf",
-    "program.tns","archive.zip","mystery.zzz","raw.bin"};
+    "program.tns","archive.zip","mystery.zzz","raw.bin","Save.JSON.TNS","small.json"};
  for(unsigned i=0;i<sizeof(exts)/sizeof(exts[0]);i++){
   snprintf(file,sizeof(file),"%s/%s",dir,exts[i]);
   create(file,i==0?"Hello Files!\nNext line\nThird line\n":"test");
@@ -98,9 +98,23 @@ int main(void){
  eh13_picker_close(&apps);
  Eh17Files f;
  assert(eh17_files_open(&f,dir));
- assert(f.active&&f.nav.show_all&&f.nav.count==9);
+ assert(f.active&&f.nav.show_all&&f.nav.count==11);
  assert(f.nav.items[0].directory);
  for(unsigned i=0;i<sizeof(exts)/sizeof(exts[0]);i++)has(&f.nav,exts[i],1);
+ assert(select_name(&f.nav,"Save.JSON.TNS"));
+ snprintf(file,sizeof(file),"%s/Save.JSON.TNS",dir);
+ FILE *large=fopen(file,"wb");assert(large);fputs("{\"data\":\"",large);
+ for(int j=0;j<5000;++j)fputc('x',large);
+ fputs("\"}",large);assert(fclose(large)==0);
+ eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==2 && f.json_view && f.preview_truncated);
+ eh17_files_handle(&f,EH_KEY_RIGHT);assert(f.preview_offset==4096 && !f.preview_truncated && strstr(f.content,"\"}"));
+ eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==2);
+ eh17_files_handle(&f,EH_KEY_LEFT);assert(!f.preview_offset && f.content[0]=='{');
+ eh17_files_handle(&f,EH_KEY_ESC);assert(!f.screen);
+ assert(select_name(&f.nav,"small.json"));eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==2);
+ eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==EH_FILES_TEXT_EDIT);
+ eh17_files_handle(&f,EH_KEY_ESC);eh17_files_handle(&f,EH_KEY_ESC);assert(!f.screen);
+ assert(eh17_is_text_name("log.LOG.TNS"));
  assert(select_name(&f.nav,"notes.txt"));
  assert(eh17_files_handle(&f,EH_KEY_ENTER)==1);
  assert(f.screen==1&&f.preview_ok&&f.text_len>0);

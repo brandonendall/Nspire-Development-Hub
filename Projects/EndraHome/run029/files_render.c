@@ -146,7 +146,7 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
  uint16_t white=p.ink,dim=p.ink,cyan=eh_skin(&p,EH_RGB(53,217,254));
  box(f,0,0,320,240,eh_skin(&p,EH_RGB(5,17,31)));
  box(f,0,0,320,38,eh_skin(&p,EH_RGB(9,28,47)));
- eh_small_text(f,12,11,v->screen==1?"FILE INFORMATION":"TEXT PREVIEW",p.ink,2,21);
+ eh_small_text(f,12,11,v->screen==1?"FILE INFORMATION":v->json_view?"JSON READER":"TEXT PREVIEW",p.ink,2,21);
  box(f,0,36,320,2,cyan);
  if(v->screen==1){
   txt(f,13,52,"NAME:",cyan,10);
@@ -174,9 +174,16 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   box(f,9,43,302,170,eh_skin(&p,EH_RGB(9,28,47)));
   if(!v->text_len)txt(f,14,62,"EMPTY TEXT FILE",dim,30);
   else show_lines(f,v,white);
-  if(v->preview_truncated)txt(f,14,202,"FIRST 4096 BYTES ONLY",cyan,27);
+  if(v->json_view && (v->preview_offset||v->preview_truncated)){
+   char range[48];snprintf(range,sizeof(range),"BYTES %lu-%lu / %lu",v->preview_offset+1,v->preview_offset+v->text_len,v->file_size);
+   eh_small_text(f,14,203,range,cyan,1,48);
+  }else if(v->preview_truncated)txt(f,14,202,"FIRST 4096 BYTES ONLY",cyan,27);
   box(f,0,218,320,22,eh_skin(&p,EH_RGB(9,28,47)));box(f,0,217,320,1,cyan);
-  if(v->preview_ok&&!v->preview_truncated&&eh_text_editable(v->path,v->content,v->text_len))
+  if(v->json_view && (v->preview_offset||v->preview_truncated))
+   eh_small_text(f,8,226,"UP/DOWN SCROLL   L/R SECTION   ESC FILES",cyan,1,48);
+  else if(v->json_view)
+   eh_small_text(f,8,226,eh_text_editable(v->path,v->content,v->text_len)?"UP/DOWN SCROLL   ENTER EDIT   ESC FILES":"UP/DOWN SCROLL   ESC FILES",cyan,1,48);
+  else if(v->preview_ok&&!v->preview_truncated&&eh_text_editable(v->path,v->content,v->text_len))
    eh_small_text(f,8,226,"UP/DOWN SCROLL   ENTER EDIT   ESC INFO",cyan,1,48);
   else txt(f,5,227,"UP/DOWN SCROLL ESC INFO MENU FILES",cyan,39);
  }

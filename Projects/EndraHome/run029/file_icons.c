@@ -30,7 +30,7 @@ EhFileKind eh_file_kind(const char *name,int directory){
       {".zip",EH_FILE_ARCHIVE},{".rar",EH_FILE_ARCHIVE},{".7z",EH_FILE_ARCHIVE},
       {".jpg",EH_FILE_IMAGE},{".jpeg",EH_FILE_IMAGE},{".png",EH_FILE_IMAGE},
       {".pdf",EH_FILE_PDF},{".cfg",EH_FILE_CONFIG},{".ini",EH_FILE_CONFIG},
-      {".theme",EH_FILE_CONFIG},{".csv",EH_FILE_CSV},
+      {".json",EH_FILE_CONFIG},{".theme",EH_FILE_CONFIG},{".csv",EH_FILE_CSV},
       {".gba",EH_FILE_ROM},{".gbz",EH_FILE_ROM},
       {".elf",EH_FILE_PROGRAM},{".zehn",EH_FILE_PROGRAM}
     };

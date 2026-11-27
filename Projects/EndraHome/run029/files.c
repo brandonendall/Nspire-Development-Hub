@@ -17,11 +17,13 @@ static int suffix(const char *p,const char *ending){
  }
  return 1;
 }
+static int json_name(const char *p){return suffix(p,".json")||suffix(p,".json.tns");}
 int eh17_is_text_name(const char *p){
  if(!p)return 0;
  static const char *ext[]={".txt",".cfg",".csv",".md",".log",".ini",
   ".json",".xml",".py",".c",".h",".sh",".yaml",".yml",".txt.tns",
-  ".cfg.tns",".py.tns",".md.tns",".csv.tns"};
+  ".cfg.tns",".py.tns",".md.tns",".csv.tns",".json.tns",".xml.tns",".log.tns",
+  ".ini.tns",".c.tns",".h.tns",".sh.tns",".yaml.tns",".yml.tns"};
  for(unsigned i=0;i<sizeof(ext)/sizeof(ext[0]);i++)
   if(suffix(p,ext[i]))return 1;
  return 0;
@@ -43,11 +45,14 @@ static void tally(Eh17Files *v){
  }
  v->line_count=lines;
 }
-static void preview(Eh17Files *v){
+static void preview_at(Eh17Files *v,unsigned long offset){
+ v->preview_offset=offset;
+ v->json_view=json_name(v->path);
  v->preview_ok=0;v->preview_truncated=0;v->line_count=0;v->scroll=0;
  v->text_len=0;v->content[0]=0;
  if(!eh17_is_text_name(v->path))return;
  FILE *f=fopen(v->path,"rb");if(!f)return;
+ if(offset && fseek(f,(long)offset,SEEK_SET)!=0){fclose(f);return;}
  size_t n=fread(v->content,1,EH17_TEXT_CAP,f);
  if(n==EH17_TEXT_CAP && fgetc(f)!=EOF)v->preview_truncated=1;
  int failed=ferror(f);
@@ -62,6 +67,7 @@ static void preview(Eh17Files *v){
  v->content[n]=0;v->text_len=(unsigned)n;
  v->preview_ok=1;tally(v);
 }
+static void preview(Eh17Files *v){preview_at(v,0);}
 static void refresh(Eh17Files *v){
  char root[EH7_PATH_CAP],dir[EH7_PATH_CAP];
  strcpy(root,v->nav.root);strcpy(dir,v->nav.dir);
@@ -194,7 +200,7 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
    const char *ext="";
    if(new_file){
     if(!strchr(v->edit_name,'.'))ext=".txt.tns";
-    else if(suffix(v->edit_name,".txt"))ext=".tns";
+    else if(suffix(v->edit_name,".txt")||suffix(v->edit_name,".json"))ext=".tns";
    }
    int n=snprintf(target,sizeof(target),"%s/%s%s",dir,v->edit_name,ext);
    v->edit_error=0;
@@ -258,11 +264,22 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   return 1;
  }
  if(v->screen==2){
-  if(key==EH_KEY_ENTER&&v->preview_ok&&!v->preview_truncated&&
+  if(key==EH_KEY_ENTER&&v->preview_ok&&!v->preview_offset&&!v->preview_truncated&&
      eh_text_editable(v->path,v->content,v->text_len)){
    eh_text_begin(&v->text_edit,v->content,v->text_len);
    v->status.text[0]=0;v->screen=EH_FILES_TEXT_EDIT;return 1;
   }
+  if(v->json_view && (key==EH_KEY_LEFT||key==EH_KEY_RIGHT)){
+   unsigned long offset=v->preview_offset;
+   if(key==EH_KEY_RIGHT && v->preview_truncated)offset+=EH17_TEXT_CAP;
+   if(key==EH_KEY_LEFT && offset)offset-=EH17_TEXT_CAP;
+   if(offset!=v->preview_offset){
+    preview_at(v,offset);
+    if(!v->preview_ok){v->screen=1;return 1;}
+   }
+   return 1;
+  }
+  if(key==EH_KEY_ESC && v->json_view){v->screen=0;return 1;}
   if(key==EH_KEY_ESC||key==EH_KEY_LEFT){v->screen=1;return 1;}
   if(key==EH_KEY_MENU){v->screen=0;return 1;}
   if(key==EH_KEY_UP){if(v->scroll>0)--v->scroll;return 1;}
@@ -312,6 +329,7 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
    return 1;
   }
   v->screen=1;preview(v);
+  if(v->json_view && v->preview_ok){v->screen=2;return 1;}
   /* One-Enter JPEG/PNG viewing, like opening an app; no extra file menu. */
   if(eh18_is_image_name(v->path)&&eh18_image_open(&v->image,v->path))
    v->screen=3;
