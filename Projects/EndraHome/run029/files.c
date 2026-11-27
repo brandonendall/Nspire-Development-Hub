@@ -109,6 +109,46 @@ static int name_contains(const char *name,const char *query){
  }
  return 0;
 }
+/* Search buffered file data, preserving enough overlap for split keys. */
+static void find_json(Eh17Files *v){
+ const size_t len=strlen(v->json_query);
+ if(!len)return;
+ FILE *fp=fopen(v->path,"rb");
+ if(!fp){eh_toast_set(&v->status,"CANNOT READ FILE");return;}
+ unsigned char buf[1024+sizeof(v->json_query)];
+ unsigned long base=v->matched?v->match+1:0,hit=0;
+ size_t kept=0;int found=0,failed=fseek(fp,(long)base,SEEK_SET)!=0;
+ while(!failed && !found){
+  size_t got=fread(buf+kept,1,1024,fp),total=kept+got;
+  for(size_t i=0;i+len<=total;++i){
+   size_t k=0;
+   while(k<len && fold_ascii(buf[i+k])==fold_ascii(v->json_query[k]))++k;
+   if(k==len){found=1;hit=base+i;break;}
+  }
+  if(got<1024){failed=ferror(fp);break;}
+  kept=total<len-1?total:len-1;
+  base+=total-kept;
+  memmove(buf,buf+total-kept,kept);
+ }
+ fclose(fp);
+ if(!found||failed){
+  v->matched=0;eh_toast_set(&v->status,failed?"READ ERROR":"NO MORE MATCHES");return;
+ }
+ preview_at(v,hit/EH17_TEXT_CAP*EH17_TEXT_CAP);
+ if(!v->preview_ok){v->screen=1;return;}
+ v->match=hit;v->matched=1;v->screen=2;
+ unsigned pos=0,local=(unsigned)(hit-v->preview_offset);
+ while(pos<v->text_len){
+  unsigned end=pos;
+  for(int col=0;col<35 && end<v->text_len;++col){
+   char ch=v->content[end++];
+   if(ch=='\r'){if(end<v->text_len&&v->content[end]=='\n')++end;break;}
+   if(ch=='\n')break;
+  }
+  if(local<end)break;
+  ++v->scroll;pos=end;
+ }
+}
 static void find_name(Eh17Files *v){
  Eh13Picker *p=&v->nav;
  for(int i=1;i<=p->count;++i){
@@ -179,6 +219,11 @@ void eh17_files_close(Eh17Files *v){
 }
 int eh17_files_handle(Eh17Files *v,EhKey key){
  if(!v||!v->active||key==EH_KEY_NONE)return 0;
+ if(v->screen==EH_FILES_FIND_JSON){
+  if(key==EH_KEY_ESC){v->screen=2;v->status.text[0]=0;}
+  if(key==EH_KEY_ENTER)find_json(v);
+  return 1;
+ }
  if(v->screen==EH_FILES_FIND){
   if(key==EH_KEY_ESC){v->screen=0;v->status.text[0]=0;}
   else if(key==EH_KEY_ENTER && v->query[0])find_name(v);
@@ -291,6 +336,7 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   return 1;
  }
  if(v->screen==2){
+  if(v->json_view&&key==EH_KEY_MENU){v->screen=EH_FILES_FIND_JSON;v->status.text[0]=0;return 1;}
   if(key==EH_KEY_ENTER&&v->preview_ok&&!v->preview_offset&&!v->preview_truncated&&
      eh_text_editable(v->path,v->content,v->text_len)){
    eh_text_begin(&v->text_edit,v->content,v->text_len);
@@ -338,7 +384,7 @@ int eh17_files_handle(Eh17Files *v,EhKey key){
   struct stat st;
   if(stat(chosen,&st)!=0)return 0;
   v->file_size=st.st_size>=0?(unsigned long)st.st_size:0;
-  strcpy(v->path,chosen);
+  strcpy(v->path,chosen);v->matched=0;
   if(suffix(chosen,".pdf")||suffix(chosen,".pdf.tns")){
    unsigned char header[1024];
    FILE *pdf=fopen(chosen,"rb");
@@ -377,11 +423,13 @@ int eh21_files_text(Eh17Files *v,int ch){
   }
   return 0;
  }
- if(v->screen==EH_FILES_FIND){
-  size_t n=strlen(v->query);
-  if(ch==8 && n)v->query[n-1]=0;
+ if(v->screen==EH_FILES_FIND||v->screen==EH_FILES_FIND_JSON){
+  char *query=v->screen==EH_FILES_FIND?v->query:v->json_query;
+  if(v->screen==EH_FILES_FIND_JSON)v->matched=0;
+  size_t n=strlen(query);
+  if(ch==8 && n)query[n-1]=0;
   else if(ch>=32 && ch<=126 && n+1<sizeof(v->query)){
-   v->query[n]=(char)ch;v->query[n+1]=0;
+   query[n]=(char)ch;query[n+1]=0;
   }
   v->status.text[0]=0;return 1;
  }

@@ -108,9 +108,12 @@ int main(void){
  assert(select_name(&f.nav,"Save.JSON.TNS"));
  snprintf(file,sizeof(file),"%s/Save.JSON.TNS",dir);
  FILE *large=fopen(file,"wb");assert(large);fputs("{\"data\":\"",large);
- for(int j=0;j<5000;++j)fputc('x',large);
+ for(int j=0;j<5000;++j)fputc(j==4085?'A':j==4086?'B':j==4087?'C':'x',large);
  fputs("\"}",large);assert(fclose(large)==0);
  eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==2 && f.json_view && f.preview_truncated);
+ eh17_files_handle(&f,EH_KEY_MENU);assert(f.screen==EH_FILES_FIND_JSON);
+ eh21_files_text(&f,'a');eh21_files_text(&f,'b');eh21_files_text(&f,'c');
+ eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==2&&f.matched&&f.match==4094&&f.scroll>0);
  eh17_files_handle(&f,EH_KEY_RIGHT);assert(f.preview_offset==4096 && !f.preview_truncated && strstr(f.content,"\"}"));
  eh17_files_handle(&f,EH_KEY_ENTER);assert(f.screen==2);
  eh17_files_handle(&f,EH_KEY_LEFT);assert(!f.preview_offset && f.content[0]=='{');

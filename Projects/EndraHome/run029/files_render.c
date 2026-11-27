@@ -15,7 +15,7 @@ static const char *tail(const char *s,int cap){
 static void show_lines(uint16_t *f,const Eh17Files *v,uint16_t white){
  unsigned pos=0;int line=0;
  while(pos<v->text_len&&line<v->scroll+12){
-  char b[36];int used=0;
+  unsigned start=pos;char b[36];int used=0;
   while(pos<v->text_len&&used<35){
    unsigned char c=(unsigned char)v->content[pos++];
    if(c=='\n')break;
@@ -27,6 +27,11 @@ static void show_lines(uint16_t *f,const Eh17Files *v,uint16_t white){
   }
   b[used]=0;
   if(line>=v->scroll)txt(f,15,51+(line-v->scroll)*13,b,white,35);
+  if(v->json_view&&v->matched&&line>=v->scroll){
+   unsigned long first=v->preview_offset+start;
+   for(int col=0;col<used;++col)if(first+col>=v->match && first+col-v->match<strlen(v->json_query))
+    box(f,15+col*8,60+(line-v->scroll)*13,8,1,white);
+  }
   ++line;
  }
 }
@@ -71,11 +76,12 @@ static void render_editor(uint16_t *f,const Eh17Files *v,const EhPalette *p){
 void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
  if(!f||!v||!v->active||!apps)return;
  EhPalette p=eh_palette(apps->appearance);
- if(v->screen==EH_FILES_FIND){
+ if(v->screen==EH_FILES_FIND||v->screen==EH_FILES_FIND_JSON){
+  int json=v->screen==EH_FILES_FIND_JSON;
   box(f,0,0,320,240,p.panel);
-  eh_small_text(f,14,14,"FIND NAME",p.ink,2,24);
-  txt(f,14,67,"SEARCH CURRENT FOLDER",p.ink,32);
-  txt(f,14,96,tail(v->query,35),p.ink,35);
+  eh_small_text(f,14,14,json?"FIND IN JSON":"FIND NAME",p.ink,2,24);
+  txt(f,14,67,json?"KEY OR VALUE":"SEARCH CURRENT FOLDER",p.ink,32);
+  txt(f,14,96,tail(json?v->json_query:v->query,35),p.ink,35);
   if(v->status.text[0])txt(f,14,155,v->status.text,p.ink,35);
   eh_small_text(f,12,226,"ENTER FIND NEXT    ESC BACK",p.ink,1,42);return;
  }
@@ -188,9 +194,9 @@ void eh17_files_render(uint16_t *f,const Eh17Files *v,const EhRegistry *apps){
   }else if(v->preview_truncated)txt(f,14,202,"FIRST 4096 BYTES ONLY",cyan,27);
   box(f,0,218,320,22,eh_skin(&p,EH_RGB(9,28,47)));box(f,0,217,320,1,cyan);
   if(v->json_view && (v->preview_offset||v->preview_truncated))
-   eh_small_text(f,8,226,"UP/DOWN SCROLL   L/R SECTION   ESC FILES",cyan,1,48);
+   eh_small_text(f,8,226,"U/D SCROLL  L/R SECTION  MENU FIND  ESC FILES",cyan,1,48);
   else if(v->json_view)
-   eh_small_text(f,8,226,eh_text_editable(v->path,v->content,v->text_len)?"UP/DOWN SCROLL   ENTER EDIT   ESC FILES":"UP/DOWN SCROLL   ESC FILES",cyan,1,48);
+   eh_small_text(f,8,226,eh_text_editable(v->path,v->content,v->text_len)?"U/D SCROLL  ENTER EDIT  MENU FIND  ESC FILES":"U/D SCROLL  MENU FIND  ESC FILES",cyan,1,48);
   else if(v->preview_ok&&!v->preview_truncated&&eh_text_editable(v->path,v->content,v->text_len))
    eh_small_text(f,8,226,"UP/DOWN SCROLL   ENTER EDIT   ESC INFO",cyan,1,48);
   else txt(f,5,227,"UP/DOWN SCROLL ESC INFO MENU FILES",cyan,39);

@@ -13,7 +13,10 @@ enum { EH_NEW_FILE=8, EH_CREATE_ZIP, EH_EXTRACT_ZIP, EH_FIND_NAME, EH_ACTION_COU
 #define EH_FILES_TEXT_EDIT 5
 typedef struct {
  Eh13Picker nav,archive;
- char query[44];
+ char query[44],json_query[44];
+ unsigned long match;
+ int matched;
+#define EH_FILES_FIND_JSON 8
  int pdf_requested;
  int active,screen,preview_ok,preview_truncated,line_count,scroll;
  unsigned long file_size,preview_offset;

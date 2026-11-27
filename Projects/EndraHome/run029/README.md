@@ -1,4 +1,6 @@
-# EndraHome Run052 Desktop
+# EndraHome Run053 Desktop
+
+Menu in the JSON reader finds keys or values across the entire file. Enter finds the next occurrence; after the last result, Enter searches again from the start.
 
 Find Name in the Files menu selects the next matching filename or folder. Searches are case-insensitive and wrap through the current list.
 
